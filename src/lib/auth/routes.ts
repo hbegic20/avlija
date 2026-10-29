@@ -5,6 +5,7 @@ export const authRoutes = {
   newPassword: "/nova-lozinka",
   callback: "/auth/callback",
   dashboard: "/moj-racun",
+  profile: "/moj-racun/profil",
 } as const;
 
 export const protectedPrefixes = ["/moj-racun", "/admin"] as const;
@@ -17,6 +18,7 @@ export const notices = {
   passwordChanged: "lozinka-promijenjena",
   signedOut: "odjava",
   linkInvalid: "link-nevazeci",
+  accountDeleted: "racun-obrisan",
 } as const;
 export type NoticeCode = (typeof notices)[keyof typeof notices];
 

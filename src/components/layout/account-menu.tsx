@@ -7,7 +7,7 @@ import { signOut } from "@/actions/auth";
 import { cn } from "@/lib/cn";
 import { bs } from "@/lib/i18n/bs";
 import { accountLinks, type HeaderUser } from "./account-links";
-import { AvatarInitials } from "./avatar-initials";
+import { Avatar } from "./avatar";
 
 const itemClasses =
   "flex w-full items-center gap-2 px-4 py-2.5 text-left text-small text-tinta transition-colors hover:bg-papir-2";
@@ -52,7 +52,7 @@ export function AccountMenu({ user }: { user: HeaderUser }) {
         onClick={() => setOpen((current) => !current)}
         className="flex h-10 items-center gap-2 rounded-xs px-1.5 text-tinta transition-colors hover:bg-papir-2"
       >
-        <AvatarInitials initials={user.initials} />
+        <Avatar fullName={user.fullName} initials={user.initials} avatarUrl={user.avatarUrl} />
         <ChevronDown aria-hidden="true" size={18} strokeWidth={1.5} className={cn(open && "rotate-180")} />
       </button>
       <div

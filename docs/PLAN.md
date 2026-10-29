@@ -98,12 +98,12 @@ Done when: full flows work end to end — register → confirm email → land on
 
 ## Phase 4 — Profile
 
-- [ ] `/moj-racun/profil` with three sections in a Ledger style layout:
+- [x] `/moj-racun/profil` with three sections in a Ledger style layout:
   - Osnovni podaci: full name, municipality, avatar upload (crop to square, compress)
   - Kontakt: phone, "Imam Viber", "Imam WhatsApp". Helper text: "Broj je vidljiv samo prijavljenim korisnicima."
   - Sigurnost: change password (current + new), change email (sends confirmation)
-- [ ] Delete account: Dialog requiring the user to type `OBRIŠI`; server action deletes storage folders and the auth user via admin client
-- [ ] Publishing a listing is blocked until a phone number is set; show an inline prompt linking to the profile
+- [x] Delete account: Dialog requiring the user to type `OBRIŠI`; server action deletes storage folders and the auth user via admin client
+- [x] Publishing a listing is blocked until a phone number is set: enforced by the publish trigger (`PHONE_REQUIRED`), `hasPhone()` helper and `PhoneRequiredNotice` (links to `/moj-racun/profil#kontakt`) ready for the Phase 5 publish step
 
 Done when: profile edits persist, avatar shows in header, deleted account removes all their data and listings.
 

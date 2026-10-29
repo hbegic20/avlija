@@ -147,6 +147,19 @@ async function run() {
     : null;
   check("publishing sets published_at and a 90-day expiry", Boolean(published?.published_at) && expiryDays === 90, `expiry in ${expiryDays} days`);
 
+  const { data: phonelessDraft } = await userB.client
+    .from("listings")
+    .insert(draftListing(userB.id, "Oglas korisnika bez telefona"))
+    .select("id")
+    .single();
+  await makePublishable(phonelessDraft.id);
+  const { error: phoneError } = await userB.client.from("listings").update({ status: "active" }).eq("id", phonelessDraft.id);
+  check(
+    "publishing without a phone number is rejected",
+    phoneError?.message?.includes("PHONE_REQUIRED") === true,
+    describeError(phoneError),
+  );
+
   const { data: anonActive } = await anon.from("listings").select("id").eq("id", draft.id);
   const { data: anonImages } = await anon.from("listing_images").select("id").eq("listing_id", draft.id);
   check("anon reads active listing and its images", anonActive?.length === 1 && anonImages?.length === 1);

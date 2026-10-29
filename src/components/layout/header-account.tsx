@@ -10,7 +10,7 @@ export const navLinkClasses = "font-medium text-tinta underline-offset-3 hover:u
 
 async function loadHeaderUser(): Promise<HeaderUser | null> {
   const user = await getCurrentUser();
-  return user ? { fullName: user.fullName, initials: initialsOf(user.fullName) } : null;
+  return user ? { fullName: user.fullName, initials: initialsOf(user.fullName), avatarUrl: user.avatarUrl } : null;
 }
 
 export async function DesktopAccount() {

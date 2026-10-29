@@ -10,4 +10,5 @@ export const accountLinks = [
 export type HeaderUser = {
   fullName: string;
   initials: string;
+  avatarUrl: string | null;
 };

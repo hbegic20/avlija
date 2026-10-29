@@ -9,7 +9,7 @@ import { buttonStyles } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { bs } from "@/lib/i18n/bs";
 import { accountLinks, type HeaderUser } from "./account-links";
-import { AvatarInitials } from "./avatar-initials";
+import { Avatar } from "./avatar";
 import { routes } from "./routes";
 
 const iconButtonClasses =
@@ -67,7 +67,7 @@ export function MobileMenu({ user }: { user: HeaderUser | null }) {
           {user ? (
             <nav aria-label={bs.account.menu} className="flex flex-col gap-3">
               <p className="flex items-center gap-3">
-                <AvatarInitials initials={user.initials} />
+                <Avatar fullName={user.fullName} initials={user.initials} avatarUrl={user.avatarUrl} />
                 <span className="truncate font-medium">{user.fullName}</span>
               </p>
               <ul className="border-t">

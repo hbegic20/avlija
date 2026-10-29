@@ -10,6 +10,7 @@ const noticeMessages: Record<NoticeCode, { message: string; tone: ToastTone }> =
   [notices.passwordChanged]: { message: bs.auth.notices.passwordChanged, tone: "success" },
   [notices.signedOut]: { message: bs.auth.notices.signedOut, tone: "info" },
   [notices.linkInvalid]: { message: bs.auth.notices.linkInvalid, tone: "error" },
+  [notices.accountDeleted]: { message: bs.auth.notices.accountDeleted, tone: "info" },
 };
 
 function isNoticeCode(value: string | null): value is NoticeCode {
