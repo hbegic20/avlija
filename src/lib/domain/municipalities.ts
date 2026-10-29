@@ -20,6 +20,6 @@ export const sbkMunicipalities: readonly MunicipalityLink[] = [
 
 export const defaultMapCentre = {
   name: "Bugojno",
-  lat: 44.0567,
-  lng: 17.4508,
+  lat: 44.0559,
+  lng: 17.4509,
 };

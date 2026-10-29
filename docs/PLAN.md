@@ -60,18 +60,18 @@ Done when: `/dizajn` matches `docs/design-preview.html` in spirit, all three the
 
 ## Phase 2 — Database
 
-- [ ] Migration: enums
-- [ ] Migration: `municipalities` + seed of 12 rows
-- [ ] Migration: `unaccent` extension and `immutable_unaccent()` (must exist before `listings`)
-- [ ] Migration: `profiles`, `profile_contacts`, `is_admin()`, `handle_new_user()` trigger, `set_updated_at()`
-- [ ] Migration: `listings` + indexes + triggers `listings_10_protect` (`protect_listing_columns`), `listings_20_lifecycle` (`set_listing_lifecycle`), `enforce_listing_limits`, `set_updated_at`
-- [ ] Migration: `listing_images` + image limit trigger
-- [ ] Migration: `favorites`, `reports`
-- [ ] Migration: RPCs `increment_listing_view`, `get_seller_contact`, `renew_listing`
-- [ ] Migration: storage buckets and policies
-- [ ] Migration: `pg_cron` job for `archive_expired_listings`
-- [ ] Generate types
-- [ ] Supabase clients: `lib/supabase/client.ts` (browser, publishable key), `server.ts` (server components and actions, cookie-based), `admin.ts` (secret key, `server-only`), `session.ts` (session refresh helper called from `src/proxy.ts`)
+- [x] Migration: enums
+- [x] Migration: `municipalities` + seed of 12 rows
+- [x] Migration: `unaccent` extension and `immutable_unaccent()` (must exist before `listings`)
+- [x] Migration: `profiles`, `profile_contacts`, `is_admin()`, `handle_new_user()` trigger, `set_updated_at()`
+- [x] Migration: `listings` + indexes + triggers `listings_10_protect` (`protect_listing_columns`), `listings_20_lifecycle` (`set_listing_lifecycle`), `enforce_listing_limits`, `set_updated_at`
+- [x] Migration: `listing_images` + image limit trigger
+- [x] Migration: `favorites`, `reports`
+- [x] Migration: RPCs `increment_listing_view`, `get_seller_contact`, `renew_listing`
+- [x] Migration: storage buckets and policies
+- [x] Migration: `pg_cron` job for `archive_expired_listings`
+- [x] Generate types
+- [x] Supabase clients: `lib/supabase/client.ts` (browser, publishable key), `server.ts` (server components and actions, cookie-based), `admin.ts` (secret key, `server-only`), `session.ts` (session refresh helper called from `src/proxy.ts`)
 
 Done when: all migrations apply cleanly, a manual SQL test confirms an anonymous user cannot read drafts, cannot read `profile_contacts`, and cannot write anything.
 
