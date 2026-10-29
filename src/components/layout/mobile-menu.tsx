@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { useRef } from "react";
-import { Menu, X } from "lucide-react";
+import { LogOut, Menu, X } from "lucide-react";
+import { signOut } from "@/actions/auth";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import { buttonStyles } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { bs } from "@/lib/i18n/bs";
+import { accountLinks, type HeaderUser } from "./account-links";
+import { AvatarInitials } from "./avatar-initials";
 import { routes } from "./routes";
 
 const iconButtonClasses =
@@ -14,7 +17,7 @@ const iconButtonClasses =
 
 const menuLinkClasses = "block border-b py-3 font-display text-h3 text-tinta hover:underline";
 
-export function MobileMenu() {
+export function MobileMenu({ user }: { user: HeaderUser | null }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const close = () => dialogRef.current?.close();
 
@@ -38,7 +41,7 @@ export function MobileMenu() {
           "backdrop:bg-tinta/40",
         )}
       >
-        <div className="flex h-full flex-col gap-8 px-4 py-4">
+        <div className="flex h-full flex-col gap-8 overflow-y-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <span className="text-label text-tinta-2 uppercase">{bs.nav.menu}</span>
             <button type="button" onClick={close} aria-label={bs.nav.closeMenu} className={iconButtonClasses}>
@@ -52,13 +55,40 @@ export function MobileMenu() {
                   {bs.nav.listings}
                 </Link>
               </li>
-              <li>
-                <Link href={routes.login} onClick={close} className={menuLinkClasses}>
-                  {bs.nav.login}
-                </Link>
-              </li>
+              {user ? null : (
+                <li>
+                  <Link href={routes.login} onClick={close} className={menuLinkClasses}>
+                    {bs.nav.login}
+                  </Link>
+                </li>
+              )}
             </ul>
           </nav>
+          {user ? (
+            <nav aria-label={bs.account.menu} className="flex flex-col gap-3">
+              <p className="flex items-center gap-3">
+                <AvatarInitials initials={user.initials} />
+                <span className="truncate font-medium">{user.fullName}</span>
+              </p>
+              <ul className="border-t">
+                {accountLinks.map((link) => (
+                  <li key={link.href}>
+                    <Link href={link.href} onClick={close} className="block border-b py-2.5 text-body hover:underline">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+                <li>
+                  <form action={signOut}>
+                    <button type="submit" className="flex w-full items-center gap-2 border-b py-2.5 text-left text-body hover:underline">
+                      <LogOut aria-hidden="true" size={18} strokeWidth={1.5} />
+                      {bs.account.signOut}
+                    </button>
+                  </form>
+                </li>
+              </ul>
+            </nav>
+          ) : null}
           <ThemeSwitcher name="theme-mobile" labelled />
           <Link href={routes.newListing} onClick={close} className={buttonStyles({ size: "lg", className: "mt-auto" })}>
             {bs.nav.publish}

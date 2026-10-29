@@ -79,18 +79,20 @@ Done when: all migrations apply cleanly, a manual SQL test confirms an anonymous
 
 Supabase Auth with email + password and Google OAuth.
 
-- [ ] `src/proxy.ts` (Next.js 16 replacement for middleware, export named `proxy`): refreshes session on every request with `getClaims()`, redirects guests from `/moj-racun/*` and `/admin/*` to `/prijava?next=<path>`, redirects logged-in users away from `/prijava` and `/registracija`
-- [ ] `/registracija`: fields Ime i prezime, Email, Lozinka (min 8, at least one number), Potvrda lozinke, checkbox "Prihvatam uslove korištenja i politiku privatnosti" (links). Server action `signUp` with `full_name` in user metadata and `emailRedirectTo` `/auth/callback?next=/moj-racun`
-- [ ] After sign-up: screen "Provjerite email" showing the address, with a "Pošalji ponovo" button (60s cooldown)
-- [ ] `/auth/callback` route handler: `exchangeCodeForSession`, then redirect to a safe `next` (only relative paths allowed)
-- [ ] `/prijava`: email + password, "Zapamti me" not needed (Supabase persists), link to registration and forgotten password, "Nastavi s Google" button, preserves `next`
-- [ ] Clear error messages in Bosnian for: wrong credentials, email not confirmed (offer resend), too many attempts, network error
-- [ ] `/zaboravljena-lozinka`: email field, always shows the same success message whether or not the email exists
-- [ ] `/nova-lozinka`: new password + confirm, then sign out other sessions and redirect to `/prijava` with success toast
+- [x] `src/proxy.ts` (Next.js 16 replacement for middleware, export named `proxy`): refreshes session on every request with `getClaims()`, redirects guests from `/moj-racun/*` and `/admin/*` to `/prijava?next=<path>`, redirects logged-in users away from `/prijava` and `/registracija`
+- [x] `/registracija`: fields Ime i prezime, Email, Lozinka (min 8, at least one number), Potvrda lozinke, checkbox "Prihvatam uslove korištenja i politiku privatnosti" (links). Server action `signUp` with `full_name` in user metadata and `emailRedirectTo` `/auth/callback?next=/moj-racun`
+- [x] After sign-up: screen "Provjerite email" showing the address, with a "Pošalji ponovo" button (60s cooldown)
+- [x] `/auth/callback` route handler: `exchangeCodeForSession`, then redirect to a safe `next` (only relative paths allowed)
+- [x] `/prijava`: email + password, "Zapamti me" not needed (Supabase persists), link to registration and forgotten password, "Nastavi s Google" button, preserves `next`
+- [x] Clear error messages in Bosnian for: wrong credentials, email not confirmed (offer resend), too many attempts, network error
+- [x] `/zaboravljena-lozinka`: email field, always shows the same success message whether or not the email exists
+- [x] `/nova-lozinka`: new password + confirm, then sign out other sessions and redirect to `/prijava` with success toast
 - [ ] Google OAuth: `signInWithOAuth` with redirect to `/auth/callback`; full name taken from Google metadata
-- [ ] Logout action in account menu
-- [ ] Header shows account menu with avatar initials when logged in
-- [ ] Configure Supabase: site URL, redirect URLs (localhost and production), email templates translated to Bosnian in the Katastar style
+- [x] Logout action in account menu
+- [x] Header shows account menu with avatar initials when logged in
+- [x] Configure Supabase via `supabase/config.toml` + `npx supabase config push`: site URL, localhost redirect URLs, min 8 chars with letters and digits, confirmations on, 60s resend interval
+- [ ] Google OAuth: owner creates OAuth client in Google Cloud, enables the Google provider in Supabase (Authentication → Sign In / Providers) with redirect `https://<ref>.supabase.co/auth/v1/callback`
+- [ ] Bosnian email templates (`supabase/templates/`, token-hash links to `/auth/callback`): blocked on the free plan until custom SMTP is set up in Phase 13; add the `[auth.email.template.*]` blocks back to `config.toml` then and push
 
 Done when: full flows work end to end — register → confirm email → land on dashboard; login with wrong password shows error; reset password works; Google login works; protected routes redirect and return to the original page after login.
 
@@ -207,7 +209,7 @@ Done when: all lifecycle transitions work and respect limits (10 active).
 ## Phase 13 — Deploy
 
 - [ ] Separate Supabase project for production, apply migrations
-- [ ] Custom SMTP for auth emails (e.g. Resend) since Supabase's built-in email is rate-limited
+- [ ] Custom SMTP for auth emails (e.g. Resend) since Supabase's built-in email is rate-limited; then push the Bosnian templates from `supabase/templates/` (see Phase 3)
 - [ ] Vercel project, env vars, custom domain, update Supabase redirect URLs and Google OAuth origins
 - [ ] Smoke test all flows on production
 

@@ -1,15 +1,16 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import { buttonStyles } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { defaultMapCentre } from "@/lib/domain/municipalities";
 import { bs } from "@/lib/i18n/bs";
 import { Container } from "./container";
 import { CoordinatesStrip } from "./coordinates-strip";
+import { DesktopAccount, MobileAccountMenu, navLinkClasses } from "./header-account";
 import { Logo } from "./logo";
 import { MobileMenu } from "./mobile-menu";
 import { routes } from "./routes";
-
-const navLinkClasses = "font-medium text-tinta underline-offset-3 hover:underline";
 
 export function SiteHeader() {
   return (
@@ -22,16 +23,18 @@ export function SiteHeader() {
             <Link href={routes.listings} className={navLinkClasses}>
               {bs.nav.listings}
             </Link>
-            <Link href={routes.login} className={navLinkClasses}>
-              {bs.nav.login}
-            </Link>
+            <Suspense fallback={<Skeleton className="h-10 w-16" />}>
+              <DesktopAccount />
+            </Suspense>
             <ThemeSwitcher name="theme-desktop" />
             <Link href={routes.newListing} className={buttonStyles()}>
               {bs.nav.publish}
             </Link>
           </nav>
           <div className="md:hidden">
-            <MobileMenu />
+            <Suspense fallback={<MobileMenu user={null} />}>
+              <MobileAccountMenu />
+            </Suspense>
           </div>
         </Container>
       </div>

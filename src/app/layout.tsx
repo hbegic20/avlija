@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, JetBrains_Mono, Schibsted_Grotesk } from "next/font/google";
+import { Suspense } from "react";
+import { NoticeToast } from "@/components/auth/notice-toast";
 import { ThemeScript } from "@/components/theme/theme-script";
 import { ToastProvider } from "@/components/ui/toast";
 import { cn } from "@/lib/cn";
@@ -48,7 +50,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ThemeScript />
       </head>
       <body suppressHydrationWarning className="flex min-h-dvh flex-col bg-papir font-sans text-body text-tinta">
-        <ToastProvider>{children}</ToastProvider>
+        <ToastProvider>
+          {children}
+          <Suspense fallback={null}>
+            <NoticeToast />
+          </Suspense>
+        </ToastProvider>
       </body>
     </html>
   );

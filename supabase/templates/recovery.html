@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="bs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Nova lozinka</title>
+</head>
+<body style="margin:0;padding:0;background:#F3EEE3;color:#1F2421;font-family:'Schibsted Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F3EEE3;">
+<tr>
+<td style="padding:32px 16px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
+<tr>
+<td style="border-top:2px solid #1F2421;border-bottom:1px solid #CFC6B2;padding:8px 0;font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:0.08em;color:#5A5F57;text-transform:uppercase;">
+Avlija · Srednjobosanski kanton
+</td>
+</tr>
+<tr>
+<td style="padding:24px 0 8px;font-family:Fraunces,Georgia,serif;font-size:28px;line-height:1.2;color:#1F2421;">
+Nova lozinka
+</td>
+</tr>
+<tr>
+<td style="padding:0 0 24px;font-size:16px;line-height:1.55;color:#1F2421;">
+Primili smo zahtjev za novu lozinku za Vaš račun. Link vrijedi jedan sat.
+</td>
+</tr>
+<tr>
+<td style="padding:0 0 24px;">
+<a href="{{ .RedirectTo }}&amp;token_hash={{ .TokenHash }}&amp;type=recovery" style="display:inline-block;background:#B5482B;color:#FFFFFF;text-decoration:none;font-weight:600;font-size:16px;padding:12px 20px;border-radius:2px;">Postavi novu lozinku</a>
+</td>
+</tr>
+<tr>
+<td style="padding:0 0 24px;font-size:14px;line-height:1.45;color:#5A5F57;">
+Ako dugme ne radi, kopirajte ovaj link u preglednik:<br>
+<a href="{{ .RedirectTo }}&amp;token_hash={{ .TokenHash }}&amp;type=recovery" style="color:#2F4A3A;word-break:break-all;">{{ .RedirectTo }}&amp;token_hash={{ .TokenHash }}&amp;type=recovery</a>
+</td>
+</tr>
+<tr>
+<td style="border-top:1px solid #CFC6B2;padding:16px 0 0;font-size:14px;line-height:1.45;color:#5A5F57;">
+Ako niste tražili novu lozinku, zanemarite ovu poruku. Vaša lozinka ostaje ista.
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>
