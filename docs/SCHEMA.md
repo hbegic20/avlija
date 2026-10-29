@@ -101,7 +101,7 @@ create table listings (
   description text not null default '' check (char_length(description) <= 5000),
   price_km integer check (price_km > 0),
   price_negotiable boolean not null default false,
-  municipality_id smallint not null references municipalities,
+  municipality_id smallint references municipalities,
   neighborhood text check (char_length(neighborhood) <= 80),
   address text check (char_length(address) <= 160),
   lat double precision,
@@ -133,6 +133,9 @@ create table listings (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table listings add constraint listings_municipality_required_unless_draft
+  check (status = 'draft' or municipality_id is not null);
 
 create index listings_public_idx on listings (status, municipality_id, type, price_km);
 create index listings_owner_idx on listings (owner_id);
@@ -242,6 +245,7 @@ RLS:
 | `enforce_image_limit()` | before insert trigger on listing_images | Max 20 images per listing, error `IMAGE_LIMIT`. |
 | `increment_listing_view(listing_id uuid)` | `security definer` RPC | Increments `view_count` for active listings. Called once per session per listing from the detail page. |
 | `renew_listing(listing_id uuid)` | `security definer` RPC | Owner only. Allowed when the listing is `archived`, or `active` with less than 14 days left. Sets `status = 'active'` and `expires_at = now() + interval '90 days'`. Respects the 10-active-listings limit. |
+| `reorder_listing_images(target_listing_id uuid, ordered_image_ids uuid[])` | `security invoker` RPC | Owner only (RLS applies). Rewrites `position` for all images of the listing in one transaction so the deferred unique `(listing_id, position)` constraint is checked once. Position 0 is the cover. Raises `IMAGE_ORDER_MISMATCH` unless the array contains exactly the listing's images. |
 | `get_seller_contact(listing_id uuid)` | `security definer` RPC | Returns phone, has_viber, has_whatsapp, full_name for an active listing's owner. Returns nothing if `auth.uid()` is null. |
 | `archive_expired_listings()` | function run daily with `pg_cron` | Sets `status = 'archived'` where `status = 'active' and expires_at < now()`. |
 

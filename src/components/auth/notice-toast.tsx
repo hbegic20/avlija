@@ -11,6 +11,9 @@ const noticeMessages: Record<NoticeCode, { message: string; tone: ToastTone }> =
   [notices.signedOut]: { message: bs.auth.notices.signedOut, tone: "info" },
   [notices.linkInvalid]: { message: bs.auth.notices.linkInvalid, tone: "error" },
   [notices.accountDeleted]: { message: bs.auth.notices.accountDeleted, tone: "info" },
+  [notices.listingPublished]: { message: bs.listingForm.review.published, tone: "success" },
+  [notices.listingDraftSaved]: { message: bs.listingForm.review.draftSaved, tone: "info" },
+  [notices.listingSaved]: { message: bs.profile.saved, tone: "success" },
 };
 
 function isNoticeCode(value: string | null): value is NoticeCode {

@@ -131,7 +131,7 @@ export type Database = {
           lat: number | null
           lng: number | null
           location_precise: boolean
-          municipality_id: number
+          municipality_id: number | null
           neighborhood: string | null
           number: number
           owner_id: string
@@ -169,7 +169,7 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           location_precise?: boolean
-          municipality_id: number
+          municipality_id?: number | null
           neighborhood?: string | null
           number?: number
           owner_id: string
@@ -207,7 +207,7 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           location_precise?: boolean
-          municipality_id?: number
+          municipality_id?: number | null
           neighborhood?: string | null
           number?: number
           owner_id?: string
@@ -413,6 +413,10 @@ export type Database = {
       }
       is_admin: { Args: never; Returns: boolean }
       renew_listing: { Args: { listing_id: string }; Returns: string }
+      reorder_listing_images: {
+        Args: { ordered_image_ids: string[]; target_listing_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       heating_type:

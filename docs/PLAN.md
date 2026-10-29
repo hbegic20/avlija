@@ -111,20 +111,20 @@ Done when: profile edits persist, avatar shows in header, deleted account remove
 
 Wizard at `/moj-racun/oglasi/novi` using Stepper. A draft row is created on step 1 so progress is saved; every step saves on "Dalje".
 
-- [ ] Step 01 Osnovno: property type (SegmentedControl with icons), title, price in KM with "Cijena po dogovoru" checkbox, description (counter 0/5000)
-- [ ] Step 02 Lokacija: municipality select, naselje, address (optional), checkbox "Prikaži tačnu lokaciju" (otherwise shown as approximate circle of ~300m). `LocationPicker` map component:
+- [x] Step 01 Osnovno: property type (SegmentedControl with icons), title, price in KM with "Cijena po dogovoru" checkbox, description (counter 0/5000)
+- [x] Step 02 Lokacija: municipality select, naselje, address (optional), checkbox "Prikaži tačnu lokaciju" (otherwise shown as approximate circle of ~300m). `LocationPicker` map component:
   - Centres on the chosen municipality and re-centres when it changes
   - Click or tap places the square pin; the pin is draggable; arrow keys move it when focused
   - "Koristi moju lokaciju" button (browser geolocation, only on click, with a clear error if denied)
   - Coordinates shown live in mono under the map (`44.0612° N · 17.4467° E`)
-  - Rejects a point outside the chosen municipality's area with an inline error
+  - Rejects a point outside the chosen municipality's area with an inline error (real OSM boundaries from `src/lib/geo/sbk-boundaries.ts`, 150 m border tolerance, checked again in the server action)
   - Saves `lat` / `lng` with the step; required to publish
-- [ ] Step 03 Detalji: fields shown depend on type (see SCHEMA field rules): area, land area, rooms, bathrooms, floor / total floors, year built, heating, condition, Uknjiženo da/ne, građevinska / upotrebna dozvola, features checklist grouped
-- [ ] Step 04 Fotografije: drag-and-drop and mobile camera input, client compression to WebP, parallel upload with per-file progress, reorder by drag, set cover, delete; min 1, max 20
-- [ ] Step 05 Pregled: renders the listing exactly as the public detail page will look, with "Objavi oglas" and "Sačuvaj kao nacrt"
-- [ ] Zod schema per step plus a full `publishListingSchema` (discriminated by type) used on publish
-- [ ] Edit page reuses the wizard with all steps unlocked
-- [ ] Unsaved-changes warning on leaving the page
+- [x] Step 03 Detalji: fields shown depend on type (see SCHEMA field rules): area, land area, rooms, bathrooms, floor / total floors, year built, heating, condition, Uknjiženo da/ne, građevinska / upotrebna dozvola, features checklist grouped
+- [x] Step 04 Fotografije: drag-and-drop and mobile camera input, client compression to WebP, parallel upload with per-file progress, reorder by drag (plus move/cover buttons for keyboard and touch), set cover, delete; min 1, max 20
+- [x] Step 05 Pregled: renders the listing exactly as the public detail page will look, with "Objavi oglas" and "Sačuvaj kao nacrt"
+- [x] Zod schema per step plus a full `publishListingSchema` (discriminated by type) used on publish
+- [x] Edit page reuses the wizard with all steps unlocked
+- [x] Unsaved-changes warning on leaving the page
 
 Done when: a user can create, publish and edit each property type; validation rules per type work; images upload, reorder and appear in the right order.
 
@@ -132,7 +132,7 @@ Done when: a user can create, publish and edit each property type; validation ru
 
 - [ ] Home page `/` as in the mockup: hero with search form, interactive canton map, latest 8 listings, municipality grid with listing counts, "Kako objaviti oglas" and seller call-to-action
 - [ ] `CantonMap` (interactive SVG, not Leaflet):
-  - Municipality outlines from real OpenStreetMap boundaries, simplified and stored as SVG paths in `src/lib/geo/sbk-municipalities.ts` (generated once with a script in `scripts/`, not fetched at runtime)
+  - Municipality outlines from real OpenStreetMap boundaries: already generated in Phase 5 by `scripts/generate-municipality-boundaries.mjs` into `src/lib/geo/sbk-boundaries.ts` (lng/lat polygons); derive the SVG paths from those
   - Each municipality is an `<a>` to `/nekretnine/[opcina]` with `aria-label="Bugojno, 86 oglasa"`, reachable with Tab
   - Hover or focus fills it with `crijep` at low opacity and shows the name and active listing count in a small mono label
   - Changing the hero form's municipality highlights it on the map, and clicking the map sets the form's municipality

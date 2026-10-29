@@ -19,6 +19,9 @@ export const notices = {
   signedOut: "odjava",
   linkInvalid: "link-nevazeci",
   accountDeleted: "racun-obrisan",
+  listingPublished: "oglas-objavljen",
+  listingDraftSaved: "oglas-nacrt",
+  listingSaved: "oglas-sacuvan",
 } as const;
 export type NoticeCode = (typeof notices)[keyof typeof notices];
 
