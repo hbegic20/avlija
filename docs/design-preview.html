@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="bs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Avlija — Katastar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=JetBrains+Mono:wght@400;600&family=Schibsted+Grotesk:wght@400;500;600&display=swap&subset=latin-ext" rel="stylesheet">
+<style>
+:root{--papir:#F3EEE3;--papir-2:#E9E2D2;--papir-3:#DDD4C0;--linija:#CFC6B2;--tinta:#1F2421;--tinta-2:#5A5F57;--tinta-3:#8A8C80;--crijep:#B5482B;--crijep-tamni:#8E3720;--vranica:#2F4A3A;--vrbas:#3E6E7A;--greska:#9B2226;--upozorenje:#A4741A;--na-crijep:#FFFFFF;--serif:'Fraunces',Georgia,serif;--sans:'Schibsted Grotesk',system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root{--papir:#171A18;--papir-2:#1F2320;--papir-3:#2A2F2B;--linija:#353B36;--tinta:#ECE6D8;--tinta-2:#B3AE9F;--tinta-3:#7D7A6E;--crijep:#D2674A;--crijep-tamni:#E07E62;--vranica:#7FA88E;--vrbas:#7DB0BC;--greska:#E0645F;--upozorenje:#D9A441;--na-crijep:#171A18}}
+*{box-sizing:border-box;margin:0}
+body{background:var(--papir);color:var(--tinta);font:400 16px/1.55 var(--sans)}
+.wrap{max-width:1240px;margin:0 auto;padding:0 16px}
+@media(min-width:768px){.wrap{padding:0 48px}}
+.strip{border-top:2px solid var(--tinta);border-bottom:1px solid var(--linija);font:400 11px/1 var(--mono);letter-spacing:.08em;color:var(--tinta-2);padding:8px 0}
+header .bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid var(--linija)}
+.logo{font:600 28px/1 var(--serif);letter-spacing:-.02em}
+.logo span{color:var(--crijep)}
+nav{display:flex;gap:24px;align-items:center;font-weight:500;font-size:15px}
+nav a{color:var(--tinta);text-decoration:none}
+nav a:hover{text-decoration:underline}
+.label{font:500 12px/1.3 var(--sans);text-transform:uppercase;letter-spacing:.08em;color:var(--tinta-2)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+h1{font:500 clamp(36px,6vw,56px)/1.05 var(--serif);letter-spacing:-.02em}
+h2{font:500 28px/1.2 var(--serif);letter-spacing:-.01em;border-top:2px solid var(--tinta);padding-top:12px;margin:56px 0 20px}
+h3{font:600 20px/1.3 var(--serif)}
+.btn{display:inline-flex;align-items:center;height:40px;padding:0 18px;border-radius:2px;font:600 15px var(--sans);cursor:pointer;border:1px solid transparent;transition:background .12s}
+.btn-primary{background:var(--crijep);color:var(--na-crijep)}
+.btn-primary:hover{background:var(--crijep-tamni)}
+.btn-secondary{background:transparent;border-color:var(--tinta);color:var(--tinta)}
+.btn-secondary:hover{background:var(--papir-2)}
+.btn-ghost{background:none;color:var(--tinta);text-decoration:underline;text-underline-offset:3px}
+.btn-danger{background:none;border-color:var(--greska);color:var(--greska)}
+.btn:focus-visible,input:focus-visible{outline:2px solid var(--vranica);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.hero{display:grid;gap:32px;padding:48px 0;grid-template-columns:1fr}
+@media(min-width:900px){.hero{grid-template-columns:1fr 1fr;align-items:center}}
+.hero p{color:var(--tinta-2);max-width:46ch;margin:16px 0 24px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:180px;flex:1}
+.input{height:44px;background:var(--papir);border:1px solid var(--linija);border-radius:2px;padding:0 12px;font:400 16px var(--sans);color:var(--tinta);width:100%}
+.input-wrap{position:relative}
+.input-wrap .unit{position:absolute;right:12px;top:50%;transform:translateY(-50%);font:400 14px var(--mono);color:var(--tinta-2)}
+.search{border:1px solid var(--linija);background:var(--papir-2);padding:20px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.map{border:1px solid var(--linija);background:var(--papir-2);aspect-ratio:4/3;width:100%}
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1px;background:var(--linija);border:1px solid var(--linija)}
+.sw{background:var(--papir);padding:12px}
+.sw i{display:block;height:56px;border:1px solid var(--linija);margin-bottom:8px}
+.sheet{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1px;background:var(--linija);border:1px solid var(--linija)}
+.card{background:var(--papir);color:inherit;text-decoration:none;display:block;position:relative;transition:background .12s}
+.card:hover{background:var(--papir-2)}
+.card:hover h3{text-decoration:underline;text-underline-offset:3px}
+.img{aspect-ratio:4/3;background:repeating-linear-gradient(45deg,var(--papir-2) 0 7px,var(--papir-3) 7px 8px);border-bottom:1px solid var(--linija)}
+.card .body{padding:14px 16px 18px;display:flex;flex-direction:column;gap:6px}
+.meta{font:400 12px/1.4 var(--mono);color:var(--tinta-2);letter-spacing:.02em}
+.price{font:600 24px/1.1 var(--mono);color:var(--crijep)}
+.price small{font:400 14px var(--mono);color:var(--tinta-2);margin-left:4px}
+.facts{font:400 13px var(--mono);color:var(--tinta-2)}
+.stamp{position:absolute;top:14px;left:14px;font:600 11px/1 var(--mono);letter-spacing:.12em;padding:6px 8px;border:3px double currentColor;transform:rotate(-3deg);opacity:.88;background:var(--papir)}
+.s-vranica{color:var(--vranica)}.s-crijep{color:var(--crijep)}.s-vrbas{color:var(--vrbas)}.s-upozorenje{color:var(--upozorenje)}
+.fav{position:absolute;top:10px;right:10px;width:34px;height:34px;display:grid;place-items:center;background:var(--papir);border:1px solid var(--linija);border-radius:2px}
+.two{display:grid;gap:32px;grid-template-columns:1fr}
+@media(min-width:900px){.two{grid-template-columns:1fr 1fr}}
+.ledger .dr{display:flex;align-items:baseline;gap:8px;padding:7px 0}
+.ledger .dr .sp{flex:1;border-bottom:1px dotted var(--linija);transform:translateY(-4px)}
+.ledger .dr .v{font:400 14px var(--mono)}
+.tag{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--linija);border-radius:2px;padding:3px 8px;font-size:14px}
+.seg{display:inline-flex;border:1px solid var(--tinta);border-radius:2px;overflow:hidden}
+.seg button{border:0;border-right:1px solid var(--tinta);background:none;padding:8px 14px;font:500 14px var(--sans);color:var(--tinta);cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg .on{background:var(--tinta);color:var(--papir)}
+.toast{border:1px solid var(--linija);border-left:4px solid var(--vranica);background:var(--papir-2);padding:12px 16px;max-width:380px;font-size:14px}
+.err{color:var(--greska);font-size:14px}
+.typo>div{padding:14px 0;border-bottom:1px solid var(--linija);display:grid;grid-template-columns:140px 1fr;gap:16px;align-items:baseline}
+footer{margin-top:72px;border-top:2px solid var(--tinta);padding:24px 0 48px;color:var(--tinta-2);font-size:14px}
+</style>
+</head>
+<body>
+<header>
+  <div class="strip"><div class="wrap">44.0567° N · 17.4508° E · BUGOJNO · SREDNJOBOSANSKI KANTON</div></div>
+  <div class="wrap bar">
+    <div class="logo">Avlija<span>.</span></div>
+    <nav><a href="#">Nekretnine</a><a href="#">Prijava</a><button class="btn btn-primary">Objavi oglas</button></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div>
+      <div class="label">Registar nekretnina · 12 općina</div>
+      <h1 style="margin-top:12px">Kuće, stanovi i placevi u Srednjoj Bosni.</h1>
+      <p>Oglasi direktno od vlasnika, s tačnom lokacijom na karti i podacima o uknjiženosti.</p>
+      <form class="search" onsubmit="return false">
+        <div class="field"><span class="label">Općina</span><select class="input"><option>Bugojno</option><option>Travnik</option><option>Gornji Vakuf-Uskoplje</option></select></div>
+        <div class="field"><span class="label">Cijena do</span><div class="input-wrap"><input class="input mono" value="200.000"><span class="unit">KM</span></div></div>
+        <button class="btn btn-primary">Pretraži</button>
+      </form>
+    </div>
+    <svg class="map" viewBox="0 0 400 300" role="img" aria-label="Karta kantona">
+      <defs><pattern id="h" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="var(--papir-3)" stroke-width="1"/></pattern></defs>
+      <path d="M40 80 L130 40 L220 60 L300 30 L360 90 L340 170 L370 240 L270 270 L190 250 L110 270 L50 210 L70 150 Z" fill="url(#h)" stroke="var(--tinta-2)" stroke-width="1"/>
+      <path d="M130 40 L150 140 L110 270 M150 140 L270 150 L340 170 M220 60 L230 150 L190 250 M270 150 L270 270 M70 150 L150 140 M300 30 L270 150" fill="none" stroke="var(--linija)" stroke-width="1" stroke-dasharray="4 3"/>
+      <path d="M60 60 C120 120 140 170 120 290" fill="none" stroke="var(--vrbas)" stroke-width="2" opacity=".6"/>
+      <path d="M70 150 L150 140 L110 270 L50 210 Z" fill="var(--crijep)" opacity=".14" stroke="var(--crijep)" stroke-width="1.5"/>
+      <rect x="93" y="183" width="12" height="12" fill="var(--crijep)" stroke="var(--papir)" stroke-width="2"/>
+      <rect x="196" y="98" width="10" height="10" fill="var(--tinta-2)"/>
+      <rect x="282" y="196" width="10" height="10" fill="var(--tinta-2)"/>
+      <text x="112" y="216" font-family="JetBrains Mono" font-size="10" letter-spacing="1" fill="var(--crijep)">BUGOJNO</text>
+      <text x="210" y="110" font-family="JetBrains Mono" font-size="9" letter-spacing="1" fill="var(--tinta-2)">TRAVNIK</text>
+      <text x="296" y="208" font-family="JetBrains Mono" font-size="9" letter-spacing="1" fill="var(--tinta-2)">KISELJAK</text>
+      <text x="62" y="70" font-family="JetBrains Mono" font-size="9" letter-spacing="1" fill="var(--tinta-2)">JAJCE</text>
+    </svg>
+  </section>
+
+  <h2>Najnoviji oglasi</h2>
+  <div class="sheet">
+    <a class="card" href="#"><div class="img"></div><span class="stamp s-vranica">UKNJIŽENO</span><span class="fav">♡</span>
+      <div class="body"><div class="meta">br. 00127 · k.o. Bugojno · Čipuljić</div><h3>Porodična kuća s baštom, blizu centra</h3><div class="price">185.000<small>KM</small></div><div class="facts">140 m² · 5 soba · plac 620 m²</div></div></a>
+    <a class="card" href="#"><div class="img"></div><span class="stamp s-vrbas">NOVO</span><span class="fav">♡</span>
+      <div class="body"><div class="meta">br. 00131 · k.o. Travnik · Centar</div><h3>Trosoban stan, 2. sprat, renoviran</h3><div class="price">142.500<small>KM</small></div><div class="facts">84,5 m² · 3 sobe · 2/4 sprat</div></div></a>
+    <a class="card" href="#"><div class="img"></div><span class="fav">♡</span>
+      <div class="body"><div class="meta">br. 00098 · k.o. Gornji Vakuf · Voljevac</div><h3>Građevinski plac uz asfalt, struja i voda</h3><div class="price">48.000<small>KM</small></div><div class="facts">1.200 m² · 40 KM/m²</div></div></a>
+    <a class="card" href="#"><div class="img"></div><span class="stamp s-crijep">PRODANO</span><span class="fav">♥</span>
+      <div class="body"><div class="meta">br. 00064 · k.o. Donji Vakuf · Prusac</div><h3>Vikendica na rubu šume</h3><div class="price">63.000<small>KM</small></div><div class="facts">56 m² · 2 sobe · plac 900 m²</div></div></a>
+  </div>
+
+  <div class="two">
+    <div>
+      <h2>Ledger · podaci o nekretnini</h2>
+      <div class="ledger">
+        <div class="label" style="margin-bottom:6px">Osnovni podaci</div>
+        <div class="dr"><span>Površina</span><span class="sp"></span><span class="v">140 m²</span></div>
+        <div class="dr"><span>Površina placa</span><span class="sp"></span><span class="v">620 m²</span></div>
+        <div class="dr"><span>Broj soba</span><span class="sp"></span><span class="v">5</span></div>
+        <div class="dr"><span>Godina izgradnje</span><span class="sp"></span><span class="v">2008.</span></div>
+        <div class="dr"><span>Grijanje</span><span class="sp"></span><span class="v">Centralno</span></div>
+        <div class="dr"><span>Uknjiženo</span><span class="sp"></span><span class="v" style="color:var(--vranica)">Da</span></div>
+        <div class="dr"><span>Cijena po m²</span><span class="sp"></span><span class="v">1.321 KM</span></div>
+      </div>
+    </div>
+    <div>
+      <h2>Kontrole</h2>
+      <div class="row" style="margin-bottom:16px"><button class="btn btn-primary">Objavi oglas</button><button class="btn btn-secondary">Sačuvaj nacrt</button><button class="btn btn-ghost">Odustani</button><button class="btn btn-danger">Obriši</button></div>
+      <div class="row" style="margin-bottom:16px"><div class="seg"><button class="on">Stan</button><button>Kuća</button><button>Plac</button><button>Vikendica</button></div></div>
+      <div class="row" style="margin-bottom:16px"><span class="tag">Bugojno ×</span><span class="tag">Do 200.000 KM ×</span><span class="tag">Uknjiženo ×</span></div>
+      <div class="field" style="max-width:320px;margin-bottom:16px"><span class="label">Lozinka</span><input class="input" type="password" value="abc" style="border-color:var(--greska)"><span class="err">⚠ Lozinka mora imati najmanje 8 znakova.</span></div>
+      <div class="row" style="gap:20px;margin-bottom:20px"><span class="stamp s-vranica" style="position:static">UKNJIŽENO</span><span class="stamp s-crijep" style="position:static">PRODANO</span><span class="stamp s-vrbas" style="position:static">NOVO</span><span class="stamp s-upozorenje" style="position:static">ISTIČE</span></div>
+      <div class="toast">Oglas br. 00127 je objavljen.</div>
+    </div>
+  </div>
+
+  <h2>Tipografija</h2>
+  <div class="typo">
+    <div><span class="label">Display</span><span style="font:500 40px/1.1 var(--serif);letter-spacing:-.02em">Avlija u Bugojnu</span></div>
+    <div><span class="label">H2 Fraunces</span><span style="font:500 28px/1.2 var(--serif)">Zgrada i stanje</span></div>
+    <div><span class="label">Body Schibsted</span><span>Kuća se nalazi u mirnom dijelu naselja, petnaest minuta hoda od centra. Čđšžć.</span></div>
+    <div><span class="label">Mono JetBrains</span><span class="mono">br. 00127 · 185.000 KM · 44.0567° N</span></div>
+  </div>
+
+  <h2>Boje</h2>
+  <div class="swatches">
+    <div class="sw"><i style="background:var(--papir)"></i><span class="mono" style="font-size:12px">papir</span></div>
+    <div class="sw"><i style="background:var(--papir-2)"></i><span class="mono" style="font-size:12px">papir-2</span></div>
+    <div class="sw"><i style="background:var(--linija)"></i><span class="mono" style="font-size:12px">linija</span></div>
+    <div class="sw"><i style="background:var(--tinta)"></i><span class="mono" style="font-size:12px">tinta</span></div>
+    <div class="sw"><i style="background:var(--tinta-2)"></i><span class="mono" style="font-size:12px">tinta-2</span></div>
+    <div class="sw"><i style="background:var(--crijep)"></i><span class="mono" style="font-size:12px">crijep</span></div>
+    <div class="sw"><i style="background:var(--vranica)"></i><span class="mono" style="font-size:12px">vranica</span></div>
+    <div class="sw"><i style="background:var(--vrbas)"></i><span class="mono" style="font-size:12px">vrbas</span></div>
+    <div class="sw"><i style="background:var(--greska)"></i><span class="mono" style="font-size:12px">greska</span></div>
+    <div class="sw"><i style="background:var(--upozorenje)"></i><span class="mono" style="font-size:12px">upozorenje</span></div>
+  </div>
+</main>
+
+<footer><div class="wrap mono" style="font-size:12px;letter-spacing:.06em">AVLIJA · BUGOJNO · BUSOVAČA · DOBRETIĆI · DONJI VAKUF · FOJNICA · GORNJI VAKUF-USKOPLJE · JAJCE · KISELJAK · KREŠEVO · NOVI TRAVNIK · TRAVNIK · VITEZ</div></footer>
+</body>
+</html>

@@ -1,0 +1,183 @@
+@import "tailwindcss";
+
+@theme {
+  --color-*: initial;
+  --color-papir: #F3EEE3;
+  --color-papir-2: #E9E2D2;
+  --color-papir-3: #DDD4C0;
+  --color-linija: #CFC6B2;
+  --color-tinta: #1F2421;
+  --color-tinta-2: #5A5F57;
+  --color-tinta-3: #8A8C80;
+  --color-crijep: #B5482B;
+  --color-crijep-tamni: #8E3720;
+  --color-vranica: #2F4A3A;
+  --color-vrbas: #3E6E7A;
+  --color-greska: #9B2226;
+  --color-upozorenje: #A4741A;
+  --color-na-crijep: #FFFFFF;
+
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-sans: var(--font-schibsted), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+  --font-mono--font-feature-settings: "tnum";
+
+  --text-display: 2.25rem;
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.02em;
+  --text-display--font-weight: 500;
+  --text-h1: 1.875rem;
+  --text-h1--line-height: 1.1;
+  --text-h1--letter-spacing: -0.02em;
+  --text-h1--font-weight: 500;
+  --text-h2: 1.5rem;
+  --text-h2--line-height: 1.2;
+  --text-h2--letter-spacing: -0.01em;
+  --text-h2--font-weight: 500;
+  --text-h3: 1.25rem;
+  --text-h3--line-height: 1.3;
+  --text-h3--font-weight: 600;
+  --text-body: 1rem;
+  --text-body--line-height: 1.55;
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.45;
+  --text-label: 0.75rem;
+  --text-label--line-height: 1.3;
+  --text-label--letter-spacing: 0.08em;
+  --text-label--font-weight: 500;
+  --text-price: 1.5rem;
+  --text-price--line-height: 1.1;
+  --text-price--font-weight: 600;
+  --text-mono: 0.875rem;
+  --text-mono--line-height: 1.4;
+
+  --radius-*: initial;
+  --radius-xs: 2px;
+
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --blur-*: initial;
+
+  --container-page: 1240px;
+
+  --ease-paper: cubic-bezier(0.2, 0, 0, 1);
+  --default-transition-duration: 120ms;
+  --default-transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+
+  --animate-dot: dot 1.2s steps(1) infinite;
+
+  @keyframes dot {
+    0%,
+    100% {
+      opacity: 0.25;
+    }
+    33% {
+      opacity: 1;
+    }
+  }
+}
+
+@media (width >= 48rem) {
+  :root {
+    --text-display: 3.5rem;
+    --text-h1: 2.5rem;
+    --text-h2: 1.75rem;
+  }
+}
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *), @media (prefers-color-scheme: dark) { &:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *) });
+
+:root {
+  color-scheme: light dark;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-papir: #171A18;
+  --color-papir-2: #1F2320;
+  --color-papir-3: #2A2F2B;
+  --color-linija: #353B36;
+  --color-tinta: #ECE6D8;
+  --color-tinta-2: #B3AE9F;
+  --color-tinta-3: #7D7A6E;
+  --color-crijep: #D2674A;
+  --color-crijep-tamni: #E07E62;
+  --color-vranica: #7FA88E;
+  --color-vrbas: #7DB0BC;
+  --color-greska: #E0645F;
+  --color-upozorenje: #D9A441;
+  --color-na-crijep: #171A18;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-papir: #171A18;
+    --color-papir-2: #1F2320;
+    --color-papir-3: #2A2F2B;
+    --color-linija: #353B36;
+    --color-tinta: #ECE6D8;
+    --color-tinta-2: #B3AE9F;
+    --color-tinta-3: #7D7A6E;
+    --color-crijep: #D2674A;
+    --color-crijep-tamni: #E07E62;
+    --color-vranica: #7FA88E;
+    --color-vrbas: #7DB0BC;
+    --color-greska: #E0645F;
+    --color-upozorenje: #D9A441;
+    --color-na-crijep: #171A18;
+  }
+}
+
+@utility hatch {
+  background-color: var(--color-papir-2);
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--color-papir-2) 0 7px,
+    var(--color-papir-3) 7px 8px
+  );
+}
+
+@utility leader {
+  flex: 1 1 0%;
+  min-width: 1rem;
+  border-bottom: 1px dotted var(--color-linija);
+  transform: translateY(-0.25rem);
+}
+
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-linija);
+  }
+
+  body {
+    transition:
+      background-color 180ms var(--ease-paper),
+      color 180ms var(--ease-paper);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-vranica);
+    outline-offset: 2px;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    transition-property: opacity !important;
+    animation: none !important;
+  }
+}

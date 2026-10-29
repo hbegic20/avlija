@@ -1,0 +1,221 @@
+# Build plan
+
+Work one phase at a time, top to bottom. Tick boxes as items are done. At the end of each phase: run `npm run typecheck` and `npm run lint`, list changed files, explain how to test manually, then stop. Never commit.
+
+## Route map
+
+| Route | Access | Purpose |
+|---|---|---|
+| `/` | public | Home: canton map illustration, search form, latest listings, municipality links |
+| `/nekretnine` | public | All listings with filters, sort, pagination, grid/map toggle |
+| `/nekretnine/[opcina]` | public | Same list pre-filtered by municipality, own SEO title |
+| `/oglas/[number]-[slug]` | public | Listing detail |
+| `/prodavac/[id]` | public | Seller's public profile and their active listings |
+| `/prijava` | guest | Log in |
+| `/registracija` | guest | Register |
+| `/zaboravljena-lozinka` | guest | Request password reset email |
+| `/nova-lozinka` | via email link | Set new password |
+| `/auth/callback` | system | Exchanges auth code for session, then redirects |
+| `/moj-racun` | user | Dashboard overview |
+| `/moj-racun/oglasi` | user | My listings |
+| `/moj-racun/oglasi/novi` | user | New listing wizard |
+| `/moj-racun/oglasi/[id]/uredi` | owner | Edit listing |
+| `/moj-racun/sacuvano` | user | Favourites |
+| `/moj-racun/profil` | user | Profile, contact info, password, delete account |
+| `/admin` | admin | Moderation overview |
+| `/admin/prijave` | admin | Reports queue |
+| `/admin/oglasi` | admin | All listings, hide/unhide |
+| `/uslovi-koristenja`, `/privatnost`, `/kontakt` | public | Legal and contact |
+
+---
+
+## Phase 0 — Project setup
+
+- [x] Scaffold Next.js in a temporary folder, because `create-next-app` refuses a folder that already has CLAUDE.md and docs: `npx create-next-app@latest avlija-tmp --ts --tailwind --eslint --app --src-dir --import-alias "@/*" --use-npm --disable-git --yes`. `--disable-git` is required, otherwise it creates a commit. Move everything from `avlija-tmp` (including dotfiles) into the project root without overwriting existing files, then ask the owner to delete the empty `avlija-tmp` folder
+- [x] Confirm `.gitignore` contains `.env*` and `!.env.example`
+- [x] Add scripts `typecheck` (`tsc --noEmit`) to package.json
+- [x] Install: `@supabase/supabase-js`, `@supabase/ssr`, `zod`, `react-hook-form`, `@hookform/resolvers`, `lucide-react`, `leaflet`, `react-leaflet`, `@types/leaflet`, `browser-image-compression`, `server-only`
+- [x] Install Supabase CLI as dev dependency, run `npx supabase init`
+- [x] Link to the project: owner runs `npx supabase login`, then `npx supabase link --project-ref <ref>`
+- [x] Create `.env.example`
+- [ ] Create `.env.local` from `.env.example` (owner fills in values from Supabase → Project Settings → API Keys: the publishable key and a secret key)
+- [x] Create folder structure from CLAUDE.md
+- [x] Add ESLint rules `no-warning-comments` (error) and `react/jsx-no-comment-textnodes` (error)
+- [x] Add `scripts/check-comments.mjs` that scans `src/`, `scripts/`, root config files and `supabase/migrations/` and fails on any comment: `//` and `/* */` (including JSX `{/* */}`) in TS/JS via the TypeScript parser, `/* */` in CSS, `--` and `/* */` in SQL. Strings, URLs, regexes, CSS custom properties (`--color-*`) and `i--` are not flagged. The generated `database.types.ts` is skipped. Added to `npm run lint`
+
+Done when: `npm run dev` shows a blank page with no errors, typecheck and lint pass.
+
+## Phase 1 — Design system foundation
+
+- [x] Load Fraunces, Schibsted Grotesk, JetBrains Mono via `next/font/google` with `latin-ext`, expose as CSS variables
+- [x] Put tokens from DESIGN.md §10 into `globals.css`, set body `bg-papir text-tinta font-sans`
+- [x] Build primitives in `src/components/ui/`: Button, Input, Textarea, Select, Checkbox, Radio, SegmentedControl, Tag, Stamp, DataRow, Ledger, PriceTag, Dialog, Toast (with provider), Skeleton, EmptyState, Pagination, Stepper
+- [x] `src/lib/format/`: `formatKM`, `formatArea`, `formatDate`, `formatListingNumber` using `bs-BA` locale
+- [x] `src/lib/i18n/bs.ts` with base strings and all enum labels
+- [x] Theme: light/dark tokens and `@custom-variant dark` from DESIGN.md §10; an inline `<head>` script reads the `theme` cookie before first paint and sets `data-theme` on `<html>` (reading `cookies()` in the root layout would make every route dynamic under `cacheComponents`); `ThemeSwitcher` (Svijetla / Tamna / Prema sistemu) writes the cookie and switches instantly
+- [x] Layout shell: header (coordinates strip, logo wordmark in Fraunces, nav: Nekretnine, Prijava / account menu, ThemeSwitcher, Objavi oglas), footer (municipality links, legal links); on mobile the ThemeSwitcher sits in the menu sheet
+- [x] Dev-only page `/dizajn` showing every component in every state (removed from production via `notFound()` when `NODE_ENV === 'production'`)
+
+Done when: `/dizajn` matches `docs/design-preview.html` in spirit, all three theme choices work and survive a reload with no flash of the wrong theme, keyboard focus is visible everywhere.
+
+## Phase 2 — Database
+
+- [ ] Migration: enums
+- [ ] Migration: `municipalities` + seed of 12 rows
+- [ ] Migration: `unaccent` extension and `immutable_unaccent()` (must exist before `listings`)
+- [ ] Migration: `profiles`, `profile_contacts`, `is_admin()`, `handle_new_user()` trigger, `set_updated_at()`
+- [ ] Migration: `listings` + indexes + triggers `listings_10_protect` (`protect_listing_columns`), `listings_20_lifecycle` (`set_listing_lifecycle`), `enforce_listing_limits`, `set_updated_at`
+- [ ] Migration: `listing_images` + image limit trigger
+- [ ] Migration: `favorites`, `reports`
+- [ ] Migration: RPCs `increment_listing_view`, `get_seller_contact`, `renew_listing`
+- [ ] Migration: storage buckets and policies
+- [ ] Migration: `pg_cron` job for `archive_expired_listings`
+- [ ] Generate types
+- [ ] Supabase clients: `lib/supabase/client.ts` (browser, publishable key), `server.ts` (server components and actions, cookie-based), `admin.ts` (secret key, `server-only`), `session.ts` (session refresh helper called from `src/proxy.ts`)
+
+Done when: all migrations apply cleanly, a manual SQL test confirms an anonymous user cannot read drafts, cannot read `profile_contacts`, and cannot write anything.
+
+## Phase 3 — Authentication
+
+Supabase Auth with email + password and Google OAuth.
+
+- [ ] `src/proxy.ts` (Next.js 16 replacement for middleware, export named `proxy`): refreshes session on every request with `getClaims()`, redirects guests from `/moj-racun/*` and `/admin/*` to `/prijava?next=<path>`, redirects logged-in users away from `/prijava` and `/registracija`
+- [ ] `/registracija`: fields Ime i prezime, Email, Lozinka (min 8, at least one number), Potvrda lozinke, checkbox "Prihvatam uslove korištenja i politiku privatnosti" (links). Server action `signUp` with `full_name` in user metadata and `emailRedirectTo` `/auth/callback?next=/moj-racun`
+- [ ] After sign-up: screen "Provjerite email" showing the address, with a "Pošalji ponovo" button (60s cooldown)
+- [ ] `/auth/callback` route handler: `exchangeCodeForSession`, then redirect to a safe `next` (only relative paths allowed)
+- [ ] `/prijava`: email + password, "Zapamti me" not needed (Supabase persists), link to registration and forgotten password, "Nastavi s Google" button, preserves `next`
+- [ ] Clear error messages in Bosnian for: wrong credentials, email not confirmed (offer resend), too many attempts, network error
+- [ ] `/zaboravljena-lozinka`: email field, always shows the same success message whether or not the email exists
+- [ ] `/nova-lozinka`: new password + confirm, then sign out other sessions and redirect to `/prijava` with success toast
+- [ ] Google OAuth: `signInWithOAuth` with redirect to `/auth/callback`; full name taken from Google metadata
+- [ ] Logout action in account menu
+- [ ] Header shows account menu with avatar initials when logged in
+- [ ] Configure Supabase: site URL, redirect URLs (localhost and production), email templates translated to Bosnian in the Katastar style
+
+Done when: full flows work end to end — register → confirm email → land on dashboard; login with wrong password shows error; reset password works; Google login works; protected routes redirect and return to the original page after login.
+
+## Phase 4 — Profile
+
+- [ ] `/moj-racun/profil` with three sections in a Ledger style layout:
+  - Osnovni podaci: full name, municipality, avatar upload (crop to square, compress)
+  - Kontakt: phone, "Imam Viber", "Imam WhatsApp". Helper text: "Broj je vidljiv samo prijavljenim korisnicima."
+  - Sigurnost: change password (current + new), change email (sends confirmation)
+- [ ] Delete account: Dialog requiring the user to type `OBRIŠI`; server action deletes storage folders and the auth user via admin client
+- [ ] Publishing a listing is blocked until a phone number is set; show an inline prompt linking to the profile
+
+Done when: profile edits persist, avatar shows in header, deleted account removes all their data and listings.
+
+## Phase 5 — Create and edit listing
+
+Wizard at `/moj-racun/oglasi/novi` using Stepper. A draft row is created on step 1 so progress is saved; every step saves on "Dalje".
+
+- [ ] Step 01 Osnovno: property type (SegmentedControl with icons), title, price in KM with "Cijena po dogovoru" checkbox, description (counter 0/5000)
+- [ ] Step 02 Lokacija: municipality select, naselje, address (optional), checkbox "Prikaži tačnu lokaciju" (otherwise shown as approximate circle of ~300m). `LocationPicker` map component:
+  - Centres on the chosen municipality and re-centres when it changes
+  - Click or tap places the square pin; the pin is draggable; arrow keys move it when focused
+  - "Koristi moju lokaciju" button (browser geolocation, only on click, with a clear error if denied)
+  - Coordinates shown live in mono under the map (`44.0612° N · 17.4467° E`)
+  - Rejects a point outside the chosen municipality's area with an inline error
+  - Saves `lat` / `lng` with the step; required to publish
+- [ ] Step 03 Detalji: fields shown depend on type (see SCHEMA field rules): area, land area, rooms, bathrooms, floor / total floors, year built, heating, condition, Uknjiženo da/ne, građevinska / upotrebna dozvola, features checklist grouped
+- [ ] Step 04 Fotografije: drag-and-drop and mobile camera input, client compression to WebP, parallel upload with per-file progress, reorder by drag, set cover, delete; min 1, max 20
+- [ ] Step 05 Pregled: renders the listing exactly as the public detail page will look, with "Objavi oglas" and "Sačuvaj kao nacrt"
+- [ ] Zod schema per step plus a full `publishListingSchema` (discriminated by type) used on publish
+- [ ] Edit page reuses the wizard with all steps unlocked
+- [ ] Unsaved-changes warning on leaving the page
+
+Done when: a user can create, publish and edit each property type; validation rules per type work; images upload, reorder and appear in the right order.
+
+## Phase 6 — Browse and search
+
+- [ ] Home page `/` as in the mockup: hero with search form, interactive canton map, latest 8 listings, municipality grid with listing counts, "Kako objaviti oglas" and seller call-to-action
+- [ ] `CantonMap` (interactive SVG, not Leaflet):
+  - Municipality outlines from real OpenStreetMap boundaries, simplified and stored as SVG paths in `src/lib/geo/sbk-municipalities.ts` (generated once with a script in `scripts/`, not fetched at runtime)
+  - Each municipality is an `<a>` to `/nekretnine/[opcina]` with `aria-label="Bugojno, 86 oglasa"`, reachable with Tab
+  - Hover or focus fills it with `crijep` at low opacity and shows the name and active listing count in a small mono label
+  - Changing the hero form's municipality highlights it on the map, and clicking the map sets the form's municipality
+  - Counts come from one cached query (revalidated every 10 minutes)
+  - On mobile it is smaller, below the search form, and a tap goes straight to the municipality page
+- [ ] `/nekretnine` server-rendered list, 24 per page
+- [ ] Filters (in URL params): municipality (multi), type (multi), price from/to, area from/to, land area from/to, rooms min, Uknjiženo only, features, text search (uses `search` tsvector; pass the query through `immutable_unaccent` so `cipuljic` finds `Čipuljić`), "Samo s fotografijama" is implicit
+- [ ] Sort: Najnovije, Najjeftinije, Najskuplje, Cijena po m², Najveća površina
+- [ ] Results header: count in mono, active filter Tags with remove, "Očisti sve"
+- [ ] Grid view (sheet grid of ListingCards) and Map view (split: list left, muted Leaflet map right with square pins, clustering when zoomed out, hovering a row highlights its pin)
+- [ ] Mobile: filter sheet, map view full screen with bottom carousel
+- [ ] `/nekretnine/[opcina]` pages with municipality name in title and intro line
+- [ ] Empty state with suggestion to widen filters
+- [ ] Sold listings excluded by default, toggle "Prikaži i prodane"
+
+Done when: every filter combination produces correct results, URL can be shared and reproduces the same view, pages load fast on mobile.
+
+## Phase 7 — Listing detail
+
+- [ ] `/oglas/[number]-[slug]` with canonical URL redirect if slug differs
+- [ ] Gallery with lightbox
+- [ ] Header block: parcel number, location line, title, PriceTag with price per m², Stamp (UKNJIŽENO / PRODANO / NOVO for first 7 days)
+- [ ] Ledger sections: Osnovni podaci, Zgrada i stanje, Dokumentacija, Opremljenost
+- [ ] Description with preserved line breaks
+- [ ] Location map (pin or approximate circle): pan and zoom allowed, scroll-wheel zoom only after a click so the page still scrolls, "Otvori u Google Maps" link (only for exact locations)
+- [ ] Seller box: name, avatar, "Član od", link to seller page. "Prikaži broj telefona" button: guests are sent to login; logged-in users get number via `get_seller_contact`, plus "Pozovi", "Viber", "WhatsApp" deep links (`tel:`, `viber://chat?number=`, `https://wa.me/`) with a prefilled message containing the listing number
+- [ ] Favourite toggle, Share (native share on mobile, copy link on desktop)
+- [ ] "Prijavi oglas" Dialog with reason radios and details
+- [ ] Views counter incremented once per browser session
+- [ ] Slični oglasi: same municipality and type, closest price, 4 items
+- [ ] Owner sees an owner bar: Uredi, Označi kao prodano, Arhiviraj
+
+Done when: detail page is complete for every type, contact reveal works only when logged in, reports are saved.
+
+## Phase 8 — My listings dashboard
+
+- [ ] `/moj-racun` overview: counts by status, total views, prompt to complete profile
+- [ ] `/moj-racun/oglasi`: tabs Aktivni, Nacrti, Prodani, Arhivirani, Skriveni; ListingRow with views, published date, expiry ("Ističe za 12 dana" with ISTIČE stamp under 7 days)
+- [ ] Actions: Uredi, Označi kao prodano, Arhiviraj, Obnovi (calls the `renew_listing` RPC: extends expiry by 90 days, allowed in last 14 days or when archived), Obriši (confirm dialog, deletes images)
+- [ ] Hidden listings show the admin's `hidden_reason`
+
+Done when: all lifecycle transitions work and respect limits (10 active).
+
+## Phase 9 — Favourites
+
+- [ ] Heart toggle on cards and detail page with optimistic update; guests are sent to login and the favourite is added after login
+- [ ] `/moj-racun/sacuvano` grid, sold listings shown with PRODANO stamp, removed listings disappear
+
+## Phase 10 — Admin and moderation
+
+- [ ] `/admin` guarded by `is_admin()` server-side check
+- [ ] Reports queue: listing preview, reason, details, reporter, actions Sakrij oglas (with reason, sets `hidden`), Odbaci prijavu, Riješeno
+- [ ] All listings table with search by number or title, filter by status, hide/unhide
+- [ ] Users list with listing counts, ability to hide all listings of a user
+- [ ] Make the owner's account admin via a one-off SQL statement documented in README
+
+## Phase 11 — SEO and sharing
+
+- [ ] `generateMetadata` for all public pages, Bosnian titles like `Kuća, 140 m², Bugojno — 185.000 KM | Avlija`
+- [ ] Dynamic Open Graph image per listing (`opengraph-image.tsx`) in Katastar style: cover photo, parcel number, price, municipality
+- [ ] `sitemap.ts` with active listings and municipality pages, `robots.ts`
+- [ ] JSON-LD `RealEstateListing` / `Offer` on detail pages
+- [ ] Sold listings keep their URL with PRODANO stamp for 30 days, then return 410
+
+## Phase 12 — Trust, legal and polish
+
+- [ ] `/uslovi-koristenja`, `/privatnost` (BiH Zakon o zaštiti ličnih podataka), `/kontakt`
+- [ ] Minimal cookie notice only if analytics are added
+- [ ] `not-found.tsx` "Parcela nije pronađena", `error.tsx`, loading states with hatch skeletons on every route
+- [ ] Accessibility pass: labels, focus order, alt text (generated from type + municipality when user gives none), contrast in both themes
+- [ ] Performance pass: `next/image` with Supabase loader, sizes on all images, map loaded only when visible
+- [ ] Rate limiting on sign-up, reports and contact reveal (Supabase settings plus simple per-user counters)
+
+## Phase 13 — Deploy
+
+- [ ] Separate Supabase project for production, apply migrations
+- [ ] Custom SMTP for auth emails (e.g. Resend) since Supabase's built-in email is rate-limited
+- [ ] Vercel project, env vars, custom domain, update Supabase redirect URLs and Google OAuth origins
+- [ ] Smoke test all flows on production
+
+## Later (not now)
+
+- Saved searches with email alerts for new matching listings
+- In-app messaging between buyer and seller
+- Rentals (`najam`) as a second offer type
+- Agency accounts with multiple agents
+- Price history and "cijena snižena" badge
+- Expanding to neighbouring cantons
