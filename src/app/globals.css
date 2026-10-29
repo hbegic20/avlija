@@ -70,7 +70,7 @@
   @keyframes dot {
     0%,
     100% {
-      opacity: 0.25;
+      opacity: 0.35;
     }
     33% {
       opacity: 1;

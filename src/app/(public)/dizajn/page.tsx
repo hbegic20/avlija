@@ -171,12 +171,12 @@ export default function DesignPage() {
       </Section>
 
       <Section title={demo.sections.fields}>
-        <div className="grid gap-6 md:grid-cols-2">
+        <form className="grid gap-6 md:grid-cols-2">
           <Input label={demo.fields.title} placeholder={demo.fields.titlePlaceholder} />
           <Input label={demo.fields.price} inputMode="numeric" defaultValue="185.000" unit="KM" />
           <Input label={demo.fields.area} inputMode="decimal" defaultValue="84,5" unit="m²" />
-          <Input label={demo.fields.phone} type="tel" defaultValue="+387 61 234 567" helper={demo.fields.helperPhone} />
-          <Input label={demo.fields.password} type="password" defaultValue="abc" error={demo.fields.passwordError} />
+          <Input label={demo.fields.phone} type="tel" autoComplete="tel" defaultValue="+387 61 234 567" helper={demo.fields.helperPhone} />
+          <Input label={demo.fields.password} type="password" autoComplete="current-password" defaultValue="abc" error={demo.fields.passwordError} />
           <Input label={demo.fields.disabled} defaultValue={demo.fields.disabledValue} disabled />
           <Select
             label={demo.fields.municipality}
@@ -190,7 +190,7 @@ export default function DesignPage() {
             placeholder={demo.fields.descriptionPlaceholder}
             fieldClassName="md:col-span-2"
           />
-        </div>
+        </form>
       </Section>
 
       <Section title={demo.sections.choices}>

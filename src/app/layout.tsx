@@ -47,7 +47,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <ThemeScript />
       </head>
-      <body className="flex min-h-dvh flex-col bg-papir font-sans text-body text-tinta">
+      <body suppressHydrationWarning className="flex min-h-dvh flex-col bg-papir font-sans text-body text-tinta">
         <ToastProvider>{children}</ToastProvider>
       </body>
     </html>

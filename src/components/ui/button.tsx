@@ -29,7 +29,7 @@ export function buttonStyles({
 } = {}): string {
   return cn(
     "inline-flex shrink-0 items-center justify-center rounded-xs border font-sans font-semibold whitespace-nowrap transition-colors",
-    "disabled:cursor-not-allowed disabled:opacity-60",
+    "relative disabled:cursor-not-allowed disabled:opacity-60 aria-busy:cursor-wait aria-busy:opacity-100",
     variantClasses[variant],
     sizeClasses[size],
     className,
@@ -38,7 +38,7 @@ export function buttonStyles({
 
 function LoadingDots() {
   return (
-    <span className="font-mono" aria-hidden="true">
+    <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center font-mono">
       <span className="animate-dot">·</span>
       <span className="animate-dot [animation-delay:400ms]">·</span>
       <span className="animate-dot [animation-delay:800ms]">·</span>
@@ -72,6 +72,9 @@ export function Button({
     >
       {loading ? (
         <>
+          <span aria-hidden="true" className="invisible inline-flex items-center gap-[inherit]">
+            {children}
+          </span>
           <LoadingDots />
           <span className="sr-only">{bs.common.loading}</span>
         </>
