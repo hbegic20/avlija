@@ -30,6 +30,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticEntries: MetadataRoute.Sitemap = [
     { url: absoluteUrl("/"), changeFrequency: "daily", priority: 1 },
     { url: absoluteUrl(listingsBasePath), changeFrequency: "hourly", priority: 0.9 },
+    ...["/uslovi-koristenja", "/privatnost", "/kontakt"].map((path) => ({
+      url: absoluteUrl(path),
+      changeFrequency: "yearly" as const,
+      priority: 0.2,
+    })),
     ...sbkMunicipalities.map((municipality) => ({
       url: absoluteUrl(`${listingsBasePath}/${municipality.slug}`),
       changeFrequency: "daily" as const,

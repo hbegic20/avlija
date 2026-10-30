@@ -13,6 +13,7 @@ Postgres on Supabase. Every table has RLS enabled. Migrations live in `supabase/
 | `listing_images` | Photos per listing, ordered. |
 | `favorites` | Saved listings per user. |
 | `reports` | Users reporting fake or wrong listings. |
+| `contact_reveals` | Log of phone reveals, used only for rate limiting. RLS on, no policies, no grants: only `get_seller_contact` (security definer) reads and writes it. |
 
 Storage buckets: `listing-images` (public read), `avatars` (public read).
 
@@ -259,7 +260,8 @@ RLS:
 | `reorder_listing_images(target_listing_id uuid, ordered_image_ids uuid[])` | `security invoker` RPC | Owner only (RLS applies). Rewrites `position` for all images of the listing in one transaction so the deferred unique `(listing_id, position)` constraint is checked once. Position 0 is the cover. Raises `IMAGE_ORDER_MISMATCH` unless the array contains exactly the listing's images. |
 | `get_listing_private_location(target_listing_id uuid)` | `security definer` RPC | Owner or admin only. Returns exact `lat`, `lng`, `address`, which are not selectable through the API. |
 | `municipality_listing_counts()` | `security invoker` RPC | Active listing count per municipality, for the home map and municipality grid. |
-| `get_seller_contact(listing_id uuid)` | `security definer` RPC | Returns phone, has_viber, has_whatsapp, full_name for an active listing's owner. Returns nothing if `auth.uid()` is null. |
+| `get_seller_contact(listing_id uuid)` | `security definer` RPC | Returns phone, has_viber, has_whatsapp, full_name for an active listing's owner. Returns nothing if `auth.uid()` is null. Logs each reveal in `contact_reveals` and raises `RATE_LIMIT` after 30 reveals per user per hour. |
+| `enforce_report_rate_limit()` | before insert trigger on reports | Raises `RATE_LIMIT` after 10 reports per user per day. |
 | `archive_expired_listings()` | function run daily with `pg_cron` | Sets `status = 'archived'` where `status = 'active' and expires_at < now()`. |
 
 ## Storage

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { LazyLocationMap } from "@/components/map/lazy-maps";
+import { VisibleLocationMap } from "@/components/map/visible-location-map";
 import { DataRow } from "@/components/ui/data-row";
 import { Ledger } from "@/components/ui/ledger";
 import { PriceTag } from "@/components/ui/price-tag";
@@ -52,7 +52,10 @@ export function ListingDetailView({
   return (
     <article className="flex flex-col gap-8">
       <div className="relative">
-        <ListingGallery images={images} title={listing.title} />
+        <ListingGallery
+          images={images}
+          altBase={[bs.enums.propertyType[listing.type], municipalityName].filter(Boolean).join(", ")}
+        />
         {stamp ? <Stamp variant={stamp} className="absolute top-4 left-4" /> : null}
       </div>
 
@@ -100,7 +103,7 @@ export function ListingDetailView({
                 {listing.location_precise ? bs.listing.exactLocation : bs.listing.approximateLocation}
                 {listing.public_address ? ` · ${listing.public_address}` : null}
               </p>
-              <LazyLocationMap lat={listing.public_lat} lng={listing.public_lng} precise={listing.location_precise} />
+              <VisibleLocationMap lat={listing.public_lat} lng={listing.public_lng} precise={listing.location_precise} />
               {listing.location_precise ? (
                 <a
                   href={`https://www.google.com/maps/search/?api=1&query=${listing.public_lat},${listing.public_lng}`}

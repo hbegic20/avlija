@@ -376,7 +376,7 @@ export function StepPhotos() {
         {uploads.map((upload) => (
           <li key={upload.key} className="flex flex-col bg-papir">
             <div className="relative aspect-4/3 overflow-hidden">
-              <Image src={upload.previewUrl} alt="" fill unoptimized className="object-cover opacity-50" />
+              <Image src={upload.previewUrl} alt="" fill unoptimized sizes="220px" className="object-cover opacity-50" />
               <div className="absolute inset-x-0 bottom-0 flex flex-col gap-1 bg-papir p-2">
                 <span className={cn("font-mono text-label", upload.status === "failed" ? "text-greska" : "text-tinta-2")}>
                   {upload.status === "compressing"

@@ -208,6 +208,13 @@ async function run() {
     describeError(revealError),
   );
 
+  const { data: revealsSeenByB, error: revealsError } = await userB.client.from("contact_reveals").select("id");
+  check(
+    "users cannot read the contact reveal log",
+    revealsError !== null || (revealsSeenByB ?? []).length === 0,
+    describeError(revealsError),
+  );
+
   const { error: viewError } = await anon.rpc("increment_listing_view", { listing_id: draft.id });
   const { data: afterView } = await admin.from("listings").select("view_count, updated_at").eq("id", draft.id).single();
   check("anon can increment views", viewError === null && afterView?.view_count === 1, describeError(viewError));

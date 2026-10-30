@@ -8,7 +8,7 @@ export default function DashboardLayout({ children }: LayoutProps<"/">) {
   return (
     <>
       <SiteHeader />
-      <main className="flex-1">
+      <main id="sadrzaj" className="flex-1">
         <Container className="py-10">{children}</Container>
       </main>
       <SiteFooter />

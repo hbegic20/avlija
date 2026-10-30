@@ -200,12 +200,12 @@ Done when: all lifecycle transitions work and respect limits (10 active).
 
 ## Phase 12 — Trust, legal and polish
 
-- [ ] `/uslovi-koristenja`, `/privatnost` (BiH Zakon o zaštiti ličnih podataka), `/kontakt`
-- [ ] Minimal cookie notice only if analytics are added
-- [ ] `not-found.tsx` "Parcela nije pronađena", `error.tsx`, loading states with hatch skeletons on every route
-- [ ] Accessibility pass: labels, focus order, alt text (generated from type + municipality when user gives none), contrast in both themes
-- [ ] Performance pass: `next/image` with Supabase loader, sizes on all images, map loaded only when visible
-- [ ] Rate limiting on sign-up, reports and contact reveal (Supabase settings plus simple per-user counters)
+- [x] `/uslovi-koristenja`, `/privatnost` (BiH Zakon o zaštiti ličnih podataka), `/kontakt`. Operator name and email from `NEXT_PUBLIC_OPERATOR_NAME` / `NEXT_PUBLIC_CONTACT_EMAIL`; texts are a draft for legal review
+- [x] Minimal cookie notice only if analytics are added (no analytics, only necessary cookies: not needed)
+- [x] `not-found.tsx` "Parcela nije pronađena", `error.tsx` + `global-error.tsx`, loading states with hatch skeletons on every route
+- [x] Accessibility pass: labels, focus order, skip link, alt text (generated from type + municipality), contrast in both themes (two token issues reported: `upozorenje` text 3.56:1 and `tinta-3` 2.95:1 in light)
+- [x] Performance pass: `next/image` everywhere with `sizes` (Next optimizer; Supabase image transformations need a paid plan), detail map loaded only when near the viewport
+- [x] Rate limiting on sign-up (Supabase `sign_in_sign_ups` 30 per 5 min per IP), reports (10 per day) and contact reveal (30 per hour) via database counters
 
 ## Phase 13 — Deploy
 

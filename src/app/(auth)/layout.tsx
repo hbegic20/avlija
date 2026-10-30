@@ -11,7 +11,7 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
   return (
     <>
       <SiteHeader />
-      <main className="flex-1">
+      <main id="sadrzaj" className="flex-1">
         <Container>{children}</Container>
       </main>
       <SiteFooter />

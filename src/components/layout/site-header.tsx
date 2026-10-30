@@ -14,6 +14,12 @@ import { routes } from "./routes";
 export function SiteHeader() {
   return (
     <header>
+      <a
+        href="#sadrzaj"
+        className="sr-only z-50 bg-tinta px-4 py-2 font-medium text-papir focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
+      >
+        {bs.a11y.skipToContent}
+      </a>
       <Suspense fallback={<StaticCoordinatesStrip />}>
         <CoordinatesStrip />
       </Suspense>

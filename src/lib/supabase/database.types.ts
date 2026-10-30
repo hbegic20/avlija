@@ -39,6 +39,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      contact_reveals: {
+        Row: {
+          created_at: string
+          id: number
+          listing_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          listing_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          listing_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_reveals_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contact_reveals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       favorites: {
         Row: {
           created_at: string

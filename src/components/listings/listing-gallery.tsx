@@ -16,7 +16,7 @@ function counter(index: number, total: number): string {
 const lightboxButtonClasses =
   "inline-flex size-12 items-center justify-center rounded-xs border border-papir/40 text-papir transition-colors hover:bg-papir/10 disabled:opacity-30";
 
-export function ListingGallery({ images, title }: { images: ListingImage[]; title: string }) {
+export function ListingGallery({ images, altBase }: { images: ListingImage[]; altBase: string }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -46,7 +46,7 @@ export function ListingGallery({ images, title }: { images: ListingImage[]; titl
   }
 
   const go = (offset: number) => setActiveIndex((current) => (current + offset + total) % total);
-  const altFor = (index: number) => `${title}, ${bs.listingForm.photos.photoAlt(index + 1).toLowerCase()}`;
+  const altFor = (index: number) => `${altBase}, ${bs.listingForm.photos.photoAlt(index + 1).toLowerCase()}`;
 
   const onLightboxKey = (event: KeyboardEvent<HTMLDialogElement>) => {
     if (event.key === "ArrowLeft") {

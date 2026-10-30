@@ -26,7 +26,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   return (
     <>
       <SiteHeader />
-      <main className="flex-1">
+      <main id="sadrzaj" className="flex-1">
         <Container className="flex flex-col gap-8 py-10">
           <div className="flex flex-col gap-4">
             <p className="border-t-2 border-t-tinta pt-3 text-label text-tinta-2 uppercase">{bs.admin.title}</p>

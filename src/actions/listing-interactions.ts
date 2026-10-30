@@ -43,7 +43,7 @@ export async function revealContact(listingId: string): Promise<InteractionResul
   }
   const { data, error } = await current.supabase.rpc("get_seller_contact", { listing_id: listingId });
   if (error) {
-    return failure("unexpected");
+    return failure(error.message.includes("RATE_LIMIT") ? "reveal_rate_limited" : "unexpected");
   }
   const contact = data?.[0];
   if (!contact) {
@@ -88,6 +88,9 @@ export async function reportListing(listingId: string, input: ReportInput): Prom
     details: parsed.data.details || null,
   });
   if (error) {
+    if (error.message.includes("RATE_LIMIT")) {
+      return failure("report_rate_limited");
+    }
     return failure(error.code === "23505" ? "duplicate" : error.code === "23503" ? "not_found" : "unexpected");
   }
   return success();
