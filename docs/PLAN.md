@@ -207,6 +207,27 @@ Done when: all lifecycle transitions work and respect limits (10 active).
 - [x] Performance pass: `next/image` everywhere with `sizes` (Next optimizer; Supabase image transformations need a paid plan), detail map loaded only when near the viewport
 - [x] Rate limiting on sign-up (Supabase `sign_in_sign_ups` 30 per 5 min per IP), reports (10 per day) and contact reveal (30 per hour) via database counters
 
+## Status and open items (2026-10-30)
+
+Phases 0–12 are built. Phase 13 (deploy) has not started. Before deploying, work through this list top to bottom.
+
+### Before deploy
+- [ ] Add `SUPABASE_SECRET_KEY` to `.env.local`, then run `npm run test:rls` (never run yet) and a full logged-in walk: profile setup, listing wizard, dashboard, favourites, admin. Logged-in pages have only been tested by the owner by hand
+- [ ] Migration: block deleting the last image of an active listing (today the publish rule is only checked when a listing becomes active)
+- [ ] Migration: limit `increment_listing_view` so views cannot be inflated by calling the RPC repeatedly
+- [ ] Set `NEXT_PUBLIC_OPERATOR_NAME` and `NEXT_PUBLIC_CONTACT_EMAIL`; legal review of `/uslovi-koristenja` and `/privatnost` texts (`src/lib/i18n/legal-bs.ts`)
+
+### Soon after
+- [ ] Daily cleanup job: delete drafts untouched for 60 days and their images; remove orphaned files in `listing-images` without a `listing_images` row
+- [ ] Cache the 410 lookup in `src/lib/listings/gone-response.ts` (one REST query per `/oglas/...` request today)
+
+### Owner decisions pending
+- [ ] Darker `upozorenje` for text contrast (3.56:1 on `papir`; suggested `#8A6114`), and `tinta-3` (2.95:1, placeholders only)
+- [ ] Stamp border: 2px as in DESIGN.md (renders solid) or 3px (renders double)
+- [ ] Add `sharp` as a direct dependency for the cover photo in listing OG images (Satori cannot decode WebP)
+- [ ] Google OAuth: create the Google Cloud client and enable the provider in Supabase
+- [ ] Production plan: Supabase Pro (free plan pauses after a week idle, no backups), error monitoring (e.g. Sentry), unit tests (e.g. Vitest); each needs approval
+
 ## Phase 13 — Deploy
 
 - [ ] Separate Supabase project for production, apply migrations
