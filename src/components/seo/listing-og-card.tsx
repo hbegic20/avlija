@@ -11,7 +11,7 @@ const stampColours = { uknjizeno: c.vranica, prodano: c.crijep, novo: c.vrbas, i
 
 export function ListingOgCard({ bundle }: { bundle: PublicListingBundle }) {
   const { listing } = bundle;
-  const stamp = stampFor({ status: listing.status, isRegistered: listing.is_registered, publishedAt: listing.published_at });
+  const stamp = stampFor({ status: listing.status, isRegistered: listing.is_registered, isNew: bundle.isNew });
   const facts = cardFacts({
     id: listing.id,
     number: listing.number,
@@ -35,6 +35,7 @@ export function ListingOgCard({ bundle }: { bundle: PublicListingBundle }) {
     municipalitySlug: bundle.municipalitySlug,
     coverUrl: null,
     path: bundle.path,
+    isNew: bundle.isNew,
   });
   const outline = bundle.municipalitySlug ? municipalityOutline(bundle.municipalitySlug, 420, 470, 30) : null;
   const pin = outline && listing.public_lat !== null && listing.public_lng !== null ? outline.project(listing.public_lat, listing.public_lng) : null;

@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { isNewListing } from "./listing-view";
 import type { EditableListing, ListingImage, MunicipalityRow } from "./types";
 
 export const listingImagesBucket = "listing-images";
@@ -10,6 +11,7 @@ const publicColumns =
 export type OwnedListingBundle = {
   listing: EditableListing;
   images: ListingImage[];
+  isNew: boolean;
 };
 
 export async function loadOwnedListing(listingId: string, ownerId: string): Promise<OwnedListingBundle | null> {
@@ -48,7 +50,7 @@ export async function loadOwnedListing(listingId: string, ownerId: string): Prom
     height: row.height,
   }));
 
-  return { listing, images };
+  return { listing, images, isNew: isNewListing(listing.published_at, Date.now()) };
 }
 
 export async function loadMunicipalities(): Promise<MunicipalityRow[]> {

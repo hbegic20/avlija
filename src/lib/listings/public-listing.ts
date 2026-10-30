@@ -3,6 +3,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { listingsCacheTag } from "@/lib/search/cache-tags";
 import { createPublicClient, publicStorageUrl } from "@/lib/supabase/public";
 import { listingPath } from "./listing-path";
+import { isNewListing } from "./listing-view";
 import { isGoneSoldListing } from "./sold-grace";
 import type { EditableListing, ListingImage } from "./types";
 
@@ -23,6 +24,7 @@ export type PublicListingBundle = {
   municipalitySlug: string | null;
   seller: PublicSeller | null;
   path: string;
+  isNew: boolean;
 };
 
 export function listingCacheTag(listingNumber: number): string {
@@ -78,6 +80,7 @@ export async function getPublicListing(listingNumber: number): Promise<PublicLis
         }
       : null,
     path: listingPath(row.number, row.title),
+    isNew: isNewListing(row.published_at, Date.now()),
   };
 }
 

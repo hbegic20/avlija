@@ -42,11 +42,7 @@ export function ListingDetailView({
   afterHeader?: ReactNode;
 }) {
   const { listing, images, municipalityName } = view;
-  const stamp = stampFor({
-    status: listing.status,
-    isRegistered: listing.is_registered,
-    publishedAt: listing.published_at,
-  });
+  const stamp = stampFor({ status: listing.status, isRegistered: listing.is_registered, isNew: view.isNew });
   const features = featureLabels(view);
 
   return (

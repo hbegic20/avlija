@@ -16,7 +16,7 @@ import { WizardFooter } from "./wizard-footer";
 const text = bs.listingForm.review;
 
 export function StepReview() {
-  const { listing, images, municipalities, hasPhone, missingSteps, goToStep } = useWizard();
+  const { listing, images, municipalities, hasPhone, isNew, missingSteps, goToStep } = useWizard();
   const [errorCode, setErrorCode] = useState<ListingErrorCode | null>(null);
   const [publishing, startPublish] = useTransition();
   const [finishing, startFinish] = useTransition();
@@ -26,8 +26,8 @@ export function StepReview() {
       return null;
     }
     const municipalityName = municipalities.find((entry) => entry.id === listing.municipality_id)?.name ?? null;
-    return { listing, images, municipalityName };
-  }, [images, listing, municipalities]);
+    return { listing, images, municipalityName, isNew };
+  }, [images, isNew, listing, municipalities]);
 
   if (!listing || !view) {
     return null;

@@ -23,6 +23,7 @@ export type ListingSummary = {
   municipalitySlug: string | null;
   coverUrl: string | null;
   path: string;
+  isNew: boolean;
 };
 
 export type ListingPin = {

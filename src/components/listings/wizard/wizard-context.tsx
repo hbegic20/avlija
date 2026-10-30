@@ -9,6 +9,7 @@ export type WizardContextValue = {
   municipalities: MunicipalityRow[];
   userId: string;
   hasPhone: boolean;
+  isNew: boolean;
   missingSteps: WizardStep[];
   goToStep: (step: WizardStep, listingId?: string) => void;
   setDirty: (dirty: boolean) => void;

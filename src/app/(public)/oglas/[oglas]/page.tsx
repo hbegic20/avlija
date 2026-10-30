@@ -132,7 +132,12 @@ export default async function ListingPage({ params }: ListingPageProps) {
   }
 
   const isSold = bundle.listing.status === "sold";
-  const view = { listing: bundle.listing, images: bundle.images, municipalityName: bundle.municipalityName };
+  const view = {
+    listing: bundle.listing,
+    images: bundle.images,
+    municipalityName: bundle.municipalityName,
+    isNew: bundle.isNew,
+  };
 
   return (
     <Container className="flex flex-col gap-14 py-8">

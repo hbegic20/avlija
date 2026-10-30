@@ -24,6 +24,7 @@ export default async function NewListingPage() {
         municipalities={municipalities}
         userId={user.id}
         hasPhone={phoneSet}
+        isNew
         step={1}
         unlockedSteps={[1]}
         completedSteps={[]}

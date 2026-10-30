@@ -1,6 +1,7 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { listingPath } from "@/lib/listings/listing-path";
+import { isNewListing } from "@/lib/listings/listing-view";
 import type { ListingPin, ListingSummary } from "@/lib/listings/summary";
 import { createPublicClient, publicStorageUrl } from "@/lib/supabase/public";
 import { toSearchableText } from "@/lib/text/searchable";
@@ -60,6 +61,7 @@ export function toSummary(row: SummaryRow): ListingSummary {
     municipalitySlug: row.municipalities?.slug ?? null,
     coverUrl: cover ? publicStorageUrl("listing-images", cover.storage_path) : null,
     path: listingPath(row.number, row.title),
+    isNew: isNewListing(row.published_at, Date.now()),
   };
 }
 

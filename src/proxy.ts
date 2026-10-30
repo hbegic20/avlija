@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { authRoutes, guestOnlyPaths, loginPathWithNext, matchesPrefix, nextParam, protectedPrefixes } from "@/lib/auth/routes";
 import { safeNextPath } from "@/lib/auth/safe-next-path";
 import { goneResponseBody, isGoneListingPath } from "@/lib/listings/gone-response";
+import { isUnknownMunicipalityPath, notFoundRewritePath } from "@/lib/search/municipality-path";
 import { updateSession } from "@/lib/supabase/session";
 
 function redirectKeepingCookies(request: NextRequest, sessionResponse: NextResponse, location: string): NextResponse {
@@ -19,6 +20,9 @@ function redirectKeepingCookies(request: NextRequest, sessionResponse: NextRespo
 
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+  if (isUnknownMunicipalityPath(pathname)) {
+    return NextResponse.rewrite(new URL(notFoundRewritePath, request.url));
+  }
   if (await isGoneListingPath(pathname)) {
     return new NextResponse(goneResponseBody(), {
       status: 410,

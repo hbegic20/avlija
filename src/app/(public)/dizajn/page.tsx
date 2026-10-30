@@ -98,6 +98,7 @@ const demoCards: ListingSummary[] = demo.cards.map((card) => ({
   municipalitySlug: null,
   coverUrl: null,
   path: "/dizajn",
+  isNew: card.publishedAt === null,
 }));
 
 const heatingOptions = heatingTypes.map((type) => ({ value: type, label: bs.enums.heating[type] }));

@@ -5,6 +5,7 @@ import { Container } from "@/components/layout/container";
 import { ListingsBrowser } from "@/components/search/listings-browser";
 import { ResultsSkeleton } from "@/components/search/results-skeleton";
 import { SearchPageHeader } from "@/components/search/search-page-header";
+import { Skeleton } from "@/components/ui/skeleton";
 import { sbkMunicipalities } from "@/lib/domain/municipalities";
 import { bs } from "@/lib/i18n/bs";
 import { parseSearchFilters } from "@/lib/search/filters";
@@ -31,26 +32,37 @@ export async function generateMetadata({ params }: MunicipalityPageProps): Promi
   };
 }
 
-async function Results({ slug, searchParams }: { slug: string; searchParams: MunicipalityPageProps["searchParams"] }) {
-  const filters = parseSearchFilters(await searchParams, slug);
-  return <ListingsBrowser filters={filters} fixedMunicipality={slug} />;
-}
-
-export default async function MunicipalityListingsPage({ params, searchParams }: MunicipalityPageProps) {
-  const { opcina } = await params;
+async function MunicipalityListings({ params, searchParams }: MunicipalityPageProps) {
+  const [{ opcina }, query] = await Promise.all([params, searchParams]);
   const municipality = findMunicipality(opcina);
   if (!municipality) {
     notFound();
   }
+  return (
+    <>
+      <SearchPageHeader title={bs.search.titleIn(municipality.name)} intro={bs.search.introIn(municipality.name)} />
+      <ListingsBrowser filters={parseSearchFilters(query, municipality.slug)} fixedMunicipality={municipality.slug} />
+    </>
+  );
+}
 
+function MunicipalityListingsSkeleton() {
+  return (
+    <>
+      <div className="flex flex-col gap-3 border-t-2 border-t-tinta pt-3" aria-hidden="true">
+        <Skeleton className="h-11 w-80 max-w-full" />
+        <Skeleton className="h-5 w-full max-w-md" />
+      </div>
+      <ResultsSkeleton />
+    </>
+  );
+}
+
+export default function MunicipalityListingsPage(props: MunicipalityPageProps) {
   return (
     <Container className="flex flex-col gap-8 py-10">
-      <SearchPageHeader
-        title={bs.search.titleIn(municipality.name)}
-        intro={bs.search.introIn(municipality.name)}
-      />
-      <Suspense fallback={<ResultsSkeleton />}>
-        <Results slug={municipality.slug} searchParams={searchParams} />
+      <Suspense fallback={<MunicipalityListingsSkeleton />}>
+        <MunicipalityListings {...props} />
       </Suspense>
     </Container>
   );

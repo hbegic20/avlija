@@ -64,6 +64,7 @@ export default async function EditListingPage({ params, searchParams }: PageProp
         municipalities={municipalities}
         userId={user.id}
         hasPhone={phoneSet}
+        isNew={bundle.isNew}
         step={requested}
         unlockedSteps={[...unlocked]}
         completedSteps={[...completedSteps(listing, images.length)]}

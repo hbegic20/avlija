@@ -19,6 +19,7 @@ type ListingWizardProps = {
   municipalities: MunicipalityRow[];
   userId: string;
   hasPhone: boolean;
+  isNew: boolean;
   step: WizardStep;
   unlockedSteps: WizardStep[];
   completedSteps: WizardStep[];
@@ -31,6 +32,7 @@ export function ListingWizard({
   municipalities,
   userId,
   hasPhone,
+  isNew,
   step,
   unlockedSteps,
   completedSteps,
@@ -74,8 +76,8 @@ export function ListingWizard({
   };
 
   const context = useMemo<WizardContextValue>(
-    () => ({ listing, images, municipalities, userId, hasPhone, missingSteps, goToStep, setDirty }),
-    [listing, images, municipalities, userId, hasPhone, missingSteps, goToStep, setDirty],
+    () => ({ listing, images, municipalities, userId, hasPhone, isNew, missingSteps, goToStep, setDirty }),
+    [listing, images, municipalities, userId, hasPhone, isNew, missingSteps, goToStep, setDirty],
   );
 
   return (

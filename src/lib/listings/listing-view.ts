@@ -10,6 +10,7 @@ export type ListingView = {
   listing: EditableListing;
   images: ListingImage[];
   municipalityName: string | null;
+  isNew: boolean;
 };
 
 const newListingDays = 7;
@@ -79,19 +80,19 @@ export function featureLabels({ listing }: ListingView): string[] {
 export type StampInput = {
   status: EditableListing["status"];
   isRegistered: boolean | null;
-  publishedAt: string | null;
+  isNew: boolean;
 };
 
-export function stampFor(listing: StampInput, now: number = Date.now()): StampVariant | null {
+export function isNewListing(publishedAt: string | null, now: number): boolean {
+  return publishedAt === null || now - new Date(publishedAt).getTime() < newListingDays * dayMs;
+}
+
+export function stampFor(listing: StampInput): StampVariant | null {
   if (listing.status === "sold") {
     return "prodano";
   }
   if (listing.isRegistered) {
     return "uknjizeno";
   }
-  const publishedAt = listing.publishedAt ? new Date(listing.publishedAt).getTime() : null;
-  if (publishedAt === null || now - publishedAt < newListingDays * dayMs) {
-    return "novo";
-  }
-  return null;
+  return listing.isNew ? "novo" : null;
 }
