@@ -66,6 +66,12 @@ function databaseErrorCode(message: string | undefined): ListingErrorCode {
   if (message.includes("IMAGE_LIMIT")) {
     return "image_limit";
   }
+  if (message.includes("RENEW_NOT_ALLOWED")) {
+    return "renew_not_allowed";
+  }
+  if (message.includes("NOT_FOUND")) {
+    return "not_found";
+  }
   return "unexpected";
 }
 
@@ -414,4 +420,54 @@ export async function finishEditing(listingId: string): Promise<void> {
   revalidateListing(listingId);
   const notice = listing?.status === "draft" ? listingNotices.draftSaved : listingNotices.saved;
   redirect(`${listingRoutes.mine}?${noticeParam}=${notice}`);
+}
+
+export async function renewListing(listingId: string): Promise<ListingResult<{ expiresAt: string }>> {
+  if (!listingIdSchema.safeParse(listingId).success) {
+    return failure("validation");
+  }
+  const current = await session();
+  if (!current) {
+    return failure("unauthenticated");
+  }
+  const { data, error } = await current.supabase.rpc("renew_listing", { listing_id: listingId });
+  if (error || !data) {
+    return failure(databaseErrorCode(error?.message));
+  }
+  revalidateListing(listingId);
+  return success({ expiresAt: data });
+}
+
+async function listFolder(current: Session, folder: string): Promise<string[]> {
+  const { data } = await current.supabase.storage.from(listingImagesBucket).list(folder, { limit: 1000 });
+  return (data ?? []).filter((entry) => entry.id !== null).map((entry) => `${folder}/${entry.name}`);
+}
+
+export async function deleteListing(listingId: string): Promise<ListingResult> {
+  if (!listingIdSchema.safeParse(listingId).success) {
+    return failure("validation");
+  }
+  const current = await session();
+  if (!current) {
+    return failure("unauthenticated");
+  }
+  const existing = await ownedListing(current, listingId);
+  if (!existing) {
+    return failure("not_found");
+  }
+  const { data: imageRows } = await current.supabase
+    .from("listing_images")
+    .select("storage_path")
+    .eq("listing_id", listingId);
+  const folderFiles = await listFolder(current, `${current.userId}/${listingId}`);
+  const paths = [...new Set([...(imageRows ?? []).map((row) => row.storage_path), ...folderFiles])];
+  if (paths.length > 0) {
+    await current.supabase.storage.from(listingImagesBucket).remove(paths);
+  }
+  const { error } = await current.supabase.from("listings").delete().eq("id", listingId).eq("owner_id", current.userId);
+  if (error) {
+    return failure("unexpected");
+  }
+  revalidateListing(listingId);
+  return success();
 }

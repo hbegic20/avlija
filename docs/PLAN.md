@@ -169,10 +169,10 @@ Done when: detail page is complete for every type, contact reveal works only whe
 
 ## Phase 8 — My listings dashboard
 
-- [ ] `/moj-racun` overview: counts by status, total views, prompt to complete profile
-- [ ] `/moj-racun/oglasi`: tabs Aktivni, Nacrti, Prodani, Arhivirani, Skriveni; ListingRow with views, published date, expiry ("Ističe za 12 dana" with ISTIČE stamp under 7 days)
-- [ ] Actions: Uredi, Označi kao prodano, Arhiviraj, Obnovi (calls the `renew_listing` RPC: extends expiry by 90 days, allowed in last 14 days or when archived), Obriši (confirm dialog, deletes images)
-- [ ] Hidden listings show the admin's `hidden_reason`
+- [x] `/moj-racun` overview: counts by status, total views, prompt to complete profile
+- [x] `/moj-racun/oglasi`: tabs Aktivni, Nacrti, Prodani, Arhivirani, Skriveni; ListingRow with views, published date, expiry ("Ističe za 12 dana" with ISTIČE stamp under 7 days)
+- [x] Actions: Uredi, Označi kao prodano, Arhiviraj, Obnovi (calls the `renew_listing` RPC: extends expiry by 90 days, allowed in last 14 days or when archived), Obriši (confirm dialog, deletes images)
+- [x] Hidden listings show the admin's `hidden_reason`
 
 Done when: all lifecycle transitions work and respect limits (10 active).
 

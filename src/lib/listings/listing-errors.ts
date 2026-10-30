@@ -10,6 +10,7 @@ export type ListingErrorCode =
   | "listing_limit"
   | "publish_requirements"
   | "image_limit"
+  | "renew_not_allowed"
   | "unexpected";
 
 const messages = bs.listingForm;
@@ -24,6 +25,7 @@ const listingErrorMessages: Record<ListingErrorCode, string> = {
   listing_limit: messages.errors.listingLimit,
   publish_requirements: messages.errors.publishRequirements,
   image_limit: messages.errors.imageLimit,
+  renew_not_allowed: bs.myListings.errors.renewNotAllowed,
   unexpected: bs.auth.errors.unexpected,
 };
 
