@@ -6,7 +6,7 @@ import { ChevronDown, LogOut } from "lucide-react";
 import { signOut } from "@/actions/auth";
 import { cn } from "@/lib/cn";
 import { bs } from "@/lib/i18n/bs";
-import { accountLinks, type HeaderUser } from "./account-links";
+import { accountLinks, adminLink, type HeaderUser } from "./account-links";
 import { Avatar } from "./avatar";
 
 const itemClasses =
@@ -63,7 +63,7 @@ export function AccountMenu({ user }: { user: HeaderUser }) {
         <p className="truncate border-b px-4 py-3 font-display text-h3">{user.fullName}</p>
         <nav aria-label={bs.account.menu}>
           <ul className="py-1">
-            {accountLinks.map((link) => (
+            {[...accountLinks, ...(user.isAdmin ? [adminLink] : [])].map((link) => (
               <li key={link.href}>
                 <Link href={link.href} onClick={() => setOpen(false)} className={itemClasses}>
                   {link.label}

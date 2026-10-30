@@ -11,4 +11,7 @@ export type HeaderUser = {
   fullName: string;
   initials: string;
   avatarUrl: string | null;
+  isAdmin: boolean;
 };
+
+export const adminLink = { href: "/admin", label: bs.account.admin } as const;

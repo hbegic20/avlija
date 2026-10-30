@@ -183,11 +183,11 @@ Done when: all lifecycle transitions work and respect limits (10 active).
 
 ## Phase 10 — Admin and moderation
 
-- [ ] `/admin` guarded by `is_admin()` server-side check
-- [ ] Reports queue: listing preview, reason, details, reporter, actions Sakrij oglas (with reason, sets `hidden`), Odbaci prijavu, Riješeno
-- [ ] All listings table with search by number or title, filter by status, hide/unhide
-- [ ] Users list with listing counts, ability to hide all listings of a user
-- [ ] Make the owner's account admin via a one-off SQL statement documented in README
+- [x] `/admin` guarded by `is_admin()` server-side check
+- [x] Reports queue: listing preview, reason, details, reporter, actions Sakrij oglas (with reason, sets `hidden`), Odbaci prijavu, Riješeno
+- [x] All listings table with search by number or title, filter by status, hide/unhide
+- [x] Users list with listing counts, ability to hide all listings of a user
+- [x] Make the owner's account admin via a one-off SQL statement documented in README (README rewritten with setup, commands and the admin SQL)
 
 ## Phase 11 — SEO and sharing
 

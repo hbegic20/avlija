@@ -8,7 +8,7 @@ import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import { buttonStyles } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { bs } from "@/lib/i18n/bs";
-import { accountLinks, type HeaderUser } from "./account-links";
+import { accountLinks, adminLink, type HeaderUser } from "./account-links";
 import { Avatar } from "./avatar";
 import { routes } from "./routes";
 
@@ -71,7 +71,7 @@ export function MobileMenu({ user }: { user: HeaderUser | null }) {
                 <span className="truncate font-medium">{user.fullName}</span>
               </p>
               <ul className="border-t">
-                {accountLinks.map((link) => (
+                {[...accountLinks, ...(user.isAdmin ? [adminLink] : [])].map((link) => (
                   <li key={link.href}>
                     <Link href={link.href} onClick={close} className="block border-b py-2.5 text-body hover:underline">
                       {link.label}
