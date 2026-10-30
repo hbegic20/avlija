@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { getCurrentUser, initialsOf } from "@/lib/auth/current-user";
+import { getCurrentUser } from "@/lib/auth/current-user";
+import { initialsOf } from "@/lib/text/initials";
 import { bs } from "@/lib/i18n/bs";
 import { AccountMenu } from "./account-menu";
 import type { HeaderUser } from "./account-links";

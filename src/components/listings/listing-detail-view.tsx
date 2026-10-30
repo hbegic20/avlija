@@ -32,7 +32,15 @@ function LedgerSection({ title, rows }: { title: string; rows: LedgerRow[] }) {
   );
 }
 
-export function ListingDetailView({ view, aside }: { view: ListingView; aside?: ReactNode }) {
+export function ListingDetailView({
+  view,
+  aside,
+  afterHeader,
+}: {
+  view: ListingView;
+  aside?: ReactNode;
+  afterHeader?: ReactNode;
+}) {
   const { listing, images, municipalityName } = view;
   const stamp = stampFor({
     status: listing.status,
@@ -56,6 +64,7 @@ export function ListingDetailView({ view, aside }: { view: ListingView; aside?: 
               {municipalityName ? ` · ${bs.listing.locationLine(municipalityName, listing.neighborhood)}` : null}
             </p>
             <h1 className="font-display text-h1">{listing.title}</h1>
+            {afterHeader}
           </header>
 
           <div className="grid gap-8 md:grid-cols-2">
@@ -92,6 +101,16 @@ export function ListingDetailView({ view, aside }: { view: ListingView; aside?: 
                 {listing.public_address ? ` · ${listing.public_address}` : null}
               </p>
               <LazyLocationMap lat={listing.public_lat} lng={listing.public_lng} precise={listing.location_precise} />
+              {listing.location_precise ? (
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${listing.public_lat},${listing.public_lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-fit text-small font-medium text-vranica underline underline-offset-3 hover:text-crijep"
+                >
+                  {bs.detail.openInGoogleMaps}
+                </a>
+              ) : null}
             </section>
           ) : null}
         </div>

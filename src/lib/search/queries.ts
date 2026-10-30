@@ -221,3 +221,51 @@ export async function municipalitiesWithCounts(): Promise<MunicipalityWithCount[
     activeCount: countById.get(municipality.id) ?? 0,
   }));
 }
+
+export async function similarListings(
+  listingId: string,
+  municipalitySlug: string,
+  type: ListingSummary["type"],
+  priceKm: number | null,
+  limit = 4,
+): Promise<ListingSummary[]> {
+  "use cache";
+  cacheTag(listingsCacheTag);
+  cacheLife("minutes");
+
+  const { data } = await createPublicClient()
+    .from("listings")
+    .select(summaryColumns)
+    .eq("status", "active")
+    .eq("type", type)
+    .eq("municipalities.slug", municipalitySlug)
+    .neq("id", listingId)
+    .order("published_at", { ascending: false })
+    .order("position", { referencedTable: "listing_images" })
+    .limit(1, { referencedTable: "listing_images" })
+    .limit(40);
+  const candidates = ((data ?? []) as unknown as SummaryRow[]).map(toSummary);
+  if (priceKm === null) {
+    return candidates.slice(0, limit);
+  }
+  const distance = (candidate: ListingSummary) =>
+    candidate.priceKm === null ? Number.POSITIVE_INFINITY : Math.abs(candidate.priceKm - priceKm);
+  return candidates.sort((a, b) => distance(a) - distance(b)).slice(0, limit);
+}
+
+export async function sellerActiveListings(sellerId: string): Promise<ListingSummary[]> {
+  "use cache";
+  cacheTag(listingsCacheTag);
+  cacheLife("minutes");
+
+  const { data } = await createPublicClient()
+    .from("listings")
+    .select(summaryColumns)
+    .eq("status", "active")
+    .eq("owner_id", sellerId)
+    .order("published_at", { ascending: false })
+    .order("position", { referencedTable: "listing_images" })
+    .limit(1, { referencedTable: "listing_images" })
+    .limit(48);
+  return ((data ?? []) as unknown as SummaryRow[]).map(toSummary);
+}

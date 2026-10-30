@@ -152,18 +152,18 @@ Done when: every filter combination produces correct results, URL can be shared 
 
 ## Phase 7 — Listing detail
 
-- [ ] `/oglas/[number]-[slug]` with canonical URL redirect if slug differs
-- [ ] Gallery with lightbox
-- [ ] Header block: parcel number, location line, title, PriceTag with price per m², Stamp (UKNJIŽENO / PRODANO / NOVO for first 7 days)
-- [ ] Ledger sections: Osnovni podaci, Zgrada i stanje, Dokumentacija, Opremljenost
-- [ ] Description with preserved line breaks
-- [ ] Location map (pin or approximate circle): pan and zoom allowed, scroll-wheel zoom only after a click so the page still scrolls, "Otvori u Google Maps" link (only for exact locations)
-- [ ] Seller box: name, avatar, "Član od", link to seller page. "Prikaži broj telefona" button: guests are sent to login; logged-in users get number via `get_seller_contact`, plus "Pozovi", "Viber", "WhatsApp" deep links (`tel:`, `viber://chat?number=`, `https://wa.me/`) with a prefilled message containing the listing number
-- [ ] Favourite toggle, Share (native share on mobile, copy link on desktop)
-- [ ] "Prijavi oglas" Dialog with reason radios and details
-- [ ] Views counter incremented once per browser session
-- [ ] Slični oglasi: same municipality and type, closest price, 4 items
-- [ ] Owner sees an owner bar: Uredi, Označi kao prodano, Arhiviraj
+- [x] `/oglas/[number]-[slug]` with canonical URL redirect if slug differs (real 308, and real 404 for missing listings via `export const instant = false`), plus public seller page `/prodavac/[id]`
+- [x] Gallery with lightbox
+- [x] Header block: parcel number, location line, title, PriceTag with price per m², Stamp (UKNJIŽENO / PRODANO / NOVO for first 7 days)
+- [x] Ledger sections: Osnovni podaci, Zgrada i stanje, Dokumentacija, Opremljenost
+- [x] Description with preserved line breaks
+- [x] Location map (pin or approximate circle): pan and zoom allowed, scroll-wheel zoom only after a click so the page still scrolls, "Otvori u Google Maps" link (only for exact locations)
+- [x] Seller box: name, avatar, "Član od", link to seller page. "Prikaži broj telefona" button: guests are sent to login; logged-in users get number via `get_seller_contact`, plus "Pozovi", "Viber", "WhatsApp" deep links (`tel:`, `viber://chat?number=`, `https://wa.me/`) with a prefilled message containing the listing number
+- [x] Favourite toggle, Share (native share on mobile, copy link on desktop). Guests are sent to login; adding the favourite after login is Phase 9
+- [x] "Prijavi oglas" Dialog with reason radios and details
+- [x] Views counter incremented once per browser session
+- [x] Slični oglasi: same municipality and type, closest price, 4 items
+- [x] Owner sees an owner bar: Uredi, Označi kao prodano, Arhiviraj
 
 Done when: detail page is complete for every type, contact reveal works only when logged in, reports are saved.
 
