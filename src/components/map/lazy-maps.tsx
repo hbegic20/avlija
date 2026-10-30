@@ -14,3 +14,8 @@ export const LazyLocationPicker = dynamic(() => import("./location-picker").then
   ssr: false,
   loading: mapSkeleton,
 });
+
+export const LazyListingsMap = dynamic(() => import("./listings-map").then((module) => module.ListingsMap), {
+  ssr: false,
+  loading: () => <Skeleton className="size-full" />,
+});

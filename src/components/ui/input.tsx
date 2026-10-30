@@ -33,7 +33,7 @@ export function Input({
           type={type}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy(inputId, helper, error)}
-          className={cn(controlClasses, "h-11 px-3", isNumeric && "font-mono", unit && "pr-14", className)}
+          className={cn(controlClasses, "h-11 px-3", isNumeric && "font-mono", unit && (unit.length <= 2 ? "pr-10" : "pr-14"), className)}
           {...props}
         />
         {unit ? (

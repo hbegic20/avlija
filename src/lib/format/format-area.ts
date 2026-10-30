@@ -1,10 +1,5 @@
-import { appLocale } from "./locale";
-
-const areaFormatter = new Intl.NumberFormat(appLocale, {
-  maximumFractionDigits: 2,
-  useGrouping: "always",
-});
+import { formatDecimal } from "./format-number";
 
 export function formatArea(squareMetres: number): string {
-  return `${areaFormatter.format(squareMetres)} m²`;
+  return `${formatDecimal(squareMetres)} m²`;
 }

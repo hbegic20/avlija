@@ -151,13 +151,19 @@
 
 @utility map-tiles {
   filter: grayscale(1) sepia(0.25) contrast(0.95);
-
-  @variant dark {
-    filter: grayscale(1) sepia(0.25) contrast(0.95) invert(1) hue-rotate(180deg);
-  }
 }
 
 @layer components {
+  :root[data-theme="dark"] .map-tiles {
+    filter: grayscale(1) sepia(0.25) contrast(0.95) invert(1) hue-rotate(180deg);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .map-tiles {
+      filter: grayscale(1) sepia(0.25) contrast(0.95) invert(1) hue-rotate(180deg);
+    }
+  }
+
   .leaflet-container {
     background-color: var(--color-papir-2);
     font-family: var(--font-sans);
@@ -190,6 +196,20 @@
 
   .leaflet-container .leaflet-control-attribution a {
     color: var(--color-vranica);
+  }
+
+  .leaflet-popup-content-wrapper,
+  .leaflet-popup-tip {
+    background-color: var(--color-papir);
+    border: 1px solid var(--color-linija);
+    border-radius: 0;
+    box-shadow: none;
+    color: var(--color-tinta);
+  }
+
+  .leaflet-popup-content {
+    margin: 0.75rem 0.875rem;
+    font-family: var(--font-sans);
   }
 }
 

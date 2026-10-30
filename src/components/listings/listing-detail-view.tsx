@@ -34,7 +34,11 @@ function LedgerSection({ title, rows }: { title: string; rows: LedgerRow[] }) {
 
 export function ListingDetailView({ view, aside }: { view: ListingView; aside?: ReactNode }) {
   const { listing, images, municipalityName } = view;
-  const stamp = stampFor(listing);
+  const stamp = stampFor({
+    status: listing.status,
+    isRegistered: listing.is_registered,
+    publishedAt: listing.published_at,
+  });
   const features = featureLabels(view);
 
   return (
@@ -80,14 +84,14 @@ export function ListingDetailView({ view, aside }: { view: ListingView; aside?: 
             </section>
           ) : null}
 
-          {listing.lat !== null && listing.lng !== null ? (
+          {listing.public_lat !== null && listing.public_lng !== null ? (
             <section className="flex flex-col gap-3">
               <h2 className="border-t-2 border-t-tinta pt-3 font-display text-h2">{bs.listing.sections.location}</h2>
               <p className="text-small text-tinta-2">
                 {listing.location_precise ? bs.listing.exactLocation : bs.listing.approximateLocation}
-                {listing.location_precise && listing.address ? ` · ${listing.address}` : null}
+                {listing.public_address ? ` · ${listing.public_address}` : null}
               </p>
-              <LazyLocationMap lat={listing.lat} lng={listing.lng} precise={listing.location_precise} />
+              <LazyLocationMap lat={listing.public_lat} lng={listing.public_lng} precise={listing.location_precise} />
             </section>
           ) : null}
         </div>

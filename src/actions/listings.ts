@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { failure, success, type ActionResult } from "@/lib/action-result";
 import { noticeParam } from "@/lib/auth/routes";
@@ -9,6 +9,7 @@ import { allowedFeaturesFor, isFieldVisible, maxListingImages } from "@/lib/doma
 import { isPointInMunicipality } from "@/lib/geo/point-in-municipality";
 import { listingNotices, listingRoutes } from "@/lib/listings/routes";
 import { listingImagesBucket } from "@/lib/listings/load-owned-listing";
+import { listingsCacheTag } from "@/lib/search/cache-tags";
 import type { ListingErrorCode } from "@/lib/listings/listing-errors";
 import type { ListingImage } from "@/lib/listings/types";
 import type { Database } from "@/lib/supabase/database.types";
@@ -71,6 +72,7 @@ function databaseErrorCode(message: string | undefined): ListingErrorCode {
 function revalidateListing(listingId: string) {
   revalidatePath(listingRoutes.edit(listingId));
   revalidatePath(listingRoutes.mine);
+  updateTag(listingsCacheTag);
 }
 
 function clearedFieldsForType(type: PropertyType, features: string[]): ListingUpdate {
@@ -364,7 +366,7 @@ export async function publishListing(listingId: string): Promise<ListingResult> 
   }
   const { data: listing } = await current.supabase
     .from("listings")
-    .select("id, status, type, title, municipality_id, lat, lng, price_km, price_negotiable, area_m2, land_area_m2, floor")
+    .select("id, status, type, title, municipality_id, public_lat, public_lng, price_km, price_negotiable, area_m2, land_area_m2, floor")
     .eq("id", listingId)
     .eq("owner_id", current.userId)
     .maybeSingle();
@@ -383,8 +385,8 @@ export async function publishListing(listingId: string): Promise<ListingResult> 
     type: listing.type,
     title: listing.title,
     municipalityId: listing.municipality_id,
-    lat: listing.lat,
-    lng: listing.lng,
+    lat: listing.public_lat,
+    lng: listing.public_lng,
     priceKm: listing.price_km,
     priceNegotiable: listing.price_negotiable,
     imageCount: count ?? 0,

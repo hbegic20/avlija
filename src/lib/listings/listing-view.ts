@@ -76,14 +76,20 @@ export function featureLabels({ listing }: ListingView): string[] {
   return listing.features.map((feature) => bs.enums.feature[feature as keyof typeof bs.enums.feature] ?? feature);
 }
 
-export function stampFor(listing: EditableListing, now: number = Date.now()): StampVariant | null {
+export type StampInput = {
+  status: EditableListing["status"];
+  isRegistered: boolean | null;
+  publishedAt: string | null;
+};
+
+export function stampFor(listing: StampInput, now: number = Date.now()): StampVariant | null {
   if (listing.status === "sold") {
     return "prodano";
   }
-  if (listing.is_registered) {
+  if (listing.isRegistered) {
     return "uknjizeno";
   }
-  const publishedAt = listing.published_at ? new Date(listing.published_at).getTime() : null;
+  const publishedAt = listing.publishedAt ? new Date(listing.publishedAt).getTime() : null;
   if (publishedAt === null || now - publishedAt < newListingDays * dayMs) {
     return "novo";
   }

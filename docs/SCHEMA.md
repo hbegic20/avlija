@@ -143,6 +143,17 @@ create index listings_published_idx on listings (published_at desc);
 create index listings_search_idx on listings using gin (search);
 ```
 
+### Public location and derived columns
+
+Generated columns (added in `public_location_and_search`):
+
+- `public_lat`, `public_lng`: equal to `lat`/`lng` when `location_precise`, otherwise the exact point shifted by a fixed, per-listing pseudo-random offset (from `md5(id)`) of up to about ±200 m and rounded to 5 decimals. Public maps draw the 300 m circle around this point, so the true location stays inside the circle but is never its centre.
+- `public_address`: `address` only when `location_precise`, otherwise null.
+- `main_area_m2`: `coalesce(area_m2, land_area_m2)`, used for the "Najveća površina" sort.
+- `price_per_m2`: `price_km / main_area_m2`, null when there is no price or it is negotiable. Used for the "Cijena po m²" sort and display.
+
+Column privileges: `anon` and `authenticated` can select every `listings` column **except** `lat`, `lng` and `address`. The owner (or an admin) reads the exact point through `get_listing_private_location(target_listing_id)`. Any new `listings` column must be added to that `grant select (...)` list in its migration, otherwise the API cannot read it.
+
 Search without diacritics: people type `cipuljic` and expect `Čipuljić`. `unaccent()` is not immutable, so it cannot be used in a generated column directly. Create this before the `listings` table and use it on both the column and the user's search text (`websearch_to_tsquery('simple', public.immutable_unaccent(:q))`):
 
 ```sql
@@ -246,6 +257,8 @@ RLS:
 | `increment_listing_view(listing_id uuid)` | `security definer` RPC | Increments `view_count` for active listings. Called once per session per listing from the detail page. |
 | `renew_listing(listing_id uuid)` | `security definer` RPC | Owner only. Allowed when the listing is `archived`, or `active` with less than 14 days left. Sets `status = 'active'` and `expires_at = now() + interval '90 days'`. Respects the 10-active-listings limit. |
 | `reorder_listing_images(target_listing_id uuid, ordered_image_ids uuid[])` | `security invoker` RPC | Owner only (RLS applies). Rewrites `position` for all images of the listing in one transaction so the deferred unique `(listing_id, position)` constraint is checked once. Position 0 is the cover. Raises `IMAGE_ORDER_MISMATCH` unless the array contains exactly the listing's images. |
+| `get_listing_private_location(target_listing_id uuid)` | `security definer` RPC | Owner or admin only. Returns exact `lat`, `lng`, `address`, which are not selectable through the API. |
+| `municipality_listing_counts()` | `security invoker` RPC | Active listing count per municipality, for the home map and municipality grid. |
 | `get_seller_contact(listing_id uuid)` | `security definer` RPC | Returns phone, has_viber, has_whatsapp, full_name for an active listing's owner. Returns nothing if `auth.uid()` is null. |
 | `archive_expired_listings()` | function run daily with `pg_cron` | Sets `status = 'archived'` where `status = 'active' and expires_at < now()`. |
 

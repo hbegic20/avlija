@@ -130,23 +130,23 @@ Done when: a user can create, publish and edit each property type; validation ru
 
 ## Phase 6 — Browse and search
 
-- [ ] Home page `/` as in the mockup: hero with search form, interactive canton map, latest 8 listings, municipality grid with listing counts, "Kako objaviti oglas" and seller call-to-action
-- [ ] `CantonMap` (interactive SVG, not Leaflet):
+- [x] Home page `/`: hero with search form, interactive canton map, latest 8 listings, municipality grid with listing counts, "Kako objaviti oglas" and seller call-to-action
+- [x] `CantonMap` (interactive SVG, not Leaflet):
   - Municipality outlines from real OpenStreetMap boundaries: already generated in Phase 5 by `scripts/generate-municipality-boundaries.mjs` into `src/lib/geo/sbk-boundaries.ts` (lng/lat polygons); derive the SVG paths from those
   - Each municipality is an `<a>` to `/nekretnine/[opcina]` with `aria-label="Bugojno, 86 oglasa"`, reachable with Tab
   - Hover or focus fills it with `crijep` at low opacity and shows the name and active listing count in a small mono label
   - Changing the hero form's municipality highlights it on the map, and clicking the map sets the form's municipality
   - Counts come from one cached query (revalidated every 10 minutes)
   - On mobile it is smaller, below the search form, and a tap goes straight to the municipality page
-- [ ] `/nekretnine` server-rendered list, 24 per page
-- [ ] Filters (in URL params): municipality (multi), type (multi), price from/to, area from/to, land area from/to, rooms min, Uknjiženo only, features, text search (uses `search` tsvector; pass the query through `immutable_unaccent` so `cipuljic` finds `Čipuljić`), "Samo s fotografijama" is implicit
-- [ ] Sort: Najnovije, Najjeftinije, Najskuplje, Cijena po m², Najveća površina
-- [ ] Results header: count in mono, active filter Tags with remove, "Očisti sve"
-- [ ] Grid view (sheet grid of ListingCards) and Map view (split: list left, muted Leaflet map right with square pins, clustering when zoomed out, hovering a row highlights its pin)
-- [ ] Mobile: filter sheet, map view full screen with bottom carousel
-- [ ] `/nekretnine/[opcina]` pages with municipality name in title and intro line
-- [ ] Empty state with suggestion to widen filters
-- [ ] Sold listings excluded by default, toggle "Prikaži i prodane"
+- [x] `/nekretnine` server-rendered list, 24 per page
+- [x] Filters (in URL params): municipality (multi), type (multi), price from/to, area from/to, land area from/to, rooms min, Uknjiženo only, features, text search (uses `search` tsvector; pass the query through `immutable_unaccent` so `cipuljic` finds `Čipuljić`), "Samo s fotografijama" is implicit
+- [x] Sort: Najnovije, Najjeftinije, Najskuplje, Cijena po m², Najveća površina
+- [x] Results header: count in mono, active filter Tags with remove, "Očisti sve"
+- [x] Grid view (sheet grid of ListingCards) and Map view (split: list left, muted Leaflet map right with square pins, clustering when zoomed out, hovering a row highlights its pin). Clustering is a small built-in grid clusterer, no extra dependency
+- [x] Mobile: filter sheet, map view full screen with bottom carousel
+- [x] `/nekretnine/[opcina]` pages with municipality name in title and intro line
+- [x] Empty state with suggestion to widen filters
+- [x] Sold listings excluded by default, toggle "Prikaži i prodane"
 
 Done when: every filter combination produces correct results, URL can be shared and reproduces the same view, pages load fast on mobile.
 

@@ -131,12 +131,17 @@ export type Database = {
           lat: number | null
           lng: number | null
           location_precise: boolean
+          main_area_m2: number | null
           municipality_id: number | null
           neighborhood: string | null
           number: number
           owner_id: string
           price_km: number | null
           price_negotiable: boolean
+          price_per_m2: number | null
+          public_address: string | null
+          public_lat: number | null
+          public_lng: number | null
           published_at: string | null
           rooms: number | null
           search: unknown
@@ -169,12 +174,17 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           location_precise?: boolean
+          main_area_m2?: number | null
           municipality_id?: number | null
           neighborhood?: string | null
           number?: number
           owner_id: string
           price_km?: number | null
           price_negotiable?: boolean
+          price_per_m2?: number | null
+          public_address?: string | null
+          public_lat?: number | null
+          public_lng?: number | null
           published_at?: string | null
           rooms?: number | null
           search?: unknown
@@ -207,12 +217,17 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           location_precise?: boolean
+          main_area_m2?: number | null
           municipality_id?: number | null
           neighborhood?: string | null
           number?: number
           owner_id?: string
           price_km?: number | null
           price_negotiable?: boolean
+          price_per_m2?: number | null
+          public_address?: string | null
+          public_lat?: number | null
+          public_lng?: number | null
           published_at?: string | null
           rooms?: number | null
           search?: unknown
@@ -397,6 +412,14 @@ export type Database = {
     }
     Functions: {
       archive_expired_listings: { Args: never; Returns: number }
+      get_listing_private_location: {
+        Args: { target_listing_id: string }
+        Returns: {
+          address: string
+          lat: number
+          lng: number
+        }[]
+      }
       get_seller_contact: {
         Args: { listing_id: string }
         Returns: {
@@ -412,6 +435,13 @@ export type Database = {
         Returns: undefined
       }
       is_admin: { Args: never; Returns: boolean }
+      municipality_listing_counts: {
+        Args: never
+        Returns: {
+          active_count: number
+          municipality_id: number
+        }[]
+      }
       renew_listing: { Args: { listing_id: string }; Returns: string }
       reorder_listing_images: {
         Args: { ordered_image_ids: string[]; target_listing_id: string }

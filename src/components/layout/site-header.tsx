@@ -3,10 +3,9 @@ import { Suspense } from "react";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import { buttonStyles } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { defaultMapCentre } from "@/lib/domain/municipalities";
 import { bs } from "@/lib/i18n/bs";
 import { Container } from "./container";
-import { CoordinatesStrip } from "./coordinates-strip";
+import { CoordinatesStrip, StaticCoordinatesStrip } from "./coordinates-strip";
 import { DesktopAccount, MobileAccountMenu, navLinkClasses } from "./header-account";
 import { Logo } from "./logo";
 import { MobileMenu } from "./mobile-menu";
@@ -15,7 +14,9 @@ import { routes } from "./routes";
 export function SiteHeader() {
   return (
     <header>
-      <CoordinatesStrip name={defaultMapCentre.name} lat={defaultMapCentre.lat} lng={defaultMapCentre.lng} />
+      <Suspense fallback={<StaticCoordinatesStrip />}>
+        <CoordinatesStrip />
+      </Suspense>
       <div className="border-b">
         <Container className="flex items-center justify-between gap-4 py-4">
           <Logo />

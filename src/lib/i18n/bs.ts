@@ -11,6 +11,25 @@ import type {
 } from "@/lib/domain/enums";
 import type { ThemePreference } from "@/lib/theme/theme";
 
+function roomWord(rooms: number): string {
+  if (!Number.isInteger(rooms)) {
+    return "sobe";
+  }
+  const lastTwo = rooms % 100;
+  const last = rooms % 10;
+  if (last === 1 && lastTwo !== 11) {
+    return "soba";
+  }
+  if (last >= 2 && last <= 4 && (lastTwo < 12 || lastTwo > 14)) {
+    return "sobe";
+  }
+  return "soba";
+}
+
+function listingWord(count: number): string {
+  return count % 10 === 1 && count % 100 !== 11 ? "oglas" : "oglasa";
+}
+
 const propertyType: Record<PropertyType, string> = {
   stan: "Stan",
   kuca: "Kuća",
@@ -450,11 +469,93 @@ export const bs = {
       const label = floor === 0 ? "prizemlje" : floor < 0 ? "suteren" : `${floor}.`;
       return total ? `${label} od ${total}` : label;
     },
-    roomsShort: (rooms: string) => `${rooms} sobe`,
+    rooms: (rooms: number, formatted: string) => `${formatted} ${roomWord(rooms)}`,
+    floorShort: (floor: number, total: number | null) => {
+      const label = floor === 0 ? "prizemlje" : floor < 0 ? "suteren" : `${floor}.`;
+      return total && floor > 0 ? `${floor}/${total} sprat` : floor > 0 ? `${label} sprat` : label;
+    },
+    landShort: (area: string) => `plac ${area}`,
+    pricePerSquareMetreShort: (amount: string) => `${amount} KM/m²`,
     approximateLocation: "Približna lokacija",
     exactLocation: "Tačna lokacija",
     noPhotos: "Nema fotografija",
   },
+  home: {
+    eyebrow: "Registar nekretnina · 12 općina",
+    title: "Kuće, stanovi i placevi u Srednjoj Bosni.",
+    intro: "Oglasi direktno od vlasnika, s tačnom lokacijom na karti i podacima o uknjiženosti.",
+    searchLabel: "Pretraga nekretnina",
+    anyMunicipality: "Sve općine",
+    anyType: "Sve vrste",
+    priceTo: "Cijena do",
+    search: "Pretraži",
+    mapTitle: "Karta Srednjobosanskog kantona",
+    mapHint: "Odaberite općinu na karti.",
+    latest: "Najnoviji oglasi",
+    allListings: "Svi oglasi",
+    municipalitiesTitle: "Općine",
+    howTitle: "Kako objaviti oglas",
+    howSteps: [
+      { title: "Registrujte se", text: "Račun je besplatan. Potrebni su ime, email i broj telefona." },
+      { title: "Unesite podatke", text: "Vrsta, cijena, lokacija na karti, površina i dokumentacija." },
+      { title: "Dodajte fotografije", text: "Do 20 fotografija, automatski smanjenih za brz prikaz." },
+    ],
+    sellerTitle: "Prodajete nekretninu?",
+    sellerText: "Objava je besplatna. Kupci Vas kontaktiraju direktno, bez posrednika.",
+    sellerAction: "Objavi oglas",
+    noListingsYet: "Još nema objavljenih oglasa. Budite prvi.",
+  },
+  search: {
+    title: "Nekretnine",
+    titleIn: (municipality: string) => `Nekretnine: ${municipality}`,
+    intro: "Kuće, stanovi, placevi i poslovni prostori u Srednjobosanskom kantonu.",
+    introIn: (municipality: string) => `Kuće, stanovi i placevi na prodaju u općini ${municipality}.`,
+    filters: "Filteri",
+    filtersCount: (count: number) => (count > 0 ? `Filteri (${count})` : "Filteri"),
+    apply: "Prikaži rezultate",
+    clearAll: "Očisti sve",
+    close: "Zatvori filtere",
+    query: "Pretraga",
+    queryPlaceholder: "npr. Čipuljić, bašta, centar",
+    municipality: "Općina",
+    type: "Vrsta",
+    price: "Cijena",
+    area: "Površina",
+    landArea: "Površina placa",
+    from: "od",
+    to: "do",
+    roomsMin: "Najmanje soba",
+    any: "Bilo koji",
+    registeredOnly: "Samo uknjižene",
+    includeSold: "Prikaži i prodane",
+    features: "Opremljenost",
+    sort: "Sortiraj",
+    sorts: {
+      najnovije: "Najnovije",
+      najjeftinije: "Najjeftinije",
+      najskuplje: "Najskuplje",
+      "cijena-m2": "Cijena po m²",
+      povrsina: "Najveća površina",
+    },
+    views: { mreza: "Mreža", karta: "Karta" },
+    view: "Prikaz",
+    results: (count: number, formatted: string) => `${formatted} ${listingWord(count)}`,
+    emptyTitle: "Nema oglasa za ove filtere",
+    emptyDescription: "Proširite pretragu: uklonite neki filter ili povećajte raspon cijene.",
+    removeFilter: (label: string) => `Ukloni filter: ${label}`,
+    tagPriceFrom: (value: string) => `Od ${value} KM`,
+    tagPriceTo: (value: string) => `Do ${value} KM`,
+    tagAreaFrom: (value: string) => `Površina od ${value} m²`,
+    tagAreaTo: (value: string) => `Površina do ${value} m²`,
+    tagLandFrom: (value: string) => `Plac od ${value} m²`,
+    tagLandTo: (value: string) => `Plac do ${value} m²`,
+    tagRooms: (value: string) => `${value}+ soba`,
+    tagQuery: (value: string) => `„${value}”`,
+    mapLabel: "Karta rezultata",
+    clusterLabel: (count: number) => `${count} oglasa, približi kartu`,
+    pinLabel: (title: string, price: string) => `${title}, ${price}`,
+  },
+  municipalityCount: (name: string, count: number) => `${name}, ${count} ${listingWord(count)}`,
   myListings: {
     title: "Moji oglasi",
     newListing: "Novi oglas",
