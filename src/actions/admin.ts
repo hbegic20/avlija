@@ -3,24 +3,13 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { failure, success, type ActionResult } from "@/lib/action-result";
 import type { AdminErrorCode } from "@/lib/admin/admin-errors";
+import { getAdminSession } from "@/lib/auth/action-session";
 import { listingCacheTag } from "@/lib/listings/public-listing";
 import { listingsCacheTag } from "@/lib/search/cache-tags";
-import { createClient } from "@/lib/supabase/server";
 import { hideListingSchema, reportResolutionSchema, type HideListingInput, type ReportResolution } from "@/lib/validation/admin";
 import { listingIdSchema } from "@/lib/validation/listing";
 
 type AdminResult<Data = undefined> = ActionResult<Data, AdminErrorCode>;
-
-async function requireAdmin() {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  const userId = data?.claims?.sub;
-  if (!userId) {
-    return null;
-  }
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", userId).maybeSingle();
-  return profile?.role === "admin" ? { supabase, userId } : null;
-}
 
 function revalidateAdmin(listingNumbers: number[] = []) {
   updateTag(listingsCacheTag);
@@ -35,7 +24,7 @@ export async function hideListing(listingId: string, input: HideListingInput): P
   if (!parsed.success || !listingIdSchema.safeParse(listingId).success) {
     return failure("validation");
   }
-  const admin = await requireAdmin();
+  const admin = await getAdminSession();
   if (!admin) {
     return failure("forbidden");
   }
@@ -61,7 +50,7 @@ export async function unhideListing(listingId: string): Promise<AdminResult> {
   if (!listingIdSchema.safeParse(listingId).success) {
     return failure("validation");
   }
-  const admin = await requireAdmin();
+  const admin = await getAdminSession();
   if (!admin) {
     return failure("forbidden");
   }
@@ -90,7 +79,7 @@ export async function resolveReport(reportId: string, resolution: ReportResoluti
   if (!parsedResolution.success || !listingIdSchema.safeParse(reportId).success) {
     return failure("validation");
   }
-  const admin = await requireAdmin();
+  const admin = await getAdminSession();
   if (!admin) {
     return failure("forbidden");
   }
@@ -112,7 +101,7 @@ export async function hideAllUserListings(userId: string, input: HideListingInpu
   if (!parsed.success || !listingIdSchema.safeParse(userId).success) {
     return failure("validation");
   }
-  const admin = await requireAdmin();
+  const admin = await getAdminSession();
   if (!admin) {
     return failure("forbidden");
   }

@@ -11,6 +11,9 @@ import { initialsOf } from "@/lib/text/initials";
 import { authRoutes } from "@/lib/auth/routes";
 import { bs } from "@/lib/i18n/bs";
 import { createClient } from "@/lib/supabase/server";
+import { PageTitle } from "@/components/ui/page-title";
+
+export const instant = false;
 
 export const metadata: Metadata = {
   title: bs.profile.title,
@@ -39,7 +42,7 @@ export default async function ProfilePage() {
 
   return (
     <div>
-      <h1 className="border-t-2 border-t-tinta pt-3 font-display text-h1">{bs.profile.title}</h1>
+      <PageTitle>{bs.profile.title}</PageTitle>
       <p className="mt-3 mb-10 max-w-[60ch] text-tinta-2">{bs.profile.description}</p>
 
       <ProfileSection

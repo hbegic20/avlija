@@ -1,7 +1,8 @@
 import { ImageResponse } from "next/og";
 import { ListingOgCard } from "@/components/seo/listing-og-card";
 import { bs } from "@/lib/i18n/bs";
-import { getPublicListing, parseListingSegment } from "@/lib/listings/public-listing";
+import { getPublicListing } from "@/lib/listings/public-listing";
+import { parseListingSegment } from "@/lib/listings/public-listing-segment";
 import { loadOgFonts, ogColours as c, ogSize } from "@/lib/seo/og-fonts";
 
 export const alt = bs.site.name;

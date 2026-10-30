@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint && node scripts/check-comments.mjs",
     "typecheck": "tsc --noEmit",
-    "test:rls": "node --env-file=.env.local scripts/check-rls.mjs"
+    "test:rls": "node --env-file=.env.local scripts/check-rls.mjs",
+    "geo:boundaries": "node scripts/generate-municipality-boundaries.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^6.0.2",

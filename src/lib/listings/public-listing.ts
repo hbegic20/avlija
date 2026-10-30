@@ -1,7 +1,8 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { listingsCacheTag } from "@/lib/search/cache-tags";
-import { createPublicClient, publicStorageUrl } from "@/lib/supabase/public";
+import { createPublicClient } from "@/lib/supabase/public";
+import { listingImageColumns, toListingImage } from "./listing-image";
 import { listingPath } from "./listing-path";
 import { isNewListing } from "./listing-view";
 import { isGoneSoldListing } from "./sold-grace";
@@ -48,11 +49,7 @@ export async function getPublicListing(listingNumber: number): Promise<PublicLis
   }
 
   const [{ data: imageRows }, { data: municipality }, { data: profile }] = await Promise.all([
-    client
-      .from("listing_images")
-      .select("id, storage_path, position, width, height")
-      .eq("listing_id", row.id)
-      .order("position"),
+    client.from("listing_images").select(listingImageColumns).eq("listing_id", row.id).order("position"),
     row.municipality_id
       ? client.from("municipalities").select("name, slug").eq("id", row.municipality_id).maybeSingle()
       : Promise.resolve({ data: null }),
@@ -61,14 +58,7 @@ export async function getPublicListing(listingNumber: number): Promise<PublicLis
 
   return {
     listing: { ...row, lat: null, lng: null, address: null },
-    images: (imageRows ?? []).map((image) => ({
-      id: image.id,
-      storagePath: image.storage_path,
-      publicUrl: publicStorageUrl("listing-images", image.storage_path),
-      position: image.position,
-      width: image.width,
-      height: image.height,
-    })),
+    images: (imageRows ?? []).map(toListingImage),
     municipalityName: municipality?.name ?? null,
     municipalitySlug: municipality?.slug ?? null,
     seller: profile
@@ -99,4 +89,3 @@ export async function getPublicSeller(sellerId: string): Promise<PublicSeller | 
     : null;
 }
 
-export { parseListingSegment } from "./public-listing-segment";

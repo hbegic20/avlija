@@ -4,13 +4,14 @@ import { createClient as createStatelessClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { failure, success, type ActionResult } from "@/lib/action-result";
+import { getActionSession } from "@/lib/auth/action-session";
 import { toAuthErrorCode } from "@/lib/auth/auth-errors";
 import { authRoutes, nextParam, noticeParam, notices } from "@/lib/auth/routes";
 import type { ProfileErrorCode } from "@/lib/profile/profile-errors";
 import { siteOrigin } from "@/lib/auth/site-origin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { supabasePublishableKey, supabaseUrl } from "@/lib/supabase/env";
-import { createClient } from "@/lib/supabase/server";
+import { avatarsBucket, listingImagesBucket } from "@/lib/supabase/storage-url";
 import {
   avatarPathFor,
   basicInfoSchema,
@@ -27,15 +28,6 @@ import {
 
 type ProfileResult<Data = undefined> = ActionResult<Data, ProfileErrorCode>;
 
-const avatarBucket = "avatars";
-const listingImagesBucket = "listing-images";
-
-async function authenticated() {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  const claims = data?.claims;
-  return claims ? { supabase, userId: claims.sub, email: claims.email ?? "" } : null;
-}
 
 function revalidateProfile() {
   revalidatePath(authRoutes.profile);
@@ -47,7 +39,7 @@ export async function updateBasicInfo(input: BasicInfoInput): Promise<ProfileRes
   if (!parsed.success) {
     return failure("validation");
   }
-  const session = await authenticated();
+  const session = await getActionSession();
   if (!session) {
     return failure("unauthenticated");
   }
@@ -66,7 +58,7 @@ export async function updateBasicInfo(input: BasicInfoInput): Promise<ProfileRes
 }
 
 export async function updateAvatar(storagePath: string | null): Promise<ProfileResult<{ avatarUrl: string | null }>> {
-  const session = await authenticated();
+  const session = await getActionSession();
   if (!session) {
     return failure("unauthenticated");
   }
@@ -77,9 +69,9 @@ export async function updateAvatar(storagePath: string | null): Promise<ProfileR
 
   let avatarUrl: string | null = null;
   if (storagePath === null) {
-    await session.supabase.storage.from(avatarBucket).remove([expectedPath]);
+    await session.supabase.storage.from(avatarsBucket).remove([expectedPath]);
   } else {
-    const { data } = session.supabase.storage.from(avatarBucket).getPublicUrl(expectedPath);
+    const { data } = session.supabase.storage.from(avatarsBucket).getPublicUrl(expectedPath);
     avatarUrl = `${data.publicUrl}?v=${Date.now()}`;
   }
 
@@ -96,7 +88,7 @@ export async function updateContacts(input: ContactInput): Promise<ProfileResult
   if (!parsed.success) {
     return failure("validation");
   }
-  const session = await authenticated();
+  const session = await getActionSession();
   if (!session) {
     return failure("unauthenticated");
   }
@@ -129,7 +121,7 @@ export async function changePassword(input: ChangePasswordInput): Promise<Profil
   if (!parsed.success) {
     return failure("validation");
   }
-  const session = await authenticated();
+  const session = await getActionSession();
   if (!session) {
     return failure("unauthenticated");
   }
@@ -162,7 +154,7 @@ export async function changeEmail(input: ChangeEmailInput): Promise<ProfileResul
   if (!parsed.success) {
     return failure("validation");
   }
-  const session = await authenticated();
+  const session = await getActionSession();
   if (!session) {
     return failure("unauthenticated");
   }
@@ -204,7 +196,7 @@ async function listAllPaths(
 }
 
 async function removeUserFiles(admin: ReturnType<typeof createAdminClient>, userId: string) {
-  for (const bucket of [listingImagesBucket, avatarBucket]) {
+  for (const bucket of [listingImagesBucket, avatarsBucket]) {
     const paths = await listAllPaths(admin, bucket, userId);
     for (let start = 0; start < paths.length; start += 100) {
       await admin.storage.from(bucket).remove(paths.slice(start, start + 100));
@@ -217,7 +209,7 @@ export async function deleteAccount(input: DeleteAccountInput): Promise<ProfileR
   if (!parsed.success) {
     return failure("validation");
   }
-  const session = await authenticated();
+  const session = await getActionSession();
   if (!session) {
     return failure("unauthenticated");
   }

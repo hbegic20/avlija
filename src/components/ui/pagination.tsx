@@ -9,7 +9,7 @@ type PageItem = number | "gap";
 
 const siblingCount = 1;
 
-export function pageItems(current: number, total: number): PageItem[] {
+function pageItems(current: number, total: number): PageItem[] {
   const pages = new Set<number>([1, total]);
   for (let page = current - siblingCount; page <= current + siblingCount; page += 1) {
     if (page >= 1 && page <= total) {

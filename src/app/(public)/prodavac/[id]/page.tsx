@@ -10,6 +10,7 @@ import { getPublicSeller } from "@/lib/listings/public-listing";
 import { sellerActiveListings } from "@/lib/search/queries";
 import { initialsOf } from "@/lib/text/initials";
 import { listingIdSchema } from "@/lib/validation/listing";
+import { HatchNotice } from "@/components/ui/hatch-notice";
 
 
 export const instant = false;
@@ -51,11 +52,9 @@ export default async function SellerPage({ params }: SellerPageProps) {
       <section>
         <SectionHeading title={bs.sellerPage.activeListings} />
         {listings.length > 0 ? (
-          <ListingSheet listings={listings} priorityCount={4} />
+          <ListingSheet listings={listings} eagerCount={4} />
         ) : (
-          <p className="hatch border p-6">
-            <span className="bg-papir px-2 py-1 text-tinta-2">{bs.sellerPage.noListings}</span>
-          </p>
+          <HatchNotice>{bs.sellerPage.noListings}</HatchNotice>
         )}
       </section>
     </Container>

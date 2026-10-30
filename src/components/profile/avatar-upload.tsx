@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/auth/form-alert";
 import { bs } from "@/lib/i18n/bs";
 import { createClient } from "@/lib/supabase/client";
+import { avatarsBucket } from "@/lib/supabase/storage-url";
 import { avatarPathFor } from "@/lib/validation/profile";
 import { cropToSquareWebp } from "@/lib/profile/crop-avatar";
 
@@ -39,7 +40,7 @@ export function AvatarUpload({
         const blob = await cropToSquareWebp(file);
         const path = avatarPathFor(userId);
         const { error: uploadError } = await createClient()
-          .storage.from("avatars")
+          .storage.from(avatarsBucket)
           .upload(path, blob, { contentType: "image/webp", upsert: true, cacheControl: "3600" });
         if (uploadError) {
           setError(bs.profile.avatar.uploadFailed);

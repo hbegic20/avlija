@@ -1,10 +1,11 @@
-export const themeCookieName = "theme";
-export const themeCookieMaxAgeSeconds = 60 * 60 * 24 * 365;
+const themeCookieName = "theme";
+const themeCookieMaxAgeSeconds = 60 * 60 * 24 * 365;
 
-export const themePreferences = ["light", "dark", "system"] as const;
-export type ThemePreference = (typeof themePreferences)[number];
+export const themeChoices = ["light", "dark"] as const;
+export type ThemeChoice = (typeof themeChoices)[number];
+export type ThemePreference = ThemeChoice | "system";
 
-export function parseThemePreference(value: string | undefined | null): ThemePreference {
+function parseThemePreference(value: string | undefined | null): ThemePreference {
   return value === "light" || value === "dark" ? value : "system";
 }
 

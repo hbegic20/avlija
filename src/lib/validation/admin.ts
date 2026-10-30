@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { bs } from "@/lib/i18n/bs";
 
-export const hideReasonSchema = z
+const hideReasonSchema = z
   .string()
   .trim()
   .min(3, bs.admin.hideDialog.reasonRequired)

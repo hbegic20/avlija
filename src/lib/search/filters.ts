@@ -27,7 +27,7 @@ export const viewOptions = ["mreza", "karta"] as const;
 export type ViewOption = (typeof viewOptions)[number];
 
 export const pageSize = 24;
-export const maxQueryLength = 100;
+const maxQueryLength = 100;
 
 export type SearchFilters = {
   municipalities: string[];
@@ -112,9 +112,7 @@ export function parseSearchFilters(params: RawSearchParams, fixedMunicipality?: 
   };
 }
 
-export const emptyFilters: SearchFilters = parseSearchFilters({});
-
-export function toSearchParams(filters: SearchFilters, fixedMunicipality?: string): URLSearchParams {
+function toSearchParams(filters: SearchFilters, fixedMunicipality?: string): URLSearchParams {
   const names = searchParamNames;
   const params = new URLSearchParams();
   if (!fixedMunicipality) {
@@ -177,8 +175,4 @@ export function searchHref(filters: SearchFilters, fixedMunicipality?: string): 
 
 export function withChanges(filters: SearchFilters, changes: Partial<SearchFilters>): SearchFilters {
   return { ...filters, page: 1, ...changes };
-}
-
-export function cacheKeyOf(filters: SearchFilters): string {
-  return toSearchParams({ ...filters, view: "mreza" }).toString();
 }

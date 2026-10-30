@@ -10,13 +10,13 @@ import { cardFacts } from "@/lib/listings/card-facts";
 import { stampFor } from "@/lib/listings/listing-view";
 import type { ListingSummary } from "@/lib/listings/summary";
 
-export function ListingCard({
+function ListingCard({
   listing,
-  priority = false,
+  eager = false,
   className,
 }: {
   listing: ListingSummary;
-  priority?: boolean;
+  eager?: boolean;
   className?: string;
 }) {
   const stamp = stampFor(listing);
@@ -34,7 +34,7 @@ export function ListingCard({
               fill
               sizes="(min-width: 1280px) 300px, (min-width: 768px) 33vw, (min-width: 520px) 50vw, 100vw"
               className="object-cover"
-              priority={priority}
+              loading={eager ? "eager" : "lazy"}
             />
           ) : (
             <div className="hatch size-full" aria-hidden="true" />
@@ -56,12 +56,12 @@ export function ListingCard({
   );
 }
 
-export function ListingSheet({ listings, priorityCount = 0 }: { listings: ListingSummary[]; priorityCount?: number }) {
+export function ListingSheet({ listings, eagerCount = 0 }: { listings: ListingSummary[]; eagerCount?: number }) {
   return (
     <ul className="grid grid-cols-1 border-t border-l min-[520px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
       {listings.map((listing, index) => (
         <li key={listing.id} className="border-r border-b bg-papir">
-          <ListingCard listing={listing} priority={index < priorityCount} />
+          <ListingCard listing={listing} eager={index < eagerCount} />
         </li>
       ))}
     </ul>

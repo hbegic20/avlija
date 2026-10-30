@@ -52,7 +52,7 @@ export async function ListingsBrowser({
         ) : isMap ? (
           <MapResults listings={page.items} pins={pins} />
         ) : (
-          <ListingSheet listings={page.items} priorityCount={4} />
+          <ListingSheet listings={page.items} eagerCount={4} />
         )}
         {page.total > pageSize ? (
           <Pagination

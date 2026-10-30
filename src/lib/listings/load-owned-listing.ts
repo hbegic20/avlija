@@ -1,9 +1,8 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { listingImageColumns, toListingImage } from "./listing-image";
 import { isNewListing } from "./listing-view";
 import type { EditableListing, ListingImage, MunicipalityRow } from "./types";
-
-export const listingImagesBucket = "listing-images";
 
 const publicColumns =
   "id, number, owner_id, status, type, title, description, price_km, price_negotiable, municipality_id, neighborhood, location_precise, area_m2, land_area_m2, rooms, bathrooms, floor, total_floors, year_built, heating, condition, is_registered, has_building_permit, has_usage_permit, features, view_count, published_at, expires_at, sold_at, hidden_reason, created_at, updated_at, public_lat, public_lng, public_address, main_area_m2, price_per_m2";
@@ -37,18 +36,10 @@ export async function loadOwnedListing(listingId: string, ownerId: string): Prom
   };
   const { data: imageRows } = await supabase
     .from("listing_images")
-    .select("id, storage_path, position, width, height")
+    .select(listingImageColumns)
     .eq("listing_id", listingId)
     .order("position");
-
-  const images = (imageRows ?? []).map((row) => ({
-    id: row.id,
-    storagePath: row.storage_path,
-    publicUrl: supabase.storage.from(listingImagesBucket).getPublicUrl(row.storage_path).data.publicUrl,
-    position: row.position,
-    width: row.width,
-    height: row.height,
-  }));
+  const images = (imageRows ?? []).map(toListingImage);
 
   return { listing, images, isNew: isNewListing(listing.published_at, Date.now()) };
 }

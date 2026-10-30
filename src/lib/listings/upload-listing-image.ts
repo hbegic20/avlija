@@ -1,9 +1,9 @@
 import imageCompression from "browser-image-compression";
 import { createClient } from "@/lib/supabase/client";
 import { supabasePublishableKey, supabaseUrl } from "@/lib/supabase/env";
+import { listingImagesBucket } from "@/lib/supabase/storage-url";
 
-export const acceptedImageTypes = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
-const bucket = "listing-images";
+const acceptedImageTypes = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
 
 export type PreparedImage = {
   blob: Blob;
@@ -42,7 +42,7 @@ export async function uploadWithProgress(
 
   await new Promise<void>((resolve, reject) => {
     const request = new XMLHttpRequest();
-    request.open("POST", `${supabaseUrl}/storage/v1/object/${bucket}/${path}`);
+    request.open("POST", `${supabaseUrl}/storage/v1/object/${listingImagesBucket}/${path}`);
     request.setRequestHeader("Authorization", `Bearer ${accessToken}`);
     request.setRequestHeader("apikey", supabasePublishableKey);
     request.setRequestHeader("Content-Type", "image/webp");

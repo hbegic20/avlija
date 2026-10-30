@@ -9,25 +9,19 @@ import type {
   StampVariant,
   UserRole,
 } from "@/lib/domain/enums";
-import type { ThemePreference } from "@/lib/theme/theme";
+import type { ThemeChoice } from "@/lib/theme/theme";
+import { pluralForm } from "./plural";
+
+const listingWords = { one: "oglas", few: "oglasa", many: "oglasa" };
+const roomWords = { one: "soba", few: "sobe", many: "soba" };
+const dayWords = { one: "dan", few: "dana", many: "dana" };
 
 function roomWord(rooms: number): string {
-  if (!Number.isInteger(rooms)) {
-    return "sobe";
-  }
-  const lastTwo = rooms % 100;
-  const last = rooms % 10;
-  if (last === 1 && lastTwo !== 11) {
-    return "soba";
-  }
-  if (last >= 2 && last <= 4 && (lastTwo < 12 || lastTwo > 14)) {
-    return "sobe";
-  }
-  return "soba";
+  return Number.isInteger(rooms) ? pluralForm(rooms, roomWords) : roomWords.few;
 }
 
 function listingWord(count: number): string {
-  return count % 10 === 1 && count % 100 !== 11 ? "oglas" : "oglasa";
+  return pluralForm(count, listingWords);
 }
 
 const propertyType: Record<PropertyType, string> = {
@@ -76,9 +70,9 @@ const reportReason: Record<ReportReason, string> = {
 };
 
 const reportStatus: Record<ReportStatus, string> = {
-  open: "Otvorena",
-  resolved: "Riješena",
-  dismissed: "Odbačena",
+  open: "Otvorene",
+  resolved: "Riješene",
+  dismissed: "Odbačene",
 };
 
 const userRole: Record<UserRole, string> = {
@@ -113,10 +107,9 @@ const stamp: Record<StampVariant, string> = {
   istice: "Ističe",
 };
 
-const themeOption: Record<ThemePreference, string> = {
+const themeOption: Record<ThemeChoice, string> = {
   light: "Svijetla",
   dark: "Tamna",
-  system: "Prema sistemu",
 };
 
 export const bs = {
@@ -155,7 +148,6 @@ export const bs = {
     removeItem: (item: string) => `Ukloni: ${item}`,
     yes: "Da",
     no: "Ne",
-    optional: "neobavezno",
   },
   price: {
     negotiable: "Cijena po dogovoru",
@@ -171,7 +163,6 @@ export const bs = {
   stepper: {
     label: "Koraci",
     done: "završeno",
-    current: "trenutni korak",
   },
   toast: {
     region: "Obavještenja",
@@ -220,7 +211,6 @@ export const bs = {
       title: "Zaboravljena lozinka",
       description: "Upišite email s kojim ste se registrovali. Poslat ćemo Vam link za novu lozinku.",
       submit: "Pošalji link",
-      sentTitle: "Provjerite email",
       sent: "Ako postoji račun s tom adresom, poslali smo link za postavljanje nove lozinke.",
       backToLogin: "Nazad na prijavu",
     },
@@ -228,7 +218,6 @@ export const bs = {
       title: "Nova lozinka",
       description: "Upišite novu lozinku. Nakon promjene bit ćete odjavljeni sa svih uređaja.",
       submit: "Sačuvaj lozinku",
-      linkExpiredTitle: "Link je istekao",
       linkExpired: "Link za novu lozinku je istekao ili je već iskorišten. Zatražite novi.",
       requestNew: "Zatraži novi link",
     },
@@ -237,7 +226,6 @@ export const bs = {
       signedOut: "Odjavljeni ste.",
       linkInvalid: "Link nije važeći ili je istekao. Pokušajte ponovo.",
       accountDeleted: "Račun je obrisan.",
-      emailChanged: "Email adresa je promijenjena.",
     },
     validation: {
       fullNameLength: "Ime i prezime mora imati između 2 i 80 znakova.",
@@ -657,10 +645,8 @@ export const bs = {
     },
     reports: {
       title: "Prijave",
-      tabs: { open: "Otvorene", resolved: "Riješene", dismissed: "Odbačene" },
       empty: "Nema prijava u ovoj grupi.",
       reason: "Razlog",
-      details: "Detalji",
       reporter: "Prijavio",
       reporterDeleted: "Obrisan korisnik",
       received: "Primljeno",
@@ -742,8 +728,7 @@ export const bs = {
     updated: "Izmijenjeno",
     expires: "Ističe",
     sold: "Prodano",
-    expiresIn: (days: number) =>
-      days <= 0 ? "Ističe danas" : `Ističe za ${days} ${days % 10 === 1 && days % 100 !== 11 ? "dan" : "dana"}`,
+    expiresIn: (days: number) => (days <= 0 ? "Ističe danas" : `Ističe za ${days} ${pluralForm(days, dayWords)}`),
     expired: "Isteklo",
     hiddenReason: "Razlog skrivanja",
     hiddenNoReason: "Administrator nije naveo razlog.",
@@ -755,7 +740,6 @@ export const bs = {
       archive: "Arhiviraj",
       renew: "Obnovi",
       remove: "Obriši",
-      more: "Više radnji",
     },
     confirm: {
       removeTitle: (number: string) => `Obrisati oglas ${number}?`,
@@ -782,7 +766,7 @@ export const bs = {
     },
     expiringTitle: "Oglasi uskoro ističu",
     expiringText: (count: number) =>
-      `${count} ${count % 10 === 1 && count % 100 !== 11 ? "oglas ističe" : "oglasa ističe"} za manje od 7 dana. Obnovite ih da ostanu vidljivi.`,
+      `${count} ${listingWord(count)} ističe za manje od 7 dana. Obnovite ih da ostanu vidljivi.`,
     expiringAction: "Pogledaj aktivne oglase",
     profileTitle: "Dopunite profil",
     profileText: "Dodajte fotografiju i općinu da bi kupci imali više povjerenja.",

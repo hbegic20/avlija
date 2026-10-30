@@ -19,7 +19,7 @@ import { bs } from "@/lib/i18n/bs";
 
 const messages = bs.listingForm.validation;
 
-export function parseLocaleNumber(value: string): number | null {
+function parseLocaleNumber(value: string): number | null {
   const normalized = value.trim().replace(/\s/g, "").replace(/\.(?=\d{3}(\D|$))/g, "").replace(",", ".");
   if (normalized === "") {
     return null;
@@ -31,7 +31,7 @@ export function parseLocaleNumber(value: string): number | null {
 export const triStateValues = ["", "da", "ne"] as const;
 export type TriState = (typeof triStateValues)[number];
 
-export function triStateToBoolean(value: TriState): boolean | null {
+function triStateToBoolean(value: TriState): boolean | null {
   return value === "" ? null : value === "da";
 }
 

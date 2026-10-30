@@ -58,10 +58,10 @@ Contrast: `tinta` and `tinta-2` on `papir` pass WCAG AA for body text. `crijep` 
 
 ### Theme switcher
 
-Users choose **Svijetla**, **Tamna** or **Prema sistemu** (default).
+Users choose **Svijetla** or **Tamna**. Until they choose, the site follows the device setting (`prefers-color-scheme`) and the switcher highlights the theme that is currently shown.
 
-- Control: `ThemeSwitcher`, a 3-option square segmented radio group in the header (sun, moon, monitor icons, 40px squares, each with `aria-label` and `title`). Selected option is `tinta` fill with `papir` icon. On mobile it lives in the account/menu sheet as a labelled 3-option row.
-- Storage: a cookie `theme` with value `light`, `dark` or `system`, 1 year, `SameSite=Lax`. Not localStorage, so the server can render the right theme.
+- Control: `ThemeSwitcher`, a 2-option square segmented radio group in the header (sun and moon icons, 40px squares, each with `aria-label` and `title`). Selected option is `tinta` fill with `papir` icon. On mobile it lives in the account/menu sheet as a labelled 2-option row.
+- Storage: a cookie `theme` with value `light` or `dark`, 1 year, `SameSite=Lax`. No cookie (or an old `system` value) means follow the device setting. Not localStorage, so the server can render the right theme.
 - No flash: a small inline script in `<head>` reads the cookie before the first paint and sets `data-theme="light"` or `data-theme="dark"` on `<html>`. For `system` it sets no attribute and the `prefers-color-scheme` media query decides. The cookie is not read with `cookies()` in the root layout, because with `cacheComponents` that would make every route dynamic.
 - Also set `<meta name="color-scheme" content="light dark">` and `color-scheme` on `:root` so native form controls and scrollbars match.
 - Switching is instant (only a 180ms background/colour transition), no reload. Leaflet tiles get an extra `invert(1) hue-rotate(180deg)` in dark mode on top of the muted filter.

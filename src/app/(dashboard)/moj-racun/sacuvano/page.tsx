@@ -11,6 +11,8 @@ import { listingsBasePath } from "@/lib/search/filters";
 import { toSummary, type SummaryRow } from "@/lib/search/queries";
 import { createClient } from "@/lib/supabase/server";
 
+export const instant = false;
+
 export const metadata: Metadata = {
   title: bs.favorites.title,
   robots: { index: false, follow: false },
@@ -56,7 +58,7 @@ export default async function FavoritesPage() {
           }
         />
       ) : (
-        <ListingSheet listings={favorites} priorityCount={4} />
+        <ListingSheet listings={favorites} eagerCount={4} />
       )}
     </div>
   );

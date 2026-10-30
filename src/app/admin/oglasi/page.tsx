@@ -11,6 +11,7 @@ import { formatDate, formatListingNumber } from "@/lib/format";
 import { bs } from "@/lib/i18n/bs";
 import { listingPath } from "@/lib/listings/listing-path";
 import { createClient } from "@/lib/supabase/server";
+import { HatchNotice } from "@/components/ui/hatch-notice";
 
 export const instant = false;
 
@@ -96,9 +97,7 @@ export default async function AdminListingsPage({ searchParams }: PageProps<"/ad
       </form>
 
       {listings.length === 0 ? (
-        <p className="hatch border p-6">
-          <span className="bg-papir px-2 py-1 text-tinta-2">{text.empty}</span>
-        </p>
+        <HatchNotice>{text.empty}</HatchNotice>
       ) : (
         <div className="overflow-x-auto border">
           <table className="w-full min-w-[760px] text-left">

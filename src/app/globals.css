@@ -220,6 +220,10 @@
     border-color: var(--color-linija);
   }
 
+  html {
+    scrollbar-gutter: stable;
+  }
+
   body {
     transition:
       background-color 180ms var(--ease-paper),

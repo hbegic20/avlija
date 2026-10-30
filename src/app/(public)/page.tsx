@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Container } from "@/components/layout/container";
-import { routes } from "@/components/layout/routes";
 import { HomeSearch } from "@/components/home/home-search";
 import { MunicipalityGrid } from "@/components/home/municipality-grid";
 import { SectionHeading } from "@/components/home/section-heading";
@@ -11,6 +10,8 @@ import { cantonSvg } from "@/lib/geo/canton-svg";
 import { bs } from "@/lib/i18n/bs";
 import { listingsBasePath } from "@/lib/search/filters";
 import { latestListings, municipalitiesWithCounts } from "@/lib/search/queries";
+import { HatchNotice } from "@/components/ui/hatch-notice";
+import { listingRoutes } from "@/lib/listings/routes";
 
 export const metadata: Metadata = {
   title: { absolute: bs.site.homeTitle },
@@ -30,11 +31,9 @@ export default async function HomePage() {
       <section className="mt-6">
         <SectionHeading title={bs.home.latest} linkHref={listingsBasePath} linkLabel={bs.home.allListings} />
         {latest.length > 0 ? (
-          <ListingSheet listings={latest} priorityCount={4} />
+          <ListingSheet listings={latest} eagerCount={4} />
         ) : (
-          <p className="hatch border p-6">
-            <span className="bg-papir px-2 py-1 text-tinta-2">{bs.home.noListingsYet}</span>
-          </p>
+          <HatchNotice>{bs.home.noListingsYet}</HatchNotice>
         )}
       </section>
 
@@ -59,7 +58,7 @@ export default async function HomePage() {
         <aside className="flex flex-col items-start gap-4 self-end border border-t-2 border-t-tinta bg-papir-2 p-6">
           <h2 className="font-display text-h2">{bs.home.sellerTitle}</h2>
           <p className="text-tinta-2">{bs.home.sellerText}</p>
-          <Link href={routes.newListing} className={buttonStyles({ size: "lg" })}>
+          <Link href={listingRoutes.create} className={buttonStyles({ size: "lg" })}>
             {bs.home.sellerAction}
           </Link>
         </aside>

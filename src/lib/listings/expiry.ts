@@ -1,6 +1,6 @@
 const dayMs = 86_400_000;
-export const expiringSoonDays = 7;
-export const renewWindowDays = 14;
+const expiringSoonDays = 7;
+const renewWindowDays = 14;
 export const maxActiveListings = 10;
 
 export function daysUntil(isoDate: string | null, now: number): number | null {

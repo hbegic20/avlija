@@ -11,6 +11,9 @@ import { completedSteps, missingStepsForPublish, unlockedSteps } from "@/lib/lis
 import { parseWizardStep, type WizardStep } from "@/lib/listings/types";
 import { listingIdSchema } from "@/lib/validation/listing";
 import { hasPhone } from "@/lib/profile/has-phone";
+import { PageTitle } from "@/components/ui/page-title";
+
+export const instant = false;
 
 export const metadata: Metadata = {
   title: bs.listingForm.newTitle,
@@ -37,7 +40,7 @@ export default async function EditListingPage({ params, searchParams }: PageProp
   if (listing.status === "hidden") {
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="border-t-2 border-t-tinta pt-3 font-display text-h1">{heading}</h1>
+        <PageTitle>{heading}</PageTitle>
         <FormAlert tone="error">
           {bs.listingForm.errors.hidden}
           {listing.hidden_reason ? ` ${listing.hidden_reason}` : null}
@@ -56,7 +59,7 @@ export default async function EditListingPage({ params, searchParams }: PageProp
 
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="border-t-2 border-t-tinta pt-3 font-display text-h1">{heading}</h1>
+      <PageTitle>{heading}</PageTitle>
       <ListingWizard
         key={`${listing.id}-${requested}-${listing.updated_at}-${images.length}`}
         listing={listing}

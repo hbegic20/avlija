@@ -20,6 +20,8 @@ import {
 } from "@/lib/listings/my-listings";
 import { listingRoutes } from "@/lib/listings/routes";
 
+export const instant = false;
+
 export const metadata: Metadata = {
   title: bs.myListings.title,
   robots: { index: false, follow: false },

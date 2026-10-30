@@ -1,31 +1,59 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LogOut, Menu, X } from "lucide-react";
 import { signOut } from "@/actions/auth";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import { buttonStyles } from "@/components/ui/button";
-import { cn } from "@/lib/cn";
+import { sheetDialogClasses } from "@/components/ui/sheet";
 import { bs } from "@/lib/i18n/bs";
 import { accountLinks, adminLink, type HeaderUser } from "./account-links";
+import { Logo } from "./logo";
 import { Avatar } from "./avatar";
 import { routes } from "./routes";
+import { listingRoutes } from "@/lib/listings/routes";
+import { authRoutes } from "@/lib/auth/routes";
 
 const iconButtonClasses =
   "inline-flex size-10 items-center justify-center rounded-xs border border-tinta text-tinta transition-colors hover:bg-papir-2";
 
 const menuLinkClasses = "block border-b py-3 font-display text-h3 text-tinta hover:underline";
 
+const minimumBarOffset = 16;
+
 export function MobileMenu({ user }: { user: HeaderUser | null }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const openButtonRef = useRef<HTMLButtonElement>(null);
+  const [barOffset, setBarOffset] = useState(minimumBarOffset);
+  const [open, setOpen] = useState(false);
   const close = () => dialogRef.current?.close();
+
+  const openMenu = () => {
+    const buttonTop = openButtonRef.current?.getBoundingClientRect().top ?? minimumBarOffset;
+    setBarOffset(Math.max(minimumBarOffset, Math.round(buttonTop)));
+    setOpen(true);
+    dialogRef.current?.showModal();
+  };
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    const { style } = document.documentElement;
+    const previousOverflow = style.overflow;
+    style.overflow = "hidden";
+    return () => {
+      style.overflow = previousOverflow;
+    };
+  }, [open]);
 
   return (
     <>
       <button
+        ref={openButtonRef}
         type="button"
-        onClick={() => dialogRef.current?.showModal()}
+        onClick={openMenu}
         aria-label={bs.nav.openMenu}
         aria-haspopup="dialog"
         className={iconButtonClasses}
@@ -35,15 +63,19 @@ export function MobileMenu({ user }: { user: HeaderUser | null }) {
       <dialog
         ref={dialogRef}
         aria-label={bs.nav.menu}
-        className={cn(
-          "m-0 h-dvh max-h-none w-full max-w-none border-t-2 border-t-tinta bg-papir p-0 text-tinta",
-          "opacity-0 transition-opacity duration-180 ease-paper open:opacity-100 starting:open:opacity-0",
-          "backdrop:bg-tinta/40",
-        )}
+        onClose={() => setOpen(false)}
+        className={sheetDialogClasses}
       >
-        <div className="flex h-full flex-col gap-8 overflow-y-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <span className="text-label text-tinta-2 uppercase">{bs.nav.menu}</span>
+        <div className="flex h-full flex-col gap-8 overflow-y-auto px-4 pb-4" style={{ paddingTop: barOffset }}>
+          <div
+            className="flex items-center justify-between"
+            onClickCapture={(event) => {
+              if ((event.target as HTMLElement).closest("a")) {
+                close();
+              }
+            }}
+          >
+            <Logo />
             <button type="button" onClick={close} aria-label={bs.nav.closeMenu} className={iconButtonClasses}>
               <X aria-hidden="true" size={20} strokeWidth={1.5} />
             </button>
@@ -57,7 +89,7 @@ export function MobileMenu({ user }: { user: HeaderUser | null }) {
               </li>
               {user ? null : (
                 <li>
-                  <Link href={routes.login} onClick={close} className={menuLinkClasses}>
+                  <Link href={authRoutes.login} onClick={close} className={menuLinkClasses}>
                     {bs.nav.login}
                   </Link>
                 </li>
@@ -90,7 +122,7 @@ export function MobileMenu({ user }: { user: HeaderUser | null }) {
             </nav>
           ) : null}
           <ThemeSwitcher name="theme-mobile" labelled />
-          <Link href={routes.newListing} onClick={close} className={buttonStyles({ size: "lg", className: "mt-auto" })}>
+          <Link href={listingRoutes.create} onClick={close} className={buttonStyles({ size: "lg", className: "mt-auto" })}>
             {bs.nav.publish}
           </Link>
         </div>

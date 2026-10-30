@@ -2,12 +2,13 @@
 
 import { revalidatePath, updateTag } from "next/cache";
 import { failure, success, type ActionResult } from "@/lib/action-result";
+import { getActionSession } from "@/lib/auth/action-session";
+import { favoritesRoutes } from "@/lib/favorites/routes";
 import type { InteractionErrorCode } from "@/lib/listings/interaction-errors";
 import { listingCacheTag } from "@/lib/listings/public-listing";
 import { listingRoutes } from "@/lib/listings/routes";
 import { listingsCacheTag } from "@/lib/search/cache-tags";
 import { createPublicClient } from "@/lib/supabase/public";
-import { createClient } from "@/lib/supabase/server";
 import { listingIdSchema } from "@/lib/validation/listing";
 import { reportSchema, type ReportInput } from "@/lib/validation/report";
 
@@ -18,13 +19,6 @@ export type SellerContact = {
   hasViber: boolean;
   hasWhatsapp: boolean;
 };
-
-async function session() {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  const claims = data?.claims;
-  return claims ? { supabase, userId: claims.sub } : null;
-}
 
 export async function recordView(listingId: string): Promise<void> {
   if (!listingIdSchema.safeParse(listingId).success) {
@@ -37,7 +31,7 @@ export async function revealContact(listingId: string): Promise<InteractionResul
   if (!listingIdSchema.safeParse(listingId).success) {
     return failure("validation");
   }
-  const current = await session();
+  const current = await getActionSession();
   if (!current) {
     return failure("unauthenticated");
   }
@@ -56,7 +50,7 @@ export async function setFavorite(listingId: string, favorite: boolean): Promise
   if (!listingIdSchema.safeParse(listingId).success) {
     return failure("validation");
   }
-  const current = await session();
+  const current = await getActionSession();
   if (!current) {
     return failure("unauthenticated");
   }
@@ -68,7 +62,7 @@ export async function setFavorite(listingId: string, favorite: boolean): Promise
   if (error) {
     return failure(error.code === "23503" ? "not_found" : "unexpected");
   }
-  revalidatePath("/moj-racun/sacuvano");
+  revalidatePath(favoritesRoutes.page);
   return success({ favorite });
 }
 
@@ -77,7 +71,7 @@ export async function reportListing(listingId: string, input: ReportInput): Prom
   if (!parsed.success || !listingIdSchema.safeParse(listingId).success) {
     return failure("validation");
   }
-  const current = await session();
+  const current = await getActionSession();
   if (!current) {
     return failure("unauthenticated");
   }
@@ -103,7 +97,7 @@ export async function changeOwnListingStatus(
   if (!listingIdSchema.safeParse(listingId).success) {
     return failure("validation");
   }
-  const current = await session();
+  const current = await getActionSession();
   if (!current) {
     return failure("unauthenticated");
   }

@@ -27,6 +27,7 @@ import type { ListingSummary } from "@/lib/listings/summary";
 import { bs } from "@/lib/i18n/bs";
 import { demo } from "./demo-content";
 import { DialogDemo, LoadingButtonDemo, RemovableTagsDemo, ToastDemo } from "./interactive-demos";
+import { PageTitle } from "@/components/ui/page-title";
 
 export const metadata: Metadata = {
   title: demo.title,
@@ -128,7 +129,7 @@ export default function DesignPage() {
 
   return (
     <Container className="py-10">
-      <h1 className="border-t-2 border-t-tinta pt-3 font-display text-h1">{demo.title}</h1>
+      <PageTitle>{demo.title}</PageTitle>
       <p className="mt-3 max-w-[60ch] text-tinta-2">{demo.intro}</p>
 
       <Section title={demo.sections.colours}>

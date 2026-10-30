@@ -17,7 +17,7 @@ export function describedBy(id: string, helper?: ReactNode, error?: ReactNode): 
   return ids.length > 0 ? ids.join(" ") : undefined;
 }
 
-export function FieldLabel({
+function FieldLabel({
   htmlFor,
   children,
   className,

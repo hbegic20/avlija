@@ -1,23 +1,17 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { Monitor, Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { SegmentedControl, type SegmentedOption } from "@/components/ui/segmented-control";
 import { bs } from "@/lib/i18n/bs";
-import type { ThemePreference } from "@/lib/theme/theme";
-import {
-  getServerThemeSnapshot,
-  getThemeSnapshot,
-  setThemePreference,
-  subscribeToTheme,
-} from "@/lib/theme/theme-store";
+import type { ThemeChoice } from "@/lib/theme/theme";
+import { getServerThemeSnapshot, getThemeSnapshot, setThemeChoice, subscribeToTheme } from "@/lib/theme/theme-store";
 
 const iconProps = { "aria-hidden": true, size: 18, strokeWidth: 1.5 } as const;
 
-const themeOptions: readonly SegmentedOption<ThemePreference>[] = [
+const themeOptions: readonly SegmentedOption<ThemeChoice>[] = [
   { value: "light", label: bs.theme.options.light, icon: <Sun {...iconProps} /> },
   { value: "dark", label: bs.theme.options.dark, icon: <Moon {...iconProps} /> },
-  { value: "system", label: bs.theme.options.system, icon: <Monitor {...iconProps} /> },
 ];
 
 export function ThemeSwitcher({
@@ -29,7 +23,7 @@ export function ThemeSwitcher({
   labelled?: boolean;
   className?: string;
 }) {
-  const preference = useSyncExternalStore(subscribeToTheme, getThemeSnapshot, getServerThemeSnapshot);
+  const choice = useSyncExternalStore(subscribeToTheme, getThemeSnapshot, getServerThemeSnapshot);
 
   return (
     <SegmentedControl
@@ -38,8 +32,8 @@ export function ThemeSwitcher({
       hideLegend={!labelled}
       iconOnly={!labelled}
       options={themeOptions}
-      value={preference}
-      onValueChange={setThemePreference}
+      value={choice ?? null}
+      onValueChange={setThemeChoice}
       className={className}
     />
   );

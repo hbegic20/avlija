@@ -1,4 +1,4 @@
-export const soldGraceDays = 30;
+const soldGraceDays = 30;
 const dayMs = 86_400_000;
 
 export function isGoneSoldListing(status: string, soldAt: string | null, now: number): boolean {

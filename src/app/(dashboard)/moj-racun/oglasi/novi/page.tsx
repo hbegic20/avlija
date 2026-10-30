@@ -5,6 +5,9 @@ import { bs } from "@/lib/i18n/bs";
 import { loadMunicipalities } from "@/lib/listings/load-owned-listing";
 import { listingRoutes } from "@/lib/listings/routes";
 import { hasPhone } from "@/lib/profile/has-phone";
+import { PageTitle } from "@/components/ui/page-title";
+
+export const instant = false;
 
 export const metadata: Metadata = {
   title: bs.listingForm.newTitle,
@@ -17,7 +20,7 @@ export default async function NewListingPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="border-t-2 border-t-tinta pt-3 font-display text-h1">{bs.listingForm.newTitle}</h1>
+      <PageTitle>{bs.listingForm.newTitle}</PageTitle>
       <ListingWizard
         listing={null}
         images={[]}

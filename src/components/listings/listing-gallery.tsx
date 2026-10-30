@@ -87,7 +87,8 @@ export function ListingGallery({ images, altBase }: { images: ListingImage[]; al
             fill
             sizes="(min-width: 1024px) 800px, 100vw"
             className="object-cover"
-            priority
+            loading="eager"
+            fetchPriority="high"
           />
         </button>
         {total > 1 ? (

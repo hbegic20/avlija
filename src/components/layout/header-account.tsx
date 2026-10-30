@@ -5,7 +5,7 @@ import { bs } from "@/lib/i18n/bs";
 import { AccountMenu } from "./account-menu";
 import type { HeaderUser } from "./account-links";
 import { MobileMenu } from "./mobile-menu";
-import { routes } from "./routes";
+import { authRoutes } from "@/lib/auth/routes";
 
 export const navLinkClasses = "font-medium text-tinta underline-offset-3 hover:underline";
 
@@ -18,7 +18,7 @@ export async function DesktopAccount() {
   const user = await loadHeaderUser();
   if (!user) {
     return (
-      <Link href={routes.login} className={navLinkClasses}>
+      <Link href={authRoutes.login} className={navLinkClasses}>
         {bs.nav.login}
       </Link>
     );

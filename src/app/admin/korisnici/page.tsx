@@ -8,6 +8,7 @@ import type { ListingStatus, UserRole } from "@/lib/domain/enums";
 import { formatDate, formatInteger } from "@/lib/format";
 import { bs } from "@/lib/i18n/bs";
 import { createClient } from "@/lib/supabase/server";
+import { HatchNotice } from "@/components/ui/hatch-notice";
 
 export const instant = false;
 
@@ -52,9 +53,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
     <div className="flex flex-col gap-6">
       <h1 className="font-display text-h1">{text.title}</h1>
       {profiles.length === 0 ? (
-        <p className="hatch border p-6">
-          <span className="bg-papir px-2 py-1 text-tinta-2">{text.empty}</span>
-        </p>
+        <HatchNotice>{text.empty}</HatchNotice>
       ) : (
         <div className="overflow-x-auto border">
           <table className="w-full min-w-[720px] text-left">

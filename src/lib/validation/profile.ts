@@ -4,7 +4,7 @@ import { bs } from "@/lib/i18n/bs";
 const authMessages = bs.auth.validation;
 const profileMessages = bs.profile;
 
-export const phonePattern = /^\+?[0-9 ]{6,20}$/;
+const phonePattern = /^\+?[0-9 ]{6,20}$/;
 
 export const basicInfoSchema = z.object({
   fullName: z.string().trim().min(2, authMessages.fullNameLength).max(80, authMessages.fullNameLength),

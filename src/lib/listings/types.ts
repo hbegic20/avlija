@@ -16,7 +16,7 @@ export type ListingImage = {
 };
 
 export type WizardStep = 1 | 2 | 3 | 4 | 5;
-export const wizardSteps: readonly WizardStep[] = [1, 2, 3, 4, 5];
+const wizardSteps: readonly WizardStep[] = [1, 2, 3, 4, 5];
 
 export function parseWizardStep(value: string | undefined | null): WizardStep {
   const step = Number(value);

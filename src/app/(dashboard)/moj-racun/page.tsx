@@ -11,6 +11,8 @@ import { loadDashboardSummary } from "@/lib/listings/my-listings";
 import { listingRoutes } from "@/lib/listings/routes";
 import { hasPhone } from "@/lib/profile/has-phone";
 
+export const instant = false;
+
 export const metadata: Metadata = {
   title: bs.account.menu,
   robots: { index: false, follow: false },

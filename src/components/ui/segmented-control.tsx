@@ -11,7 +11,7 @@ type SegmentedControlProps<Value extends string> = {
   name: string;
   legend: string;
   options: readonly SegmentedOption<Value>[];
-  value?: Value;
+  value?: Value | null;
   defaultValue?: Value;
   onValueChange?: (value: Value) => void;
   iconOnly?: boolean;

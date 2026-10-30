@@ -52,11 +52,11 @@ Done when: `npm run dev` shows a blank page with no errors, typecheck and lint p
 - [x] Build primitives in `src/components/ui/`: Button, Input, Textarea, Select, Checkbox, Radio, SegmentedControl, Tag, Stamp, DataRow, Ledger, PriceTag, Dialog, Toast (with provider), Skeleton, EmptyState, Pagination, Stepper
 - [x] `src/lib/format/`: `formatKM`, `formatArea`, `formatDate`, `formatListingNumber` using `bs-BA` locale
 - [x] `src/lib/i18n/bs.ts` with base strings and all enum labels
-- [x] Theme: light/dark tokens and `@custom-variant dark` from DESIGN.md §10; an inline `<head>` script reads the `theme` cookie before first paint and sets `data-theme` on `<html>` (reading `cookies()` in the root layout would make every route dynamic under `cacheComponents`); `ThemeSwitcher` (Svijetla / Tamna / Prema sistemu) writes the cookie and switches instantly
+- [x] Theme: light/dark tokens and `@custom-variant dark` from DESIGN.md §10; an inline `<head>` script reads the `theme` cookie before first paint and sets `data-theme` on `<html>` (reading `cookies()` in the root layout would make every route dynamic under `cacheComponents`); `ThemeSwitcher` (Svijetla / Tamna; follows the device until the user chooses) writes the cookie and switches instantly
 - [x] Layout shell: header (coordinates strip, logo wordmark in Fraunces, nav: Nekretnine, Prijava / account menu, ThemeSwitcher, Objavi oglas), footer (municipality links, legal links); on mobile the ThemeSwitcher sits in the menu sheet
 - [x] Dev-only page `/dizajn` showing every component in every state (removed from production via `notFound()` when `NODE_ENV === 'production'`)
 
-Done when: `/dizajn` matches `docs/design-preview.html` in spirit, all three theme choices work and survive a reload with no flash of the wrong theme, keyboard focus is visible everywhere.
+Done when: `/dizajn` matches `docs/design-preview.html` in spirit, both theme choices work and survive a reload with no flash of the wrong theme, keyboard focus is visible everywhere.
 
 ## Phase 2 — Database
 

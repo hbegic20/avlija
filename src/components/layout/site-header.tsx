@@ -10,6 +10,7 @@ import { DesktopAccount, MobileAccountMenu, navLinkClasses } from "./header-acco
 import { Logo } from "./logo";
 import { MobileMenu } from "./mobile-menu";
 import { routes } from "./routes";
+import { listingRoutes } from "@/lib/listings/routes";
 
 export function SiteHeader() {
   return (
@@ -34,7 +35,7 @@ export function SiteHeader() {
               <DesktopAccount />
             </Suspense>
             <ThemeSwitcher name="theme-desktop" />
-            <Link href={routes.newListing} className={buttonStyles()}>
+            <Link href={listingRoutes.create} className={buttonStyles()}>
               {bs.nav.publish}
             </Link>
           </nav>

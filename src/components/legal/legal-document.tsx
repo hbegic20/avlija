@@ -1,3 +1,4 @@
+import { PageTitle } from "@/components/ui/page-title";
 import type { ReactNode } from "react";
 import { Container } from "@/components/layout/container";
 import { formatDate } from "@/lib/format";
@@ -18,7 +19,7 @@ export function LegalDocument({
     <Container className="py-10">
       <article className="flex max-w-[720px] flex-col gap-8">
         <header className="flex flex-col gap-3">
-          <h1 className="border-t-2 border-t-tinta pt-3 font-display text-h1">{title}</h1>
+          <PageTitle>{title}</PageTitle>
           <p className="text-tinta-2">{intro}</p>
         </header>
         {before}

@@ -1,7 +1,7 @@
 import { sbkBoundaries, type LngLat, type MunicipalityBoundary, type Ring } from "./sbk-boundaries";
 
 const metresPerDegreeLatitude = 111_320;
-export const borderToleranceMetres = 150;
+const borderToleranceMetres = 150;
 
 function isInsideRing([x, y]: LngLat, ring: Ring): boolean {
   let inside = false;

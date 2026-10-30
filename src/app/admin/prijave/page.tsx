@@ -9,6 +9,7 @@ import { formatDate, formatListingNumber } from "@/lib/format";
 import { bs } from "@/lib/i18n/bs";
 import { listingPath } from "@/lib/listings/listing-path";
 import { createClient } from "@/lib/supabase/server";
+import { HatchNotice } from "@/components/ui/hatch-notice";
 
 export const instant = false;
 
@@ -59,16 +60,14 @@ export default async function AdminReportsPage({ searchParams }: PageProps<"/adm
                   entry === status ? "border-tinta bg-tinta text-papir" : "border-tinta text-tinta hover:bg-papir-2",
                 )}
               >
-                {text.tabs[entry]}
+                {bs.enums.reportStatus[entry]}
               </Link>
             </li>
           ))}
         </ul>
       </nav>
       {reports.length === 0 ? (
-        <p className="hatch border p-6">
-          <span className="bg-papir px-2 py-1 text-tinta-2">{text.empty}</span>
-        </p>
+        <HatchNotice>{text.empty}</HatchNotice>
       ) : (
         <ul className="divide-y border">
           {reports.map((report) => (

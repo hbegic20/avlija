@@ -27,7 +27,7 @@ const buildingFields: readonly DetailField[] = [
   "hasUsagePermit",
 ];
 
-export const fieldRules: Record<PropertyType, FieldRule> = {
+const fieldRules: Record<PropertyType, FieldRule> = {
   stan: { visible: [...buildingFields, "floor"], required: ["areaM2", "floor"] },
   kuca: { visible: [...buildingFields, "landAreaM2"], required: ["areaM2"] },
   vikendica: { visible: [...buildingFields, "landAreaM2"], required: ["areaM2"] },

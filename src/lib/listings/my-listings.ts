@@ -1,7 +1,7 @@
 import "server-only";
 import type { ListingStatus } from "@/lib/domain/enums";
 import { createClient } from "@/lib/supabase/server";
-import { publicStorageUrl } from "@/lib/supabase/public";
+import { listingImagesBucket, publicStorageUrl } from "@/lib/supabase/storage-url";
 import { canRenew, daysUntil, isExpiringSoon } from "./expiry";
 import { listingPath } from "./listing-path";
 import type { ListingSummary } from "./summary";
@@ -101,7 +101,7 @@ export async function loadMyListings(ownerId: string): Promise<OwnerListing[]> {
       locationPrecise: row.location_precise,
       municipalityName: row.municipalities?.name ?? null,
       municipalitySlug: row.municipalities?.slug ?? null,
-      coverUrl: cover ? publicStorageUrl("listing-images", cover.storage_path) : null,
+      coverUrl: cover ? publicStorageUrl(listingImagesBucket, cover.storage_path) : null,
       path: listingPath(row.number, row.title),
       viewCount: row.view_count,
       expiresAt: row.expires_at,

@@ -3,17 +3,18 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { failure, success, type ActionResult } from "@/lib/action-result";
+import { getActionSession, type ActionSession } from "@/lib/auth/action-session";
 import { noticeParam } from "@/lib/auth/routes";
 import type { PropertyType } from "@/lib/domain/enums";
 import { allowedFeaturesFor, isFieldVisible, maxListingImages } from "@/lib/domain/listing-fields";
 import { isPointInMunicipality } from "@/lib/geo/point-in-municipality";
 import { listingNotices, listingRoutes } from "@/lib/listings/routes";
-import { listingImagesBucket } from "@/lib/listings/load-owned-listing";
 import { listingsCacheTag } from "@/lib/search/cache-tags";
 import type { ListingErrorCode } from "@/lib/listings/listing-errors";
+import { listingImageColumns, toListingImage } from "@/lib/listings/listing-image";
 import type { ListingImage } from "@/lib/listings/types";
+import { listingImagesBucket } from "@/lib/supabase/storage-url";
 import type { Database } from "@/lib/supabase/database.types";
-import { createClient } from "@/lib/supabase/server";
 import {
   basicsSchema,
   detailsSchemaFor,
@@ -31,16 +32,8 @@ import {
 type ListingResult<Data = undefined> = ActionResult<Data, ListingErrorCode>;
 type ListingUpdate = Database["public"]["Tables"]["listings"]["Update"];
 
-async function session() {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  const claims = data?.claims;
-  return claims ? { supabase, userId: claims.sub } : null;
-}
 
-type Session = NonNullable<Awaited<ReturnType<typeof session>>>;
-
-async function ownedListing(current: Session, listingId: string) {
+async function ownedListing(current: ActionSession, listingId: string) {
   const { data } = await current.supabase
     .from("listings")
     .select("id, status, type, municipality_id, features")
@@ -106,7 +99,7 @@ export async function saveBasics(
   if (!parsed.success || (listingId !== null && !listingIdSchema.safeParse(listingId).success)) {
     return failure("validation");
   }
-  const current = await session();
+  const current = await getActionSession();
   if (!current) {
     return failure("unauthenticated");
   }
@@ -155,7 +148,7 @@ export async function saveLocation(listingId: string, input: LocationFormValues)
   if (!parsed.success || !listingIdSchema.safeParse(listingId).success) {
     return failure("validation");
   }
-  const current = await session();
+  const current = await getActionSession();
   if (!current) {
     return failure("unauthenticated");
   }
@@ -203,7 +196,7 @@ export async function saveDetails(listingId: string, input: DetailsFormValues): 
   if (!listingIdSchema.safeParse(listingId).success) {
     return failure("validation");
   }
-  const current = await session();
+  const current = await getActionSession();
   if (!current) {
     return failure("unauthenticated");
   }
@@ -244,20 +237,13 @@ export async function saveDetails(listingId: string, input: DetailsFormValues): 
   return success();
 }
 
-async function listImages(current: Session, listingId: string): Promise<ListingImage[]> {
+async function listImages(current: ActionSession, listingId: string): Promise<ListingImage[]> {
   const { data } = await current.supabase
     .from("listing_images")
-    .select("id, storage_path, position, width, height")
+    .select(listingImageColumns)
     .eq("listing_id", listingId)
     .order("position");
-  return (data ?? []).map((row) => ({
-    id: row.id,
-    storagePath: row.storage_path,
-    publicUrl: current.supabase.storage.from(listingImagesBucket).getPublicUrl(row.storage_path).data.publicUrl,
-    position: row.position,
-    width: row.width,
-    height: row.height,
-  }));
+  return (data ?? []).map(toListingImage);
 }
 
 export async function registerImage(listingId: string, input: ImageRegistration): Promise<ListingResult<ListingImage>> {
@@ -265,7 +251,7 @@ export async function registerImage(listingId: string, input: ImageRegistration)
   if (!parsed.success || !listingIdSchema.safeParse(listingId).success) {
     return failure("validation");
   }
-  const current = await session();
+  const current = await getActionSession();
   if (!current) {
     return failure("unauthenticated");
   }
@@ -294,21 +280,14 @@ export async function registerImage(listingId: string, input: ImageRegistration)
       width: parsed.data.width,
       height: parsed.data.height,
     })
-    .select("id, storage_path, position, width, height")
+    .select(listingImageColumns)
     .single();
   if (error || !data) {
     await current.supabase.storage.from(listingImagesBucket).remove([parsed.data.storagePath]);
     return failure(databaseErrorCode(error?.message));
   }
   revalidateListing(listingId);
-  return success({
-    id: data.id,
-    storagePath: data.storage_path,
-    publicUrl: current.supabase.storage.from(listingImagesBucket).getPublicUrl(data.storage_path).data.publicUrl,
-    position: data.position,
-    width: data.width,
-    height: data.height,
-  });
+  return success(toListingImage(data));
 }
 
 export async function reorderImages(listingId: string, orderedImageIds: string[]): Promise<ListingResult> {
@@ -316,7 +295,7 @@ export async function reorderImages(listingId: string, orderedImageIds: string[]
   if (!parsed.success || !listingIdSchema.safeParse(listingId).success) {
     return failure("validation");
   }
-  const current = await session();
+  const current = await getActionSession();
   if (!current) {
     return failure("unauthenticated");
   }
@@ -335,7 +314,7 @@ export async function deleteImage(listingId: string, imageId: string): Promise<L
   if (!listingIdSchema.safeParse(listingId).success || !listingIdSchema.safeParse(imageId).success) {
     return failure("validation");
   }
-  const current = await session();
+  const current = await getActionSession();
   if (!current) {
     return failure("unauthenticated");
   }
@@ -366,7 +345,7 @@ export async function publishListing(listingId: string): Promise<ListingResult> 
   if (!listingIdSchema.safeParse(listingId).success) {
     return failure("validation");
   }
-  const current = await session();
+  const current = await getActionSession();
   if (!current) {
     return failure("unauthenticated");
   }
@@ -415,7 +394,7 @@ export async function publishListing(listingId: string): Promise<ListingResult> 
 }
 
 export async function finishEditing(listingId: string): Promise<void> {
-  const current = await session();
+  const current = await getActionSession();
   const listing = current && listingIdSchema.safeParse(listingId).success ? await ownedListing(current, listingId) : null;
   revalidateListing(listingId);
   const notice = listing?.status === "draft" ? listingNotices.draftSaved : listingNotices.saved;
@@ -426,7 +405,7 @@ export async function renewListing(listingId: string): Promise<ListingResult<{ e
   if (!listingIdSchema.safeParse(listingId).success) {
     return failure("validation");
   }
-  const current = await session();
+  const current = await getActionSession();
   if (!current) {
     return failure("unauthenticated");
   }
@@ -438,7 +417,7 @@ export async function renewListing(listingId: string): Promise<ListingResult<{ e
   return success({ expiresAt: data });
 }
 
-async function listFolder(current: Session, folder: string): Promise<string[]> {
+async function listFolder(current: ActionSession, folder: string): Promise<string[]> {
   const { data } = await current.supabase.storage.from(listingImagesBucket).list(folder, { limit: 1000 });
   return (data ?? []).filter((entry) => entry.id !== null).map((entry) => `${folder}/${entry.name}`);
 }
@@ -447,7 +426,7 @@ export async function deleteListing(listingId: string): Promise<ListingResult> {
   if (!listingIdSchema.safeParse(listingId).success) {
     return failure("validation");
   }
-  const current = await session();
+  const current = await getActionSession();
   if (!current) {
     return failure("unauthenticated");
   }

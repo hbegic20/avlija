@@ -1,10 +1,9 @@
+import { listingsBasePath } from "@/lib/search/filters";
+
 export const routes = {
   home: "/",
-  listings: "/nekretnine",
-  municipality: (slug: string) => `/nekretnine/${slug}`,
-  login: "/prijava",
-  register: "/registracija",
-  newListing: "/moj-racun/oglasi/novi",
+  listings: listingsBasePath,
+  municipality: (slug: string) => `${listingsBasePath}/${slug}`,
   terms: "/uslovi-koristenja",
   privacy: "/privatnost",
   contact: "/kontakt",

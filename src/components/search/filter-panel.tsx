@@ -8,6 +8,7 @@ import { Button, buttonStyles } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { sheetDialogClasses } from "@/components/ui/sheet";
 import { listingFeatures, propertyTypes } from "@/lib/domain/enums";
 import { sbkMunicipalities } from "@/lib/domain/municipalities";
 import { cn } from "@/lib/cn";
@@ -241,11 +242,7 @@ export function FilterSheet({ filters, fixedMunicipality, activeCount, clearHref
       <dialog
         ref={dialogRef}
         aria-label={text.filters}
-        className={cn(
-          "m-0 h-dvh max-h-none w-full max-w-none border-t-2 border-t-tinta bg-papir p-0 text-tinta",
-          "opacity-0 transition-opacity duration-180 ease-paper open:opacity-100 starting:open:opacity-0",
-          "backdrop:bg-tinta/40",
-        )}
+        className={cn(sheetDialogClasses, "border-t-2 border-t-tinta")}
       >
         <form
           key={formKey}

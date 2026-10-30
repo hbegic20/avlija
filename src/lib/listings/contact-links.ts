@@ -1,6 +1,6 @@
 const bihCountryCode = "387";
 
-export function internationalDigits(phone: string): string {
+function internationalDigits(phone: string): string {
   const compact = phone.replace(/[^\d+]/g, "");
   if (compact.startsWith("+")) {
     return compact.slice(1);

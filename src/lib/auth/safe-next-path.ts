@@ -1,6 +1,6 @@
-export const defaultAfterLoginPath = "/moj-racun";
+import { authRoutes } from "./routes";
 
-export function safeNextPath(value: string | null | undefined, fallback = defaultAfterLoginPath): string {
+export function safeNextPath(value: string | null | undefined, fallback: string = authRoutes.dashboard): string {
   if (!value || !value.startsWith("/") || value.startsWith("//") || value.startsWith("/\\")) {
     return fallback;
   }

@@ -8,7 +8,3 @@ export function createPublicClient() {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   });
 }
-
-export function publicStorageUrl(bucket: string, path: string): string {
-  return `${supabaseUrl}/storage/v1/object/public/${bucket}/${path.split("/").map(encodeURIComponent).join("/")}`;
-}

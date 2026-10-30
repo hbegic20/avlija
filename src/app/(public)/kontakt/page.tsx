@@ -4,6 +4,7 @@ import { DataRow } from "@/components/ui/data-row";
 import { Ledger } from "@/components/ui/ledger";
 import { contactPage } from "@/lib/i18n/legal-bs";
 import { operator } from "@/lib/legal/operator";
+import { PageTitle } from "@/components/ui/page-title";
 
 export const metadata: Metadata = {
   title: contactPage.title,
@@ -16,7 +17,7 @@ export default function ContactPage() {
     <Container className="py-10">
       <div className="flex max-w-[640px] flex-col gap-8">
         <header className="flex flex-col gap-3">
-          <h1 className="border-t-2 border-t-tinta pt-3 font-display text-h1">{contactPage.title}</h1>
+          <PageTitle>{contactPage.title}</PageTitle>
           <p className="text-tinta-2">{contactPage.intro}</p>
         </header>
         <Ledger>
