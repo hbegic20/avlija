@@ -101,3 +101,41 @@ function buildCantonSvg(): CantonSvg {
 }
 
 export const cantonSvg: CantonSvg = buildCantonSvg();
+
+export type MunicipalityOutline = {
+  path: string;
+  width: number;
+  height: number;
+  project: (lat: number, lng: number) => [number, number];
+};
+
+export function municipalityOutline(slug: string, width: number, height: number, padding = 24): MunicipalityOutline | null {
+  const boundary = sbkBoundaries.find((entry) => entry.slug === slug);
+  if (!boundary) {
+    return null;
+  }
+  const points = boundary.polygons.flatMap((rings) => rings.flat());
+  const minLng = Math.min(...points.map(([lng]) => lng));
+  const maxLng = Math.max(...points.map(([lng]) => lng));
+  const minLat = Math.min(...points.map(([, lat]) => lat));
+  const maxLat = Math.max(...points.map(([, lat]) => lat));
+  const lngScale = Math.cos((((minLat + maxLat) / 2) * Math.PI) / 180);
+  const spanX = (maxLng - minLng) * lngScale;
+  const spanY = maxLat - minLat;
+  const scale = Math.min((width - padding * 2) / spanX, (height - padding * 2) / spanY);
+  const offsetX = (width - spanX * scale) / 2;
+  const offsetY = (height - spanY * scale) / 2;
+  const project = (lat: number, lng: number): [number, number] => [
+    Math.round((offsetX + (lng - minLng) * lngScale * scale) * 10) / 10,
+    Math.round((offsetY + (maxLat - lat) * scale) * 10) / 10,
+  ];
+  const path = boundary.polygons
+    .flatMap((rings) =>
+      rings.map((ring) => {
+        const projected = simplify(ring, displayToleranceDegrees / 2).map(([lng, lat]) => project(lat, lng));
+        return `M${projected.map(([x, y]) => `${x} ${y}`).join("L")}Z`;
+      }),
+    )
+    .join("");
+  return { path, width, height, project };
+}

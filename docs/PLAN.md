@@ -191,11 +191,12 @@ Done when: all lifecycle transitions work and respect limits (10 active).
 
 ## Phase 11 — SEO and sharing
 
-- [ ] `generateMetadata` for all public pages, Bosnian titles like `Kuća, 140 m², Bugojno — 185.000 KM | Avlija`
-- [ ] Dynamic Open Graph image per listing (`opengraph-image.tsx`) in Katastar style: cover photo, parcel number, price, municipality
-- [ ] `sitemap.ts` with active listings and municipality pages, `robots.ts`
-- [ ] JSON-LD `RealEstateListing` / `Offer` on detail pages
-- [ ] Sold listings keep their URL with PRODANO stamp for 30 days, then return 410
+- [x] `generateMetadata` for all public pages, Bosnian titles like `Kuća, 140 m², Bugojno — 185.000 KM | Avlija`
+- [x] Dynamic Open Graph image per listing (`opengraph-image.tsx`) in Katastar style: parcel number, title, price, facts, stamp, municipality outline with pin. Site-wide OG image with the canton map
+- [ ] Cover photo in the listing OG image: Satori cannot decode WebP, needs `sharp` (already installed by Next) added as a direct dependency to convert the cover to PNG/JPEG
+- [x] `sitemap.ts` with active listings and municipality pages, `robots.ts`
+- [x] JSON-LD `RealEstateListing` / `Offer` on detail pages
+- [x] Sold listings keep their URL with PRODANO stamp for 30 days, then return 410 (checked in `src/proxy.ts`)
 
 ## Phase 12 — Trust, legal and polish
 

@@ -13,6 +13,7 @@ import { SellerBox } from "@/components/listings/detail/seller-box";
 import { ShareButton } from "@/components/listings/detail/share-button";
 import { ViewCounter } from "@/components/listings/detail/view-counter";
 import { FormAlert } from "@/components/auth/form-alert";
+import { ListingJsonLd } from "@/components/seo/listing-json-ld";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { loginPathWithNext } from "@/lib/auth/routes";
@@ -21,6 +22,8 @@ import { bs } from "@/lib/i18n/bs";
 import { getPublicListing, parseListingSegment, type PublicListingBundle } from "@/lib/listings/public-listing";
 import { listingRoutes } from "@/lib/listings/routes";
 import { similarListings } from "@/lib/search/queries";
+import { descriptionSnippet } from "@/lib/seo/description";
+import { listingSeoTitle } from "@/lib/seo/listing-title";
 
 
 export const instant = false;
@@ -37,10 +40,20 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
   if (!bundle) {
     return {};
   }
+  const title = listingSeoTitle({
+    type: bundle.listing.type,
+    areaM2: bundle.listing.area_m2,
+    landAreaM2: bundle.listing.land_area_m2,
+    municipalityName: bundle.municipalityName,
+    priceKm: bundle.listing.price_km,
+    priceNegotiable: bundle.listing.price_negotiable,
+  });
+  const description = descriptionSnippet(bundle.listing.description) || bundle.listing.title;
   return {
-    title: bundle.listing.title,
-    description: bundle.listing.description.slice(0, 160) || undefined,
+    title,
+    description,
     alternates: { canonical: bundle.path },
+    openGraph: { title, description, url: bundle.path, type: "website" },
   };
 }
 
@@ -123,6 +136,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
 
   return (
     <Container className="flex flex-col gap-14 py-8">
+      <ListingJsonLd bundle={bundle} />
       <ViewCounter listingId={bundle.listing.id} />
       <Suspense fallback={null}>
         <ViewerOwnerBar bundle={bundle} />

@@ -27,6 +27,7 @@ export async function generateMetadata({ params }: MunicipalityPageProps): Promi
   return {
     title: bs.search.titleIn(municipality.name),
     description: bs.search.introIn(municipality.name),
+    alternates: { canonical: `/nekretnine/${municipality.slug}` },
   };
 }
 

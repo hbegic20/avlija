@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Container } from "@/components/layout/container";
 import { routes } from "@/components/layout/routes";
@@ -10,6 +11,12 @@ import { cantonSvg } from "@/lib/geo/canton-svg";
 import { bs } from "@/lib/i18n/bs";
 import { listingsBasePath } from "@/lib/search/filters";
 import { latestListings, municipalitiesWithCounts } from "@/lib/search/queries";
+
+export const metadata: Metadata = {
+  title: { absolute: bs.site.homeTitle },
+  description: bs.site.description,
+  alternates: { canonical: "/" },
+};
 
 export default async function HomePage() {
   const [latest, municipalities] = await Promise.all([latestListings(8), municipalitiesWithCounts()]);

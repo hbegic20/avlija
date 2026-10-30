@@ -3,6 +3,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { listingsCacheTag } from "@/lib/search/cache-tags";
 import { createPublicClient, publicStorageUrl } from "@/lib/supabase/public";
 import { listingPath } from "./listing-path";
+import { isGoneSoldListing } from "./sold-grace";
 import type { EditableListing, ListingImage } from "./types";
 
 const publicListingColumns =
@@ -40,7 +41,7 @@ export async function getPublicListing(listingNumber: number): Promise<PublicLis
     .eq("number", listingNumber)
     .in("status", ["active", "sold"])
     .maybeSingle();
-  if (!row) {
+  if (!row || isGoneSoldListing(row.status, row.sold_at, Date.now())) {
     return null;
   }
 
@@ -95,7 +96,4 @@ export async function getPublicSeller(sellerId: string): Promise<PublicSeller | 
     : null;
 }
 
-export function parseListingSegment(segment: string): number | null {
-  const match = /^(\d{1,9})(?:-|$)/.exec(segment);
-  return match ? Number(match[1]) : null;
-}
+export { parseListingSegment } from "./public-listing-segment";

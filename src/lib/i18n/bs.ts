@@ -122,6 +122,8 @@ const themeOption: Record<ThemePreference, string> = {
 export const bs = {
   site: {
     name: "Avlija",
+    homeTitle: "Avlija — nekretnine u Bugojnu i Srednjoj Bosni",
+    ogTagline: "Kuće, stanovi i placevi direktno od vlasnika",
     description: "Kuće, stanovi i placevi u Bugojnu i Srednjobosanskom kantonu, direktno od vlasnika.",
     region: "Srednjobosanski kanton",
   },
@@ -588,6 +590,9 @@ export const bs = {
     openInGoogleMaps: "Otvori u Google Maps",
     similar: "Slični oglasi",
     soldNotice: "Ova nekretnina je prodana.",
+    goneTitle: "Oglas više nije dostupan",
+    goneText: "Nekretnina je prodana i oglas je uklonjen.",
+    goneAction: "Pregledaj ostale nekretnine",
     gallery: {
       open: (index: number, total: number) => `Otvori fotografiju ${index} od ${total} preko cijelog ekrana`,
       close: "Zatvori galeriju",

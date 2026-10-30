@@ -10,6 +10,7 @@ import { parseSearchFilters } from "@/lib/search/filters";
 export const metadata: Metadata = {
   title: bs.search.title,
   description: bs.search.intro,
+  alternates: { canonical: "/nekretnine" },
 };
 
 async function Results({ searchParams }: { searchParams: PageProps<"/nekretnine">["searchParams"] }) {

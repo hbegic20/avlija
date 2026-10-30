@@ -6,6 +6,7 @@ import { ThemeScript } from "@/components/theme/theme-script";
 import { ToastProvider } from "@/components/ui/toast";
 import { cn } from "@/lib/cn";
 import { bs } from "@/lib/i18n/bs";
+import { siteUrl } from "@/lib/seo/site-url";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -28,11 +29,21 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
-    default: bs.site.name,
+    default: bs.site.homeTitle,
     template: `%s | ${bs.site.name}`,
   },
   description: bs.site.description,
+  applicationName: bs.site.name,
+  openGraph: {
+    siteName: bs.site.name,
+    locale: "bs_BA",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export const viewport: Viewport = {

@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { authRoutes, guestOnlyPaths, loginPathWithNext, matchesPrefix, nextParam, protectedPrefixes } from "@/lib/auth/routes";
 import { safeNextPath } from "@/lib/auth/safe-next-path";
+import { goneResponseBody, isGoneListingPath } from "@/lib/listings/gone-response";
 import { updateSession } from "@/lib/supabase/session";
 
 function redirectKeepingCookies(request: NextRequest, sessionResponse: NextResponse, location: string): NextResponse {
@@ -17,8 +18,15 @@ function redirectKeepingCookies(request: NextRequest, sessionResponse: NextRespo
 }
 
 export async function proxy(request: NextRequest) {
-  const { response, claims } = await updateSession(request);
   const { pathname, search } = request.nextUrl;
+  if (await isGoneListingPath(pathname)) {
+    return new NextResponse(goneResponseBody(), {
+      status: 410,
+      headers: { "content-type": "text/html; charset=utf-8" },
+    });
+  }
+
+  const { response, claims } = await updateSession(request);
 
   const isProtected = protectedPrefixes.some((prefix) => matchesPrefix(pathname, prefix));
   if (isProtected && !claims) {
