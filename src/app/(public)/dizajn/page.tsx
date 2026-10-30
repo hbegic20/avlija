@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { Building2, Car, House, LandPlot, Store, Tent, Trees } from "lucide-react";
 import { Container } from "@/components/layout/container";
+import { ListingSheet } from "@/components/listings/listing-card";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -22,6 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { heatingTypes, propertyTypes, reportReasons, stampVariants, type PropertyType } from "@/lib/domain/enums";
 import { sbkMunicipalities } from "@/lib/domain/municipalities";
 import { formatArea, formatKM } from "@/lib/format";
+import type { ListingSummary } from "@/lib/listings/summary";
 import { bs } from "@/lib/i18n/bs";
 import { demo } from "./demo-content";
 import { DialogDemo, LoadingButtonDemo, RemovableTagsDemo, ToastDemo } from "./interactive-demos";
@@ -86,6 +88,16 @@ const viewOptions: readonly SegmentedOption<"grid" | "map">[] = [
 const municipalityOptions = sbkMunicipalities.map((municipality) => ({
   value: municipality.slug,
   label: municipality.name,
+}));
+
+const demoCards: ListingSummary[] = demo.cards.map((card) => ({
+  ...card,
+  publicLat: null,
+  publicLng: null,
+  locationPrecise: false,
+  municipalitySlug: null,
+  coverUrl: null,
+  path: "/dizajn",
 }));
 
 const heatingOptions = heatingTypes.map((type) => ({ value: type, label: bs.enums.heating[type] }));
@@ -323,6 +335,10 @@ export default function DesignPage() {
           <Stepper steps={demo.stepper} currentIndex={2} />
           <Stepper steps={demo.stepper} currentIndex={4} />
         </div>
+      </Section>
+
+      <Section title={demo.sections.cards}>
+        <ListingSheet listings={demoCards} />
       </Section>
 
       <Section title={demo.sections.theme}>

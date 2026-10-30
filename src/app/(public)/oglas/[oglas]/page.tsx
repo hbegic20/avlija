@@ -21,7 +21,6 @@ import { bs } from "@/lib/i18n/bs";
 import { getPublicListing, parseListingSegment, type PublicListingBundle } from "@/lib/listings/public-listing";
 import { listingRoutes } from "@/lib/listings/routes";
 import { similarListings } from "@/lib/search/queries";
-import { createClient } from "@/lib/supabase/server";
 
 
 export const instant = false;
@@ -60,27 +59,11 @@ async function ViewerContact({ bundle }: { bundle: PublicListingBundle }) {
 
 async function ViewerActions({ bundle }: { bundle: PublicListingBundle }) {
   const user = await getCurrentUser();
-  let isFavorite = false;
-  if (user) {
-    const supabase = await createClient();
-    const { data } = await supabase
-      .from("favorites")
-      .select("listing_id")
-      .eq("user_id", user.id)
-      .eq("listing_id", bundle.listing.id)
-      .maybeSingle();
-    isFavorite = data !== null;
-  }
   const loginHref = loginPathWithNext(bundle.path);
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap gap-2">
-        <FavoriteButton
-          listingId={bundle.listing.id}
-          initialFavorite={isFavorite}
-          isLoggedIn={user !== null}
-          loginHref={loginHref}
-        />
+        <FavoriteButton listingId={bundle.listing.id} />
         <ShareButton path={bundle.path} title={bundle.listing.title} />
       </div>
       {user?.id === bundle.listing.owner_id ? null : (

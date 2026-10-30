@@ -17,6 +17,7 @@ export const demo = {
     pagination: "Paginacija",
     stepper: "Koraci",
     theme: "Tema",
+    cards: "Kartice oglasa",
   },
   typography: {
     display: "Avlija u Bugojnu",
@@ -109,6 +110,12 @@ export const demo = {
     emptyAction: "Očisti sve",
   },
   stepper: ["Osnovno", "Lokacija", "Detalji", "Fotografije", "Pregled"],
+  cards: [
+    { id: "00000000-0000-4000-8000-000000000127", number: 127, title: "Porodična kuća s baštom, blizu centra", type: "kuca", status: "active", priceKm: 185000, priceNegotiable: false, areaM2: 140, landAreaM2: 620, rooms: 5, floor: null, totalFloors: 2, neighborhood: "Čipuljić", isRegistered: true, publishedAt: "2026-09-01T10:00:00Z", municipalityName: "Bugojno" },
+    { id: "00000000-0000-4000-8000-000000000131", number: 131, title: "Trosoban stan, 2. sprat, renoviran", type: "stan", status: "active", priceKm: 142500, priceNegotiable: false, areaM2: 84.5, landAreaM2: null, rooms: 3, floor: 2, totalFloors: 4, neighborhood: "Centar", isRegistered: false, publishedAt: null, municipalityName: "Travnik" },
+    { id: "00000000-0000-4000-8000-000000000098", number: 98, title: "Građevinski plac uz asfalt, struja i voda", type: "plac", status: "active", priceKm: 48000, priceNegotiable: false, areaM2: null, landAreaM2: 1200, rooms: null, floor: null, totalFloors: null, neighborhood: "Voljevac", isRegistered: false, publishedAt: "2026-01-01T10:00:00Z", municipalityName: "Gornji Vakuf-Uskoplje" },
+    { id: "00000000-0000-4000-8000-000000000064", number: 64, title: "Vikendica na rubu šume", type: "vikendica", status: "sold", priceKm: 63000, priceNegotiable: false, areaM2: 56, landAreaM2: 900, rooms: 2, floor: null, totalFloors: 1, neighborhood: "Prusac", isRegistered: false, publishedAt: "2026-03-01T10:00:00Z", municipalityName: "Donji Vakuf" },
+  ],
   theme: {
     compact: "Zaglavlje",
     labelled: "Mobilni meni",

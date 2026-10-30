@@ -178,8 +178,8 @@ Done when: all lifecycle transitions work and respect limits (10 active).
 
 ## Phase 9 — Favourites
 
-- [ ] Heart toggle on cards and detail page with optimistic update; guests are sent to login and the favourite is added after login
-- [ ] `/moj-racun/sacuvano` grid, sold listings shown with PRODANO stamp, removed listings disappear
+- [x] Heart toggle on cards and detail page with optimistic update; guests are sent to login and the favourite is added after login
+- [x] `/moj-racun/sacuvano` grid, sold listings shown with PRODANO stamp, removed listings disappear
 
 ## Phase 10 — Admin and moderation
 

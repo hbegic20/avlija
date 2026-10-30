@@ -12,7 +12,7 @@ const summaryColumns =
 
 const maxMapPins = 500;
 
-type SummaryRow = {
+export type SummaryRow = {
   id: string;
   number: number;
   title: string;
@@ -35,7 +35,7 @@ type SummaryRow = {
   listing_images: { storage_path: string; position: number }[];
 };
 
-function toSummary(row: SummaryRow): ListingSummary {
+export function toSummary(row: SummaryRow): ListingSummary {
   const cover = [...row.listing_images].sort((a, b) => a.position - b.position)[0];
   return {
     id: row.id,

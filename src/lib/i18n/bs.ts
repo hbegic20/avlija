@@ -609,6 +609,15 @@ export const bs = {
       done: "Promjena je sačuvana.",
     },
   },
+  favorites: {
+    title: "Sačuvano",
+    description: "Oglasi koje ste sačuvali. Prodane nekretnine ostaju označene, a uklonjeni oglasi nestaju sa liste.",
+    add: (title: string) => `Sačuvaj oglas: ${title}`,
+    remove: (title: string) => `Ukloni iz sačuvanih: ${title}`,
+    emptyTitle: "Još niste sačuvali nijedan oglas",
+    emptyDescription: "Kliknite srce na oglasu da ga sačuvate za kasnije.",
+    browse: "Pregledaj nekretnine",
+  },
   sellerPage: {
     title: (name: string) => `Prodavac: ${name}`,
     activeListings: "Aktivni oglasi",
