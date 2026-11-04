@@ -3,11 +3,14 @@ import type { ListingStatus } from "@/lib/domain/enums";
 import { createClient } from "@/lib/supabase/server";
 import { listingImagesBucket, publicStorageUrl } from "@/lib/supabase/storage-url";
 import { canRenew, daysUntil, isExpiringSoon } from "./expiry";
+import { recentPreviousPrice } from "./price-reduction";
 import { listingPath } from "./listing-path";
 import type { ListingSummary } from "./summary";
 
 export type OwnerListing = ListingSummary & {
   viewCount: number;
+  favoriteCount: number;
+  contactCount: number;
   expiresAt: string | null;
   soldAt: string | null;
   updatedAt: string;
@@ -35,7 +38,7 @@ export function parseStatusTab(value: string | string[] | undefined): StatusTab 
 }
 
 const ownerColumns =
-  "id, number, title, type, status, price_km, price_negotiable, area_m2, land_area_m2, rooms, floor, total_floors, neighborhood, is_registered, published_at, expires_at, sold_at, updated_at, view_count, hidden_reason, public_lat, public_lng, location_precise, municipalities(name, slug), listing_images(storage_path, position)";
+  "id, number, title, type, status, price_km, price_negotiable, previous_price_km, price_reduced_at, area_m2, land_area_m2, rooms, floor, total_floors, neighborhood, is_registered, published_at, expires_at, sold_at, updated_at, view_count, hidden_reason, public_lat, public_lng, location_precise, municipalities(name, slug), listing_images(storage_path, position)";
 
 type OwnerRow = {
   id: string;
@@ -45,6 +48,8 @@ type OwnerRow = {
   status: ListingStatus;
   price_km: number | null;
   price_negotiable: boolean;
+  previous_price_km: number | null;
+  price_reduced_at: string | null;
   area_m2: number | null;
   land_area_m2: number | null;
   rooms: number | null;
@@ -70,16 +75,21 @@ const newListingMs = 7 * 86_400_000;
 export async function loadMyListings(ownerId: string): Promise<OwnerListing[]> {
   const now = Date.now();
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("listings")
-    .select(ownerColumns)
-    .eq("owner_id", ownerId)
-    .order("updated_at", { ascending: false })
-    .order("position", { referencedTable: "listing_images" })
-    .limit(1, { referencedTable: "listing_images" });
+  const [{ data }, { data: stats }] = await Promise.all([
+    supabase
+      .from("listings")
+      .select(ownerColumns)
+      .eq("owner_id", ownerId)
+      .order("updated_at", { ascending: false })
+      .order("position", { referencedTable: "listing_images" })
+      .limit(1, { referencedTable: "listing_images" }),
+    supabase.rpc("my_listing_stats"),
+  ]);
+  const statsById = new Map((stats ?? []).map((entry) => [entry.listing_id, entry]));
 
   return ((data ?? []) as unknown as OwnerRow[]).map((row) => {
     const cover = row.listing_images[0];
+    const listingStats = statsById.get(row.id);
     return {
       id: row.id,
       number: row.number,
@@ -88,6 +98,7 @@ export async function loadMyListings(ownerId: string): Promise<OwnerListing[]> {
       status: row.status,
       priceKm: row.price_km,
       priceNegotiable: row.price_negotiable,
+      previousPriceKm: recentPreviousPrice(row.price_km, row.previous_price_km, row.price_reduced_at, now),
       areaM2: row.area_m2,
       landAreaM2: row.land_area_m2,
       rooms: row.rooms,
@@ -104,6 +115,8 @@ export async function loadMyListings(ownerId: string): Promise<OwnerListing[]> {
       coverUrl: cover ? publicStorageUrl(listingImagesBucket, cover.storage_path) : null,
       path: listingPath(row.number, row.title),
       viewCount: row.view_count,
+      favoriteCount: listingStats?.favorite_count ?? 0,
+      contactCount: listingStats?.contact_count ?? 0,
       expiresAt: row.expires_at,
       soldAt: row.sold_at,
       updatedAt: row.updated_at,

@@ -151,19 +151,19 @@
 
 @utility map-tiles {
   filter: grayscale(1) sepia(0.25) contrast(0.95);
-}
 
-@layer components {
-  :root[data-theme="dark"] .map-tiles {
+  :root[data-theme="dark"] & {
     filter: grayscale(1) sepia(0.25) contrast(0.95) invert(1) hue-rotate(180deg);
   }
 
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .map-tiles {
+    :root:not([data-theme="light"]) & {
       filter: grayscale(1) sepia(0.25) contrast(0.95) invert(1) hue-rotate(180deg);
     }
   }
+}
 
+@layer components {
   .leaflet-container {
     background-color: var(--color-papir-2);
     font-family: var(--font-sans);

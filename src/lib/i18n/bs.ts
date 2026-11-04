@@ -152,6 +152,10 @@ export const bs = {
   price: {
     negotiable: "Cijena po dogovoru",
     perSquareMetre: (amount: string) => `${amount} KM/m²`,
+    inEuro: (amount: string) => `≈ ${amount}`,
+    previous: "Prethodna cijena",
+    reduced: (percent: number) => `sniženo ${percent}%`,
+    inEuroLabel: "Približno u eurima, po fiksnom kursu 1 € = 1,95583 KM",
   },
   pagination: {
     label: "Stranice",
@@ -725,6 +729,8 @@ export const bs = {
     },
     activeLimit: (count: number, max: number) => `${count} / ${max} aktivnih`,
     views: "Pregleda",
+    favorites: "Sačuvalo",
+    contacts: "Vidjelo broj",
     published: "Objavljeno",
     updated: "Izmijenjeno",
     expires: "Ističe",

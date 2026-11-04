@@ -36,6 +36,7 @@ export function ListingOgCard({ bundle }: { bundle: PublicListingBundle }) {
     coverUrl: null,
     path: bundle.path,
     isNew: bundle.isNew,
+    previousPriceKm: bundle.previousPriceKm,
   });
   const outline = bundle.municipalitySlug ? municipalityOutline(bundle.municipalitySlug, 420, 470, 30) : null;
   const pin = outline && listing.public_lat !== null && listing.public_lng !== null ? outline.project(listing.public_lat, listing.public_lng) : null;

@@ -167,6 +167,25 @@ async function run() {
     : null;
   check("publishing sets published_at and a 90-day expiry", Boolean(published?.published_at) && expiryDays === 90, `expiry in ${expiryDays} days`);
 
+  await userA.client.from("listings").update({ price_km: 195000 }).eq("id", draft.id);
+  const { data: reduced } = await userA.client
+    .from("listings")
+    .update({ price_km: 175000, previous_price_km: 999999 })
+    .eq("id", draft.id)
+    .select("price_km, previous_price_km, price_reduced_at")
+    .single();
+  check(
+    "price drop is measured from the price before the last 30 days of changes",
+    reduced?.previous_price_km === 185000 && Boolean(reduced?.price_reduced_at),
+    JSON.stringify(reduced),
+  );
+  const { data: history } = await anon.from("listing_price_history").select("old_price_km, new_price_km").eq("listing_id", draft.id);
+  check("price changes are recorded and publicly readable", history?.length === 2, `got ${history?.length}`);
+  const { error: historyInsertError } = await userA.client
+    .from("listing_price_history")
+    .insert({ listing_id: draft.id, old_price_km: 1, new_price_km: 2 });
+  check("users cannot write price history", historyInsertError !== null, describeError(historyInsertError));
+
   const { data: phonelessDraft } = await userB.client
     .from("listings")
     .insert(draftListing(userB.id, "Oglas korisnika bez telefona"))
@@ -243,6 +262,18 @@ async function run() {
     revealError === null && revealed?.[0]?.phone === "+387 61 111 222" && revealed?.[0]?.has_viber === true,
     describeError(revealError),
   );
+
+  const { data: statsForA, error: statsError } = await userA.client.rpc("my_listing_stats");
+  const draftStats = statsForA?.find((entry) => entry.listing_id === draft.id);
+  check(
+    "owner sees favourite and contact counts for own listing",
+    statsError === null && draftStats?.favorite_count === 1 && draftStats?.contact_count === 1,
+    describeError(statsError) || JSON.stringify(draftStats),
+  );
+  const { data: statsForB } = await userB.client.rpc("my_listing_stats");
+  check("stats never include other owners' listings", !(statsForB ?? []).some((entry) => entry.listing_id === draft.id));
+  const { error: anonStatsError } = await anon.rpc("my_listing_stats");
+  check("anon cannot call listing stats", anonStatsError !== null, describeError(anonStatsError));
 
   const { data: revealsSeenByB, error: revealsError } = await userB.client.from("contact_reveals").select("id");
   check(

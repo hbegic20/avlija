@@ -9,6 +9,7 @@ import { formatKM, formatListingNumber } from "@/lib/format";
 import { bs } from "@/lib/i18n/bs";
 import type { ListingPin } from "@/lib/listings/summary";
 import { tileAttribution, tileUrl } from "./map-config";
+import { useFreshMapKey } from "./use-fresh-map-key";
 
 const clusterCellPixels = 56;
 const cantonCentre: [number, number] = [44.12, 17.65];
@@ -124,8 +125,10 @@ function ClusteredPins({ pins, highlightedId }: { pins: ListingPin[]; highlighte
 }
 
 export function ListingsMap({ pins, highlightedId }: { pins: ListingPin[]; highlightedId: string | null }) {
+  const mapKey = useFreshMapKey();
   return (
     <MapContainer
+      key={mapKey}
       center={cantonCentre}
       zoom={10}
       scrollWheelZoom

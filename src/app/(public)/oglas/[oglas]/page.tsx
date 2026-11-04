@@ -138,6 +138,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
     images: bundle.images,
     municipalityName: bundle.municipalityName,
     isNew: bundle.isNew,
+    previousPriceKm: bundle.previousPriceKm,
   };
 
   return (

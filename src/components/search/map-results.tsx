@@ -41,7 +41,11 @@ function ResultRow({
         <p className="line-clamp-2 font-display text-body font-semibold underline-offset-3 group-hover:underline">
           {listing.title}
         </p>
-        <PriceTag priceKm={listing.priceKm} negotiable={listing.priceNegotiable} className="[&_p:first-child]:text-body" />
+        <PriceTag
+          priceKm={listing.priceKm}
+          negotiable={listing.priceNegotiable}
+          previousPriceKm={listing.previousPriceKm}
+          className="[&_p:first-child]:text-body" />
         <p className="truncate font-mono text-label text-tinta-2">{cardFacts(listing).join(" · ")}</p>
       </div>
     </Link>

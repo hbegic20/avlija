@@ -1,4 +1,5 @@
 export { formatKM, formatKMAmount } from "./format-km";
+export { formatEURFromKM, kmPerEuro } from "./format-eur";
 export { formatDecimal, formatInteger } from "./format-number";
 export { formatArea } from "./format-area";
 export { formatDate } from "./format-date";

@@ -5,11 +5,12 @@ import { createPublicClient } from "@/lib/supabase/public";
 import { listingImageColumns, toListingImage } from "./listing-image";
 import { listingPath } from "./listing-path";
 import { isNewListing } from "./listing-view";
+import { recentPreviousPrice } from "./price-reduction";
 import { isGoneSoldListing } from "./sold-grace";
 import type { EditableListing, ListingImage } from "./types";
 
 const publicListingColumns =
-  "id, number, owner_id, status, type, title, description, price_km, price_negotiable, municipality_id, neighborhood, location_precise, area_m2, land_area_m2, rooms, bathrooms, floor, total_floors, year_built, heating, condition, is_registered, has_building_permit, has_usage_permit, features, view_count, published_at, expires_at, sold_at, hidden_reason, created_at, updated_at, public_lat, public_lng, public_address, main_area_m2, price_per_m2";
+  "id, number, owner_id, status, type, title, description, price_km, price_negotiable, municipality_id, neighborhood, location_precise, area_m2, land_area_m2, rooms, bathrooms, floor, total_floors, year_built, heating, condition, is_registered, has_building_permit, has_usage_permit, features, view_count, published_at, expires_at, sold_at, hidden_reason, created_at, updated_at, public_lat, public_lng, public_address, main_area_m2, price_per_m2, previous_price_km, price_reduced_at";
 
 export type PublicSeller = {
   id: string;
@@ -26,6 +27,7 @@ export type PublicListingBundle = {
   seller: PublicSeller | null;
   path: string;
   isNew: boolean;
+  previousPriceKm: number | null;
 };
 
 export function listingCacheTag(listingNumber: number): string {
@@ -71,6 +73,7 @@ export async function getPublicListing(listingNumber: number): Promise<PublicLis
       : null,
     path: listingPath(row.number, row.title),
     isNew: isNewListing(row.published_at, Date.now()),
+    previousPriceKm: recentPreviousPrice(row.price_km, row.previous_price_km, row.price_reduced_at, Date.now()),
   };
 }
 

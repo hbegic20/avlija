@@ -11,6 +11,7 @@ import {
   tileAttribution,
   tileUrl,
 } from "./map-config";
+import { useFreshMapKey } from "./use-fresh-map-key";
 
 function EnableWheelZoomOnClick() {
   const map = useMapEvents({
@@ -22,8 +23,10 @@ function EnableWheelZoomOnClick() {
 }
 
 export function LocationMap({ lat, lng, precise }: { lat: number; lng: number; precise: boolean }) {
+  const mapKey = useFreshMapKey();
   return (
     <MapContainer
+      key={mapKey}
       center={[lat, lng]}
       zoom={precise ? pinZoom : 15}
       scrollWheelZoom={false}

@@ -7,6 +7,7 @@ import type { LatLngExpression, Marker as LeafletMarker } from "leaflet";
 import { findBoundary, isPointInMunicipality } from "@/lib/geo/point-in-municipality";
 import { bs } from "@/lib/i18n/bs";
 import { municipalityZoom, outlinePathClasses, pinZoom, squarePinIcon, tileAttribution, tileUrl } from "./map-config";
+import { useFreshMapKey } from "./use-fresh-map-key";
 
 export type PickedPoint = { lat: number; lng: number };
 
@@ -101,6 +102,7 @@ function KeyboardPin({ value, onPick }: { value: PickedPoint; onPick: (point: Pi
 }
 
 export function LocationPicker({ municipalitySlug, centre, value, onChange }: LocationPickerProps) {
+  const mapKey = useFreshMapKey();
   const boundary = useMemo(() => findBoundary(municipalitySlug), [municipalitySlug]);
   const outline = useMemo<LatLngExpression[][][]>(
     () =>
@@ -112,6 +114,7 @@ export function LocationPicker({ municipalitySlug, centre, value, onChange }: Lo
 
   return (
     <MapContainer
+      key={mapKey}
       center={value ? [value.lat, value.lng] : [centre.lat, centre.lng]}
       zoom={value ? pinZoom : municipalityZoom}
       scrollWheelZoom

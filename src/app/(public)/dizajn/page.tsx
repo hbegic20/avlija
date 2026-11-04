@@ -100,6 +100,7 @@ const demoCards: ListingSummary[] = demo.cards.map((card) => ({
   coverUrl: null,
   path: "/dizajn",
   isNew: card.publishedAt === null,
+  previousPriceKm: null,
 }));
 
 const heatingOptions = heatingTypes.map((type) => ({ value: type, label: bs.enums.heating[type] }));
@@ -278,7 +279,10 @@ export default function DesignPage() {
             <PriceTag priceKm={142500} />
           </Specimen>
           <Specimen label="priceKm + areaM2">
-            <PriceTag priceKm={185000} areaM2={140} />
+            <PriceTag priceKm={185000} areaM2={140} showEuro />
+          </Specimen>
+          <Specimen label="previousPriceKm">
+            <PriceTag priceKm={140000} previousPriceKm={155000} />
           </Specimen>
           <Specimen label="negotiable">
             <PriceTag priceKm={48000} negotiable />

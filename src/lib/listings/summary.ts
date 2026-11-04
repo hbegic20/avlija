@@ -8,6 +8,7 @@ export type ListingSummary = {
   status: ListingStatus;
   priceKm: number | null;
   priceNegotiable: boolean;
+  previousPriceKm: number | null;
   areaM2: number | null;
   landAreaM2: number | null;
   rooms: number | null;

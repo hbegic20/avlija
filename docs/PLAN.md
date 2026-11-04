@@ -209,7 +209,7 @@ Done when: all lifecycle transitions work and respect limits (10 active).
 
 ## Status and open items (2026-10-30)
 
-Phases 0–12 are built. Phase 13 (deploy) has not started. Before deploying, work through this list top to bottom.
+Phases 0–12 are built. Phase 13 (pre-launch features) is in progress, Phase 14 (deploy) has not started. Before deploying, work through this list top to bottom.
 
 ### Before deploy
 - [ ] Add `SUPABASE_SECRET_KEY` to `.env.local`, then run `npm run test:rls` (never run yet) and a full logged-in walk: profile setup, listing wizard, dashboard, favourites, admin. Logged-in pages have only been tested by the owner by hand
@@ -219,7 +219,7 @@ Phases 0–12 are built. Phase 13 (deploy) has not started. Before deploying, wo
 - [ ] Set `NEXT_PUBLIC_OPERATOR_NAME` and `NEXT_PUBLIC_CONTACT_EMAIL`; legal review of `/uslovi-koristenja` and `/privatnost` texts (`src/lib/i18n/legal-bs.ts`)
 
 ### Soon after
-- [ ] Daily cleanup job: delete drafts untouched for 60 days and their images; remove orphaned files in `listing-images` without a `listing_images` row; delete `contact_reveals` rows older than a day
+- [ ] Daily cleanup job: delete drafts untouched for 60 days and their images; remove orphaned files in `listing-images` without a `listing_images` row; keep `contact_reveals` (seller stats count distinct viewers from it), or roll old rows up into per-listing counts if it grows large
 - [ ] Cache the 410 lookup in `src/lib/listings/gone-response.ts` (one REST query per `/oglas/...` request today)
 
 ### Owner decisions pending
@@ -229,18 +229,31 @@ Phases 0–12 are built. Phase 13 (deploy) has not started. Before deploying, wo
 - [ ] Google OAuth: create the Google Cloud client and enable the provider in Supabase
 - [ ] Production plan: Supabase Pro (free plan pauses after a week idle, no backups), error monitoring (e.g. Sentry), unit tests (e.g. Vitest); each needs approval
 
-## Phase 13 — Deploy
+## Phase 13 — Pre-launch features
+
+- [x] Price in EUR on the listing detail (`≈ 71.581 €` under the KM price), fixed rate 1 € = 1,95583 KM via `formatEURFromKM`, no API
+- [x] Seller stats in "Moji oglasi": views, saved by (favourites, excluding the owner) and phone revealed (distinct users) per listing via the `my_listing_stats()` RPC
+- [x] Price history and reduced price: `listing_price_history` written by the `listings_25_price_history` trigger on every price change after first publish; cards, map list, dashboard and detail show the struck-through old price and `sniženo N%` for 30 days. The reference is the price before the earliest change in the last 30 days, so raising and then lowering the price does not fake a reduction. Shown as a PriceTag line, not a stamp (owner decision)
+- [ ] Share to Viber and WhatsApp from the "Podijeli" button (deep links, no SDK)
+- [ ] Print version of the listing detail styled as a land registry extract (print stylesheet, no PDF library)
+
+Done when: all items work in both themes and on mobile, RLS tests cover any new table or RPC.
+
+## Phase 14 — Deploy
 
 - [ ] Separate Supabase project for production, apply migrations
 - [ ] Custom SMTP for auth emails (e.g. Resend) since Supabase's built-in email is rate-limited; then push the Bosnian templates from `supabase/templates/` (see Phase 3)
 - [ ] Vercel project, env vars, custom domain, update Supabase redirect URLs and Google OAuth origins
 - [ ] Smoke test all flows on production
 
+## Phase 15 — Alerts (right after deploy, needs custom SMTP)
+
+- [ ] Saved searches: store the search URL params per user, daily cron emails new matching listings, unsubscribe link
+- [ ] Favourite alerts: email when a saved listing's price drops or it is marked sold
+
 ## Later (not now)
 
-- Saved searches with email alerts for new matching listings
 - In-app messaging between buyer and seller
 - Rentals (`najam`) as a second offer type
 - Agency accounts with multiple agents
-- Price history and "cijena snižena" badge
 - Expanding to neighbouring cantons

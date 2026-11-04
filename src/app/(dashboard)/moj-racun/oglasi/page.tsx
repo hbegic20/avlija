@@ -32,12 +32,16 @@ const text = bs.myListings;
 type Fact = { label: string; value: string; tone?: "default" | "positive" | "negative" };
 
 function factsFor(listing: OwnerListing): Fact[] {
-  const views = { label: text.views, value: formatInteger(listing.viewCount) };
+  const interest = [
+    { label: text.views, value: formatInteger(listing.viewCount) },
+    { label: text.favorites, value: formatInteger(listing.favoriteCount) },
+    { label: text.contacts, value: formatInteger(listing.contactCount) },
+  ];
   switch (listing.status) {
     case "active": {
       const days = listing.daysLeft;
       return [
-        views,
+        ...interest,
         ...(listing.publishedAt ? [{ label: text.published, value: formatDate(listing.publishedAt) }] : []),
         ...(listing.expiresAt && days !== null
           ? [{ label: text.expires, value: text.expiresIn(days), tone: days < 7 ? ("negative" as const) : undefined }]
@@ -45,9 +49,9 @@ function factsFor(listing: OwnerListing): Fact[] {
       ];
     }
     case "sold":
-      return [views, ...(listing.soldAt ? [{ label: text.sold, value: formatDate(listing.soldAt) }] : [])];
+      return [...interest, ...(listing.soldAt ? [{ label: text.sold, value: formatDate(listing.soldAt) }] : [])];
     case "archived":
-      return [views, ...(listing.expiresAt ? [{ label: text.expired, value: formatDate(listing.expiresAt) }] : [])];
+      return [...interest, ...(listing.expiresAt ? [{ label: text.expired, value: formatDate(listing.expiresAt) }] : [])];
     default:
       return [{ label: text.updated, value: formatDate(listing.updatedAt) }];
   }

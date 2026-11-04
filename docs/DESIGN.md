@@ -124,7 +124,7 @@ All live in `src/components/ui/`. Build them in Phase 1 before any feature work.
 | `SegmentedControl` | Row of joined buttons sharing borders, active segment tinta fill with papir text. Used for property type and grid/map toggle. |
 | `Stamp` | See signature elements. |
 | `DataRow` / `Ledger` | See signature elements. A `Ledger` is a list of `DataRow`s with a `text-label` heading. |
-| `PriceTag` | `text-price` in crijep, `KM` suffix in smaller mono tinta-2. Optional line below: `Cijena po dogovoru` or price per m² in `text-mono tinta-2`. |
+| `PriceTag` | `text-price` in crijep, `KM` suffix in smaller mono tinta-2. Optional lines below, all in `text-mono tinta-2`, in this order: reduced price (struck-through old price · `sniženo 10%`, cards and detail, no extra stamp), approximate EUR (`≈ 71.581 €`, detail only), then `Cijena po dogovoru` or price per m². |
 | `ListingCard` | Image 4:3, no radius. Below: parcel number + municipality line in mono, title in `text-h3` (2 lines max), PriceTag, then 3 inline facts (`84 m² · 3 sobe · 2. sprat`) in mono. Optional Stamp overlapping the top-left image corner. Favourite button top-right as a square ghost icon button on papir. Whole card is a link; hover shows papir-2 background and title underline. |
 | `ListingRow` | Horizontal variant for dashboard and map side-list: thumbnail 120px, facts in a ledger, status stamp, actions on the right. |
 | `FilterBar` | Desktop: sticky left column 280px with grouped fields under `text-label` headings separated by linija rules. Mobile: a full-screen sheet opened by a `Filteri (3)` button. Active filters appear as removable `Tag`s above results. |

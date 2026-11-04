@@ -11,6 +11,7 @@ export type ListingView = {
   images: ListingImage[];
   municipalityName: string | null;
   isNew: boolean;
+  previousPriceKm: number | null;
 };
 
 const newListingDays = 7;

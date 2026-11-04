@@ -46,7 +46,12 @@ function ListingCard({
             {location ? ` · ${location}` : null}
           </p>
           <h3 className="line-clamp-2 font-display text-h3 underline-offset-3 group-hover:underline">{listing.title}</h3>
-          <PriceTag priceKm={listing.priceKm} negotiable={listing.priceNegotiable} className="mt-auto pt-1" />
+          <PriceTag
+            priceKm={listing.priceKm}
+            negotiable={listing.priceNegotiable}
+            previousPriceKm={listing.previousPriceKm}
+            className="mt-auto pt-1"
+          />
           {facts.length > 0 ? <p className="font-mono text-mono text-tinta-2">{facts.join(" · ")}</p> : null}
         </div>
       </Link>

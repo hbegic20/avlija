@@ -2,6 +2,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { listingPath } from "@/lib/listings/listing-path";
 import { isNewListing } from "@/lib/listings/listing-view";
+import { recentPreviousPrice } from "@/lib/listings/price-reduction";
 import type { ListingPin, ListingSummary } from "@/lib/listings/summary";
 import { createPublicClient } from "@/lib/supabase/public";
 import { listingImagesBucket, publicStorageUrl } from "@/lib/supabase/storage-url";
@@ -10,7 +11,7 @@ import { listingsCacheTag } from "./cache-tags";
 import { pageSize, type SearchFilters } from "./filters";
 
 const summaryColumns =
-  "id, number, title, type, status, price_km, price_negotiable, area_m2, land_area_m2, rooms, floor, total_floors, neighborhood, is_registered, published_at, public_lat, public_lng, location_precise, municipalities!inner(name, slug), listing_images(storage_path, position)";
+  "id, number, title, type, status, price_km, price_negotiable, previous_price_km, price_reduced_at, area_m2, land_area_m2, rooms, floor, total_floors, neighborhood, is_registered, published_at, public_lat, public_lng, location_precise, municipalities!inner(name, slug), listing_images(storage_path, position)";
 
 const maxMapPins = 500;
 
@@ -22,6 +23,8 @@ export type SummaryRow = {
   status: ListingSummary["status"];
   price_km: number | null;
   price_negotiable: boolean;
+  previous_price_km: number | null;
+  price_reduced_at: string | null;
   area_m2: number | null;
   land_area_m2: number | null;
   rooms: number | null;
@@ -47,6 +50,7 @@ export function toSummary(row: SummaryRow): ListingSummary {
     status: row.status,
     priceKm: row.price_km,
     priceNegotiable: row.price_negotiable,
+    previousPriceKm: recentPreviousPrice(row.price_km, row.previous_price_km, row.price_reduced_at, Date.now()),
     areaM2: row.area_m2,
     landAreaM2: row.land_area_m2,
     rooms: row.rooms,

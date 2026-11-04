@@ -146,6 +146,38 @@ export type Database = {
           },
         ]
       }
+      listing_price_history: {
+        Row: {
+          changed_at: string
+          id: number
+          listing_id: string
+          new_price_km: number | null
+          old_price_km: number | null
+        }
+        Insert: {
+          changed_at?: string
+          id?: never
+          listing_id: string
+          new_price_km?: number | null
+          old_price_km?: number | null
+        }
+        Update: {
+          changed_at?: string
+          id?: never
+          listing_id?: string
+          new_price_km?: number | null
+          old_price_km?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_price_history_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listings: {
         Row: {
           address: string | null
@@ -173,9 +205,11 @@ export type Database = {
           neighborhood: string | null
           number: number
           owner_id: string
+          previous_price_km: number | null
           price_km: number | null
           price_negotiable: boolean
           price_per_m2: number | null
+          price_reduced_at: string | null
           public_address: string | null
           public_lat: number | null
           public_lng: number | null
@@ -217,9 +251,11 @@ export type Database = {
           neighborhood?: string | null
           number?: number
           owner_id: string
+          previous_price_km?: number | null
           price_km?: number | null
           price_negotiable?: boolean
           price_per_m2?: number | null
+          price_reduced_at?: string | null
           public_address?: string | null
           public_lat?: number | null
           public_lng?: number | null
@@ -261,9 +297,11 @@ export type Database = {
           neighborhood?: string | null
           number?: number
           owner_id?: string
+          previous_price_km?: number | null
           price_km?: number | null
           price_negotiable?: boolean
           price_per_m2?: number | null
+          price_reduced_at?: string | null
           public_address?: string | null
           public_lat?: number | null
           public_lng?: number | null
@@ -479,6 +517,14 @@ export type Database = {
         Returns: {
           active_count: number
           municipality_id: number
+        }[]
+      }
+      my_listing_stats: {
+        Args: never
+        Returns: {
+          contact_count: number
+          favorite_count: number
+          listing_id: string
         }[]
       }
       renew_listing: { Args: { listing_id: string }; Returns: string }

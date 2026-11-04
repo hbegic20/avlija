@@ -116,7 +116,13 @@ export function ListingDetailView({
 
         <aside className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
           <div className="flex flex-col gap-4 border bg-papir-2 p-5">
-            <PriceTag priceKm={listing.price_km} negotiable={listing.price_negotiable} areaM2={pricingArea(listing)} />
+            <PriceTag
+              priceKm={listing.price_km}
+              negotiable={listing.price_negotiable}
+              previousPriceKm={view.previousPriceKm}
+              areaM2={pricingArea(listing)}
+              showEuro
+            />
           </div>
           {aside}
         </aside>

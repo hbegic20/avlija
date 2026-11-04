@@ -44,7 +44,7 @@ export function ListingRow({
         </div>
         <h2 className="font-display text-h3">{listing.title}</h2>
         <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-          <PriceTag priceKm={listing.priceKm} negotiable={listing.priceNegotiable} />
+          <PriceTag priceKm={listing.priceKm} negotiable={listing.priceNegotiable} previousPriceKm={listing.previousPriceKm} />
           {inlineFacts.length > 0 ? <p className="font-mono text-mono text-tinta-2">{inlineFacts.join(" · ")}</p> : null}
         </div>
         <dl className="grid max-w-md gap-x-6 sm:grid-cols-2">

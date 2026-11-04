@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 };
 
 const favoriteListingColumns =
-  "created_at, listings(id, number, title, type, status, price_km, price_negotiable, area_m2, land_area_m2, rooms, floor, total_floors, neighborhood, is_registered, published_at, public_lat, public_lng, location_precise, municipalities(name, slug), listing_images(storage_path, position))";
+  "created_at, listings(id, number, title, type, status, price_km, price_negotiable, previous_price_km, price_reduced_at, area_m2, land_area_m2, rooms, floor, total_floors, neighborhood, is_registered, published_at, public_lat, public_lng, location_precise, municipalities(name, slug), listing_images(storage_path, position))";
 
 async function loadFavorites(userId: string): Promise<ListingSummary[]> {
   const supabase = await createClient();

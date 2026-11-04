@@ -153,7 +153,7 @@ Generated columns (added in `public_location_and_search`):
 - `main_area_m2`: `coalesce(area_m2, land_area_m2)`, used for the "Najveća površina" sort.
 - `price_per_m2`: `price_km / main_area_m2`, null when there is no price or it is negotiable. Used for the "Cijena po m²" sort and display.
 
-Column privileges: `anon` and `authenticated` can select every `listings` column **except** `lat`, `lng` and `address`. The owner (or an admin) reads the exact point through `get_listing_private_location(target_listing_id)`. Any new `listings` column must be added to that `grant select (...)` list in its migration, otherwise the API cannot read it.
+Column privileges: `anon` and `authenticated` can select every `listings` column **except** `lat`, `lng`, `address` and `location_seed`. `previous_price_km` and `price_reduced_at` were added to the grant in `listing_price_history`. The owner (or an admin) reads the exact point through `get_listing_private_location(target_listing_id)`. Any new `listings` column must be added to that `grant select (...)` list in its migration, otherwise the API cannot read it.
 
 Search without diacritics: people type `cipuljic` and expect `Čipuljić`. `unaccent()` is not immutable, so it cannot be used in a generated column directly. Create this before the `listings` table and use it on both the column and the user's search text (`websearch_to_tsquery('simple', public.immutable_unaccent(:q))`):
 
@@ -212,6 +212,20 @@ RLS:
 - `authenticated` may update only `position`.
 - `prevent_removing_last_active_image` (before delete) raises `LAST_IMAGE` when the row is the last image of an `active` listing. Cascading deletes from a removed listing are not affected.
 
+### listing_price_history
+
+```sql
+create table listing_price_history (
+  id bigint generated always as identity primary key,
+  listing_id uuid not null references listings on delete cascade,
+  old_price_km integer,
+  new_price_km integer,
+  changed_at timestamptz not null default now()
+);
+```
+
+Written only by the `track_listing_price` trigger. RLS: `select` when the parent listing is visible (same rule as `listing_images`); no insert, update or delete for `anon` or `authenticated`.
+
 ### favorites
 
 ```sql
@@ -261,6 +275,8 @@ RLS:
 | `renew_listing(listing_id uuid)` | `security definer` RPC | Owner only. Allowed when the listing is `archived`, or `active` with less than 14 days left. Sets `status = 'active'` and `expires_at = now() + interval '90 days'`. Respects the 10-active-listings limit. |
 | `reorder_listing_images(target_listing_id uuid, ordered_image_ids uuid[])` | `security invoker` RPC | Owner only (RLS applies). Rewrites `position` for all images of the listing in one transaction so the deferred unique `(listing_id, position)` constraint is checked once. Position 0 is the cover. Raises `IMAGE_ORDER_MISMATCH` unless the array contains exactly the listing's images. |
 | `get_listing_private_location(target_listing_id uuid)` | `security definer` RPC | Owner or admin only. Returns exact `lat`, `lng`, `address`, which are not selectable through the API. |
+| `track_listing_price()` | before update trigger on listings, named `listings_25_price_history` | `security definer`. Runs when `price_km` changes on a listing that has been published (`published_at` not null). Inserts a `listing_price_history` row. The reference price is `old_price_km` of the earliest history row in the last 30 days, or the previous price when there is none. If the new price is lower, sets `previous_price_km` to the reference and `price_reduced_at = now()`, otherwise clears both. The app shows the reduction for 30 days after `price_reduced_at` and only when it is at least 1%. Both columns are reset by `protect_listing_columns` for API callers, so owners cannot set them. |
+| `my_listing_stats()` | `security definer` RPC | Authenticated only. For each listing owned by the caller returns `favorite_count` (favourites by other users) and `contact_count` (distinct other users who revealed the phone, from `contact_reveals`). Owners cannot read `favorites` or `contact_reveals` directly. |
 | `municipality_listing_counts()` | `security invoker` RPC | Active listing count per municipality, for the home map and municipality grid. |
 | `get_seller_contact(listing_id uuid)` | `security definer` RPC | Returns phone, has_viber, has_whatsapp, full_name for an active listing's owner. Returns nothing if `auth.uid()` is null. Logs each reveal in `contact_reveals` and raises `RATE_LIMIT` after 30 reveals per user per hour. |
 | `enforce_report_rate_limit()` | before insert trigger on reports | Raises `RATE_LIMIT` after 10 reports per user per day. |

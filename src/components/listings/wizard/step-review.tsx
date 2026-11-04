@@ -26,7 +26,7 @@ export function StepReview() {
       return null;
     }
     const municipalityName = municipalities.find((entry) => entry.id === listing.municipality_id)?.name ?? null;
-    return { listing, images, municipalityName, isNew };
+    return { listing, images, municipalityName, isNew, previousPriceKm: null };
   }, [images, isNew, listing, municipalities]);
 
   if (!listing || !view) {
