@@ -167,6 +167,7 @@ export type Database = {
           lat: number | null
           lng: number | null
           location_precise: boolean
+          location_seed: string
           main_area_m2: number | null
           municipality_id: number | null
           neighborhood: string | null
@@ -210,6 +211,7 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           location_precise?: boolean
+          location_seed?: string
           main_area_m2?: number | null
           municipality_id?: number | null
           neighborhood?: string | null
@@ -253,6 +255,7 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           location_precise?: boolean
+          location_seed?: string
           main_area_m2?: number | null
           municipality_id?: number | null
           neighborhood?: string | null

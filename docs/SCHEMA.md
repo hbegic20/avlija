@@ -64,7 +64,7 @@ create table profiles (
 ```
 
 RLS:
-- `select`: everyone.
+- `select`: the user's own row, admins, and anyone for sellers who have at least one `active` or `sold` listing. A fully public table would let anyone list every registered user's name with one query (and the sign-up trigger falls back to the email's local part when no name is given).
 - `update`: `auth.uid() = id`.
 - The `role` column must not be changeable by the user. A column-level `revoke update (role)` does nothing while the table-level grant Supabase gives `authenticated` exists, so revoke the whole grant and give back only the editable columns:
   ```sql
@@ -148,7 +148,7 @@ create index listings_search_idx on listings using gin (search);
 
 Generated columns (added in `public_location_and_search`):
 
-- `public_lat`, `public_lng`: equal to `lat`/`lng` when `location_precise`, otherwise the exact point shifted by a fixed, per-listing pseudo-random offset (from `md5(id)`) of up to about ±200 m and rounded to 5 decimals. Public maps draw the 300 m circle around this point, so the true location stays inside the circle but is never its centre.
+- `public_lat`, `public_lng`: equal to `lat`/`lng` when `location_precise`, otherwise the exact point shifted by a fixed, per-listing pseudo-random offset (from `md5(location_seed)`) of up to about ±200 m and rounded to 5 decimals. Public maps draw the 300 m circle around this point, so the true location stays inside the circle but is never its centre. `location_seed` is a random uuid that is not granted to `anon` or `authenticated`; seeding from the public `id` would let anyone recompute the offset and recover the exact point.
 - `public_address`: `address` only when `location_precise`, otherwise null.
 - `main_area_m2`: `coalesce(area_m2, land_area_m2)`, used for the "Najveća površina" sort.
 - `price_per_m2`: `price_km / main_area_m2`, null when there is no price or it is negotiable. Used for the "Cijena po m²" sort and display.
@@ -208,7 +208,9 @@ Max 20 images per listing (trigger). Position `0` is the cover image.
 
 RLS:
 - `select`: allowed when the parent listing is visible (`exists` subquery with the same rule as listings select).
-- `insert`, `update`, `delete`: the parent listing's `owner_id = auth.uid()`.
+- `insert`, `update`, `delete`: the parent listing's `owner_id = auth.uid()`. Insert also requires `storage_path` to match `<auth.uid()>/<listing_id>/<uuid>.webp`.
+- `authenticated` may update only `position`.
+- `prevent_removing_last_active_image` (before delete) raises `LAST_IMAGE` when the row is the last image of an `active` listing. Cascading deletes from a removed listing are not affected.
 
 ### favorites
 
@@ -250,8 +252,8 @@ RLS:
 | `is_admin()` | `security definer` function, `stable` | Returns true if `profiles.role = 'admin'` for `auth.uid()`. Set `search_path = ''` and use fully qualified names. |
 | `handle_new_user()` | trigger on `auth.users` after insert | Creates `profiles` row with `full_name` from `raw_user_meta_data->>'full_name'` (fallback: part of email before `@`) and an empty `profile_contacts` row. `security definer`, `search_path = ''`. |
 | `set_updated_at()` | before update trigger | Sets `updated_at = now()` on profiles, profile_contacts, listings. |
-| `protect_listing_columns()` | before insert/update trigger on listings, named `listings_10_protect` | Security invoker. Applies only when `current_user` is `authenticated` or `anon` (an API request) and the caller is not an admin, so trusted `security definer` functions (`renew_listing`, `increment_listing_view`) and the cron job can still write these columns. For API callers: on insert forces `view_count = 0`, `published_at`, `expires_at`, `sold_at`, `hidden_reason` to null; on update copies `number`, `owner_id`, `view_count`, `published_at`, `expires_at`, `sold_at`, `hidden_reason` back from `OLD`. Postgres runs triggers on the same event in name order, so this runs before the lifecycle trigger. |
-| `set_listing_lifecycle()` | before insert/update trigger on listings, named `listings_20_lifecycle` | When status changes to `active` and `published_at` is null: set `published_at = now()`, `expires_at = now() + interval '90 days'`. When status becomes `sold`: set `sold_at = now()`. |
+| `protect_listing_columns()` | before insert/update trigger on listings, named `listings_10_protect` | Security invoker. Applies only when `current_user` is `authenticated` or `anon` (an API request) and the caller is not an admin, so trusted `security definer` functions (`renew_listing`, `increment_listing_view`) and the cron job can still write these columns. For API callers: on insert forces `view_count = 0`, `published_at`, `expires_at`, `sold_at`, `hidden_reason` to null; on update copies `id`, `number`, `owner_id`, `location_seed`, `view_count`, `published_at`, `expires_at`, `sold_at`, `hidden_reason`, `created_at` back from `OLD`, and allows only these status changes (else `STATUS_TRANSITION`): `draft`/`archived` → `active`, `active` → `sold`/`archived`. `authenticated` has insert privilege only on user-editable columns, so `number`, `id`, `location_seed` and timestamps cannot be chosen on insert. Postgres runs triggers on the same event in name order, so this runs before the lifecycle trigger. |
+| `set_listing_lifecycle()` | before insert/update trigger on listings, named `listings_20_lifecycle` | When status changes to `active`: set `published_at = now()` if it is null, and `expires_at = now() + interval '90 days'` if it is null or already past. When status becomes `sold`: set `sold_at = now()`. |
 | `enforce_listing_limits()` | before insert/update trigger on listings, named `listings_30_limits` | Max 10 listings with status `active` per non-admin owner. Raise a clear error code `LISTING_LIMIT`. |
 | `enforce_listing_publish_requirements()` | before insert/update trigger on listings, named `listings_40_publish` | When status becomes `active`: requires at least 1 row in `listing_images`, `lat` and `lng` set, and `price_km` set or `price_negotiable = true` (raises `PUBLISH_REQUIREMENTS`), and a phone number in the owner's `profile_contacts` (raises `PHONE_REQUIRED`). |
 | `enforce_image_limit()` | before insert trigger on listing_images | Max 20 images per listing, error `IMAGE_LIMIT`. |

@@ -102,13 +102,28 @@ async function run() {
   const { error: activeInsertError } = await userA.client.from("listings").insert({ ...draftListing(userA.id), status: "active" });
   check("user cannot insert a listing directly as active", activeInsertError !== null, describeError(activeInsertError));
 
+  const { error: protectedInsertError } = await userA.client
+    .from("listings")
+    .insert({ ...draftListing(userA.id), view_count: 500, expires_at: "2099-01-01T00:00:00Z" });
+  check("protected columns cannot be set on insert", protectedInsertError !== null, describeError(protectedInsertError));
+
+  const { error: numberInsertError } = await userA.client.from("listings").insert({ ...draftListing(userA.id), number: 999999 });
+  check("listing number cannot be chosen on insert", numberInsertError !== null, describeError(numberInsertError));
+
   const { data: draft, error: draftError } = await userA.client
     .from("listings")
-    .insert({ ...draftListing(userA.id), view_count: 500, expires_at: "2099-01-01T00:00:00Z" })
+    .insert(draftListing(userA.id))
     .select("id, view_count, expires_at, status")
     .single();
   check("user can insert a draft", draftError === null && draft?.status === "draft", describeError(draftError));
-  check("protected columns are reset on insert", draft?.view_count === 0 && draft?.expires_at === null);
+  check("protected columns start empty on insert", draft?.view_count === 0 && draft?.expires_at === null);
+
+  const { error: draftToSoldError } = await userA.client.from("listings").update({ status: "sold" }).eq("id", draft.id);
+  check(
+    "owner cannot mark a draft as sold",
+    draftToSoldError?.message?.includes("STATUS_TRANSITION") === true,
+    describeError(draftToSoldError),
+  );
 
   const { data: anonDraft } = await anon.from("listings").select("id").eq("id", draft.id);
   check("anon cannot read drafts", (anonDraft ?? []).length === 0);
@@ -125,8 +140,13 @@ async function run() {
 
   const { error: imageError } = await userA.client
     .from("listing_images")
-    .insert({ listing_id: draft.id, storage_path: `${userA.id}/${draft.id}/cover.webp`, position: 0 });
+    .insert({ listing_id: draft.id, storage_path: `${userA.id}/${draft.id}/${crypto.randomUUID()}.webp`, position: 0 });
   check("owner can add image rows", imageError === null, describeError(imageError));
+
+  const { error: foreignPathError } = await userA.client
+    .from("listing_images")
+    .insert({ listing_id: draft.id, storage_path: `${userB.id}/other/${crypto.randomUUID()}.webp`, position: 1 });
+  check("image rows must point into the owner's listing folder", foreignPathError !== null, describeError(foreignPathError));
 
   const { error: foreignImageError } = await userB.client
     .from("listing_images")
@@ -163,6 +183,22 @@ async function run() {
   const { data: anonActive } = await anon.from("listings").select("id").eq("id", draft.id);
   const { data: anonImages } = await anon.from("listing_images").select("id").eq("listing_id", draft.id);
   check("anon reads active listing and its images", anonActive?.length === 1 && anonImages?.length === 1);
+
+  const { data: anonSellerA } = await anon.from("profiles").select("id").eq("id", userA.id);
+  const { data: anonProfileB } = await anon.from("profiles").select("id").eq("id", userB.id);
+  check("anon reads profiles of sellers with public listings", anonSellerA?.length === 1);
+  check("anon cannot read profiles of users without public listings", (anonProfileB ?? []).length === 0);
+
+  const { data: lastImage } = await userA.client.from("listing_images").select("id").eq("listing_id", draft.id).single();
+  const { error: lastImageError } = await userA.client.from("listing_images").delete().eq("id", lastImage.id);
+  check(
+    "owner cannot delete the last image of an active listing",
+    lastImageError?.message?.includes("LAST_IMAGE") === true,
+    describeError(lastImageError),
+  );
+
+  const { data: exactLocation } = await admin.from("listings").select("lat, public_lat").eq("id", draft.id).single();
+  check("approximate location differs from the exact one", exactLocation?.lat !== exactLocation?.public_lat);
 
   const { error: anonInsertError } = await anon.from("listings").insert(draftListing(userA.id));
   check("anon cannot insert listings", anonInsertError !== null, describeError(anonInsertError));

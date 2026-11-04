@@ -438,6 +438,7 @@ export const bs = {
       listingLimit: "Možete imati najviše 10 aktivnih oglasa. Arhivirajte ili označite neki kao prodan.",
       publishRequirements: "Oglasu nedostaju fotografija, lokacija ili cijena.",
       imageLimit: "Oglas može imati najviše 20 fotografija.",
+      lastImage: "Aktivan oglas mora imati barem jednu fotografiju. Prvo dodajte novu.",
       hidden: "Ovaj oglas je sakrio administrator i ne može se uređivati.",
     },
   },

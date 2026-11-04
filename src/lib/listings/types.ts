@@ -4,7 +4,7 @@ export type ListingRow = Database["public"]["Tables"]["listings"]["Row"];
 export type ListingImageRow = Database["public"]["Tables"]["listing_images"]["Row"];
 export type MunicipalityRow = Database["public"]["Tables"]["municipalities"]["Row"];
 
-export type EditableListing = Omit<ListingRow, "search">;
+export type EditableListing = Omit<ListingRow, "search" | "location_seed">;
 
 export type ListingImage = {
   id: string;

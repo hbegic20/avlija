@@ -59,6 +59,9 @@ function databaseErrorCode(message: string | undefined): ListingErrorCode {
   if (message.includes("IMAGE_LIMIT")) {
     return "image_limit";
   }
+  if (message.includes("LAST_IMAGE")) {
+    return "last_image";
+  }
   if (message.includes("RENEW_NOT_ALLOWED")) {
     return "renew_not_allowed";
   }
@@ -325,7 +328,10 @@ export async function deleteImage(listingId: string, imageId: string): Promise<L
     .eq("listing_id", listingId)
     .select("storage_path")
     .maybeSingle();
-  if (error || !removed) {
+  if (error) {
+    return failure(databaseErrorCode(error.message));
+  }
+  if (!removed) {
     return failure("not_found");
   }
   await current.supabase.storage.from(listingImagesBucket).remove([removed.storage_path]);

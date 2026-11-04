@@ -213,12 +213,13 @@ Phases 0–12 are built. Phase 13 (deploy) has not started. Before deploying, wo
 
 ### Before deploy
 - [ ] Add `SUPABASE_SECRET_KEY` to `.env.local`, then run `npm run test:rls` (never run yet) and a full logged-in walk: profile setup, listing wizard, dashboard, favourites, admin. Logged-in pages have only been tested by the owner by hand
-- [ ] Migration: block deleting the last image of an active listing (today the publish rule is only checked when a listing becomes active)
+- [x] Migration: block deleting the last image of an active listing (today the publish rule is only checked when a listing becomes active)
+- [x] Migration review (2026-11-04, `harden_listings_and_profiles`): approximate location no longer reversible from the public listing id (random hidden `location_seed`), listing `number` and other system columns not insertable by users, owner status changes limited to publish / sold / archive, republishing an expired listing gets a fresh 90-day expiry, image rows must point into the owner's own folder, profiles readable only for sellers with active or sold listings (seller page returns 404 for users without public listings)
 - [ ] Migration: limit `increment_listing_view` so views cannot be inflated by calling the RPC repeatedly
 - [ ] Set `NEXT_PUBLIC_OPERATOR_NAME` and `NEXT_PUBLIC_CONTACT_EMAIL`; legal review of `/uslovi-koristenja` and `/privatnost` texts (`src/lib/i18n/legal-bs.ts`)
 
 ### Soon after
-- [ ] Daily cleanup job: delete drafts untouched for 60 days and their images; remove orphaned files in `listing-images` without a `listing_images` row
+- [ ] Daily cleanup job: delete drafts untouched for 60 days and their images; remove orphaned files in `listing-images` without a `listing_images` row; delete `contact_reveals` rows older than a day
 - [ ] Cache the 410 lookup in `src/lib/listings/gone-response.ts` (one REST query per `/oglas/...` request today)
 
 ### Owner decisions pending
