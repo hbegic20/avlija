@@ -11,11 +11,15 @@ export function MunicipalityGrid({ municipalities }: { municipalities: Municipal
         <li key={municipality.slug} className="border-r border-b">
           <Link
             href={`${listingsBasePath}/${municipality.slug}`}
-            aria-label={bs.municipalityCount(municipality.name, municipality.activeCount)}
             className="group flex h-full items-baseline justify-between gap-3 bg-papir px-4 py-4 transition-colors hover:bg-papir-2"
           >
             <span className="font-medium underline-offset-3 group-hover:underline">{municipality.name}</span>
-            <span className="font-mono text-mono text-tinta-2">{formatInteger(municipality.activeCount)}</span>
+            <span className="font-mono text-mono text-tinta-2">
+              <span aria-hidden="true">{formatInteger(municipality.activeCount)}</span>
+              <span className="sr-only">
+                {bs.search.results(municipality.activeCount, formatInteger(municipality.activeCount))}
+              </span>
+            </span>
           </Link>
         </li>
       ))}

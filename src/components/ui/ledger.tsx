@@ -12,7 +12,7 @@ export function Ledger({
 }) {
   return (
     <section className={cn("flex flex-col", className)}>
-      {title ? <h3 className="mb-1.5 text-label text-tinta-2 uppercase">{title}</h3> : null}
+      {title ? <h2 className="mb-1.5 text-label text-tinta-2 uppercase">{title}</h2> : null}
       <dl>{children}</dl>
     </section>
   );

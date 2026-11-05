@@ -29,9 +29,9 @@ export function ResultsHeader({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <p className="font-mono text-price text-tinta" aria-live="polite">
+        <h2 className="font-mono text-price text-tinta" aria-live="polite">
           {bs.search.results(total, formatInteger(total))}
-        </p>
+        </h2>
         <div className="flex flex-wrap items-end gap-3">
           {filterButton}
           <SortSelect filters={filters} fixedMunicipality={fixedMunicipality} />

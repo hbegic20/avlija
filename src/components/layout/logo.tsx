@@ -25,13 +25,13 @@ export function Logo() {
   return (
     <Link
       href={routes.home}
-      aria-label={bs.nav.home}
       className="inline-flex items-center gap-2.5 font-display text-h2 font-semibold tracking-[-0.02em] text-tinta"
     >
       <SiteLogoMark />
       <span>
         {bs.site.name}
         <span className="text-crijep">.</span>
+        <span className="sr-only">{bs.nav.homeHint}</span>
       </span>
     </Link>
   );

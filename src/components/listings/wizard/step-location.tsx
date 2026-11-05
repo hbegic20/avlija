@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LocateFixed } from "lucide-react";
+import { LocateFixed, MapPin } from "lucide-react";
 import { saveLocation } from "@/actions/listings";
 import { FormAlert } from "@/components/auth/form-alert";
 import { LazyLocationPicker } from "@/components/map/lazy-maps";
@@ -67,6 +67,12 @@ export function StepLocation() {
     setOutside(!inside);
   };
 
+  const placeChecked = (next: PickedPoint) => {
+    void import("@/lib/geo/point-in-municipality").then(({ isPointInMunicipality }) =>
+      placePoint(next, municipality ? isPointInMunicipality(municipality.slug, next.lat, next.lng) : false),
+    );
+  };
+
   const useMyLocation = () => {
     if (!("geolocation" in navigator)) {
       setGeolocation("unavailable");
@@ -76,10 +82,7 @@ export function StepLocation() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setGeolocation("idle");
-        const next = { lat: position.coords.latitude, lng: position.coords.longitude };
-        void import("@/lib/geo/point-in-municipality").then(({ isPointInMunicipality }) =>
-          placePoint(next, municipality ? isPointInMunicipality(municipality.slug, next.lat, next.lng) : false),
-        );
+        placeChecked({ lat: position.coords.latitude, lng: position.coords.longitude });
       },
       (error) => setGeolocation(error.code === error.PERMISSION_DENIED ? "denied" : "unavailable"),
       { enableHighAccuracy: true, timeout: 15000 },
@@ -148,16 +151,28 @@ export function StepLocation() {
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-small text-tinta-2">{text.mapHint}</p>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={useMyLocation}
-            loading={geolocation === "locating"}
-            disabled={!municipality}
-          >
-            <LocateFixed aria-hidden="true" size={18} strokeWidth={1.5} />
-            {text.useMyLocation}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            {municipality && !point ? (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => placeChecked({ lat: municipality.lat, lng: municipality.lng })}
+              >
+                <MapPin aria-hidden="true" size={18} strokeWidth={1.5} />
+                {text.placeAtCentre}
+              </Button>
+            ) : null}
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={useMyLocation}
+              loading={geolocation === "locating"}
+              disabled={!municipality}
+            >
+              <LocateFixed aria-hidden="true" size={18} strokeWidth={1.5} />
+              {text.useMyLocation}
+            </Button>
+          </div>
         </div>
         {municipality ? (
           <LazyLocationPicker
