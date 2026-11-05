@@ -50,7 +50,7 @@ export default async function AdminReportsPage({ searchParams }: PageProps<"/adm
     .eq("status", status)
     .order("created_at", { ascending: status === "open" })
     .range(from, from + reportsPageSize - 1);
-  const reports = (data ?? []) as unknown as ReportRow[];
+  const reports: ReportRow[] = data ?? [];
 
   return (
     <div className="flex flex-col gap-6">

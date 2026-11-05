@@ -35,10 +35,8 @@ async function loadFavorites(userId: string, page: number): Promise<{ items: Lis
     .limit(1, { referencedTable: "listings.listing_images" })
     .range(from, from + pageSize - 1);
 
-  const items = ((data ?? []) as unknown as Array<{ listings: SummaryRow | null }>)
-    .map((row) => row.listings)
-    .filter((listing): listing is SummaryRow => listing !== null)
-    .map(toSummary);
+  const rows: SummaryRow[] = (data ?? []).map((row) => row.listings);
+  const items = rows.map(toSummary);
   return { items, total: count ?? 0 };
 }
 

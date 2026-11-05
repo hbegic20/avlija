@@ -67,6 +67,36 @@ function RangeInputs({
   );
 }
 
+function CheckboxGrid({
+  name,
+  options,
+  selected,
+  className,
+}: {
+  name: string;
+  options: readonly { value: string; label: string }[];
+  selected: readonly string[];
+  className?: string;
+}) {
+  return (
+    <div className={cn("grid grid-cols-2 gap-x-3 gap-y-2.5 lg:grid-cols-1", className)}>
+      {options.map((option) => (
+        <Checkbox
+          key={option.value}
+          name={name}
+          value={option.value}
+          label={option.label}
+          defaultChecked={selected.includes(option.value)}
+        />
+      ))}
+    </div>
+  );
+}
+
+const municipalityOptions = sbkMunicipalities.map((municipality) => ({ value: municipality.slug, label: municipality.name }));
+const typeOptions = propertyTypes.map((type) => ({ value: type, label: bs.enums.propertyType[type] }));
+const featureOptions = listingFeatures.map((feature) => ({ value: feature, label: bs.enums.feature[feature] }));
+
 function FilterFields({ filters, fixedMunicipality }: { filters: SearchFilters; fixedMunicipality?: string }) {
   return (
     <div className="flex flex-col gap-5">
@@ -80,31 +110,11 @@ function FilterFields({ filters, fixedMunicipality }: { filters: SearchFilters; 
       />
       {fixedMunicipality ? null : (
         <Group title={text.municipality}>
-          <div className="grid grid-cols-2 gap-x-3 gap-y-2.5 lg:grid-cols-1">
-            {sbkMunicipalities.map((municipality) => (
-              <Checkbox
-                key={municipality.slug}
-                name={names.municipality}
-                value={municipality.slug}
-                label={municipality.name}
-                defaultChecked={filters.municipalities.includes(municipality.slug)}
-              />
-            ))}
-          </div>
+          <CheckboxGrid name={names.municipality} options={municipalityOptions} selected={filters.municipalities} />
         </Group>
       )}
       <Group title={text.type}>
-        <div className="grid grid-cols-2 gap-x-3 gap-y-2.5 lg:grid-cols-1">
-          {propertyTypes.map((type) => (
-            <Checkbox
-              key={type}
-              name={names.type}
-              value={type}
-              label={bs.enums.propertyType[type]}
-              defaultChecked={filters.types.includes(type)}
-            />
-          ))}
-        </div>
+        <CheckboxGrid name={names.type} options={typeOptions} selected={filters.types} />
       </Group>
       <Group title={text.price}>
         <RangeInputs
@@ -154,17 +164,7 @@ function FilterFields({ filters, fixedMunicipality }: { filters: SearchFilters; 
           <summary className="cursor-pointer text-small text-vranica underline underline-offset-3">
             {text.features} ({listingFeatures.length})
           </summary>
-          <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2.5 lg:grid-cols-1">
-            {listingFeatures.map((feature) => (
-              <Checkbox
-                key={feature}
-                name={names.feature}
-                value={feature}
-                label={bs.enums.feature[feature]}
-                defaultChecked={filters.features.includes(feature)}
-              />
-            ))}
-          </div>
+          <CheckboxGrid name={names.feature} options={featureOptions} selected={filters.features} className="mt-3" />
         </details>
       </Group>
       {filters.sort !== "najnovije" ? <input type="hidden" name={names.sort} value={filters.sort} /> : null}
@@ -173,14 +173,16 @@ function FilterFields({ filters, fixedMunicipality }: { filters: SearchFilters; 
   );
 }
 
-function useFilterSubmit(fixedMunicipality?: string) {
+function useFilterForm(filters: SearchFilters, fixedMunicipality?: string) {
   const router = useRouter();
-  return (event: FormEvent<HTMLFormElement>, afterSubmit?: () => void) => {
+  const action = searchBasePath(fixedMunicipality);
+  const submit = (event: FormEvent<HTMLFormElement>, afterSubmit?: () => void) => {
     event.preventDefault();
-    const href = searchHrefFromForm(event.currentTarget, searchBasePath(fixedMunicipality));
+    const href = searchHrefFromForm(event.currentTarget, action);
     afterSubmit?.();
     router.push(href);
   };
+  return { key: JSON.stringify(filters), action, submit };
 }
 
 type FilterPanelProps = {
@@ -191,17 +193,15 @@ type FilterPanelProps = {
 };
 
 export function FilterSidebar({ filters, fixedMunicipality, activeCount, clearHref }: FilterPanelProps) {
-  const submit = useFilterSubmit(fixedMunicipality);
-  const action = searchBasePath(fixedMunicipality);
-  const formKey = JSON.stringify(filters);
+  const form = useFilterForm(filters, fixedMunicipality);
 
   return (
     <aside className="hidden lg:block">
       <form
-        key={formKey}
-        action={action}
+        key={form.key}
+        action={form.action}
         method="get"
-        onSubmit={(event) => submit(event)}
+        onSubmit={(event) => form.submit(event)}
         aria-label={text.filters}
         className="sticky top-6 flex max-h-[calc(100dvh-3rem)] flex-col gap-5 overflow-y-auto pr-2 pb-4"
       >
@@ -222,10 +222,8 @@ export function FilterSidebar({ filters, fixedMunicipality, activeCount, clearHr
 }
 
 export function FilterSheet({ filters, fixedMunicipality, activeCount, clearHref }: FilterPanelProps) {
-  const submit = useFilterSubmit(fixedMunicipality);
+  const form = useFilterForm(filters, fixedMunicipality);
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const action = searchBasePath(fixedMunicipality);
-  const formKey = JSON.stringify(filters);
 
   return (
     <div className="lg:hidden">
@@ -239,10 +237,10 @@ export function FilterSheet({ filters, fixedMunicipality, activeCount, clearHref
         className={cn(sheetDialogClasses, "border-t-2 border-t-tinta")}
       >
         <form
-          key={formKey}
-          action={action}
+          key={form.key}
+          action={form.action}
           method="get"
-          onSubmit={(event) => submit(event, () => dialogRef.current?.close())}
+          onSubmit={(event) => form.submit(event, () => dialogRef.current?.close())}
           className="flex h-full flex-col"
         >
           <div className="flex items-center justify-between border-b px-4 py-3">

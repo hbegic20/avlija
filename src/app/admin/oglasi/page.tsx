@@ -61,7 +61,7 @@ export default async function AdminListingsPage({ searchParams }: PageProps<"/ad
   }
   const from = (page - 1) * adminPageSize;
   const { data, count } = await request.order("created_at", { ascending: false }).range(from, from + adminPageSize - 1);
-  const listings = (data ?? []) as unknown as AdminListingRow[];
+  const listings: AdminListingRow[] = data ?? [];
 
   const filterParams: Record<string, string> = { ...(query ? { q: query } : {}), ...(status ? { status } : {}) };
   const hrefForPage = (target: number) => pageHref(adminRoutes.listings, target, filterParams);

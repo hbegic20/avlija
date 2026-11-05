@@ -14,7 +14,12 @@ const maxMapPins = 500;
 
 type PublicClient = ReturnType<typeof createPublicClient>;
 
-function filteredListings(client: PublicClient, columns: string, filters: SearchFilters, withCount: boolean) {
+function filteredListings<Columns extends string>(
+  client: PublicClient,
+  columns: Columns,
+  filters: SearchFilters,
+  withCount: boolean,
+) {
   let query = client.from("listings").select(columns, withCount ? { count: "exact" } : undefined);
   query = filters.includeSold ? query.in("status", ["active", "sold"]) : query.eq("status", "active");
   if (filters.municipalities.length > 0) {
@@ -88,7 +93,8 @@ export async function searchListings(filters: SearchFilters): Promise<SearchPage
     const { count: total } = await filteredListings(client, "id, municipalities!inner(slug)", filters, true).limit(1);
     return { items: [], total: total ?? 0 };
   }
-  return { items: (data as unknown as SummaryRow[]).map(toSummary), total: count ?? 0 };
+  const rows: SummaryRow[] = data;
+  return { items: rows.map(toSummary), total: count ?? 0 };
 }
 
 export async function searchPins(filters: SearchFilters): Promise<ListingPin[]> {
@@ -106,27 +112,25 @@ export async function searchPins(filters: SearchFilters): Promise<ListingPin[]> 
     .order("published_at", { ascending: false })
     .limit(maxMapPins);
 
-  const rows = (data ?? []) as unknown as Array<{
-    id: string;
-    number: number;
-    title: string;
-    price_km: number | null;
-    price_negotiable: boolean;
-    public_lat: number;
-    public_lng: number;
-    location_precise: boolean;
-  }>;
-  return rows.map((row) => ({
-    id: row.id,
-    number: row.number,
-    title: row.title,
-    priceKm: row.price_km,
-    priceNegotiable: row.price_negotiable,
-    lat: row.public_lat,
-    lng: row.public_lng,
-    precise: row.location_precise,
-    path: listingPath(row.number, row.title),
-  }));
+  return (data ?? []).flatMap((row) => {
+    const { public_lat: lat, public_lng: lng } = row;
+    if (lat === null || lng === null) {
+      return [];
+    }
+    return [
+      {
+        id: row.id,
+        number: row.number,
+        title: row.title,
+        priceKm: row.price_km,
+        priceNegotiable: row.price_negotiable,
+        lat,
+        lng,
+        precise: row.location_precise,
+        path: listingPath(row.number, row.title),
+      },
+    ];
+  });
 }
 
 export async function latestListings(limit = 8): Promise<ListingSummary[]> {
@@ -142,7 +146,8 @@ export async function latestListings(limit = 8): Promise<ListingSummary[]> {
     .order("position", { referencedTable: "listing_images" })
     .limit(1, { referencedTable: "listing_images" })
     .limit(limit);
-  return ((data ?? []) as unknown as SummaryRow[]).map(toSummary);
+  const rows: SummaryRow[] = data ?? [];
+  return rows.map(toSummary);
 }
 
 export type MunicipalityWithCount = {
@@ -193,7 +198,8 @@ export async function similarListings(
     .order("position", { referencedTable: "listing_images" })
     .limit(1, { referencedTable: "listing_images" })
     .limit(40);
-  const candidates = ((data ?? []) as unknown as SummaryRow[]).map(toSummary);
+  const rows: SummaryRow[] = data ?? [];
+  const candidates = rows.map(toSummary);
   if (priceKm === null) {
     return candidates.slice(0, limit);
   }
@@ -216,5 +222,6 @@ export async function sellerActiveListings(sellerId: string): Promise<ListingSum
     .order("position", { referencedTable: "listing_images" })
     .limit(1, { referencedTable: "listing_images" })
     .limit(48);
-  return ((data ?? []) as unknown as SummaryRow[]).map(toSummary);
+  const rows: SummaryRow[] = data ?? [];
+  return rows.map(toSummary);
 }

@@ -61,7 +61,8 @@ export async function loadMyListings(ownerId: string): Promise<OwnerListing[]> {
   ]);
   const statsById = new Map((stats ?? []).map((entry) => [entry.listing_id, entry]));
 
-  return ((data ?? []) as unknown as OwnerRow[]).map((row) => {
+  const rows: OwnerRow[] = data ?? [];
+  return rows.map((row) => {
     const listingStats = statsById.get(row.id);
     return {
       ...toSummary(row),
