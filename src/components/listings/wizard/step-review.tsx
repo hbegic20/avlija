@@ -16,7 +16,7 @@ import { WizardFooter } from "./wizard-footer";
 const text = bs.listingForm.review;
 
 export function StepReview() {
-  const { listing, images, municipalities, hasPhone, isNew, missingSteps, goToStep } = useWizard();
+  const { listing, images, municipalities, hasPhone, isNew, missingSteps, goToStep, pendingStep } = useWizard();
   const [errorCode, setErrorCode] = useState<ListingErrorCode | null>(null);
   const [publishing, startPublish] = useTransition();
   const [finishing, startFinish] = useTransition();
@@ -75,7 +75,7 @@ export function StepReview() {
       </div>
 
       <WizardFooter>
-        <Button variant="ghost" onClick={() => goToStep(4)}>
+        <Button variant="ghost" loading={pendingStep === 4} disabled={pendingStep !== null} onClick={() => goToStep(4)}>
           {bs.listingForm.back}
         </Button>
         <div className="flex flex-wrap gap-3">

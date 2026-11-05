@@ -31,7 +31,7 @@ const geolocationMessages: Record<Exclude<GeolocationState, "idle" | "locating">
 };
 
 export function StepLocation() {
-  const { listing, municipalities, goToStep } = useWizard();
+  const { listing, municipalities, goToStep, pendingStep } = useWizard();
   const [errorCode, setErrorCode] = useState<ListingErrorCode | null>(null);
   const [outside, setOutside] = useState(false);
   const [geolocation, setGeolocation] = useState<GeolocationState>("idle");
@@ -196,10 +196,10 @@ export function StepLocation() {
       </div>
 
       <WizardFooter>
-        <Button variant="ghost" onClick={() => goToStep(1)}>
+        <Button variant="ghost" loading={pendingStep === 1} disabled={pendingStep !== null} onClick={() => goToStep(1)}>
           {bs.listingForm.back}
         </Button>
-        <Button type="submit" size="lg" loading={isSubmitting} disabled={outside}>
+        <Button type="submit" size="lg" loading={isSubmitting || pendingStep === 3} disabled={outside}>
           {bs.listingForm.next}
         </Button>
       </WizardFooter>

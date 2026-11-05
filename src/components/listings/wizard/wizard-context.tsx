@@ -12,6 +12,7 @@ export type WizardContextValue = {
   isNew: boolean;
   missingSteps: WizardStep[];
   goToStep: (step: WizardStep, listingId?: string) => void;
+  pendingStep: WizardStep | null;
   setDirty: (dirty: boolean) => void;
 };
 

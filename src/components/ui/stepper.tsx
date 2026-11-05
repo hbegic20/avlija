@@ -12,12 +12,14 @@ export function Stepper({
   currentIndex,
   completedIndexes,
   hrefForStep,
+  onStepNavigate,
   className,
 }: {
   steps: readonly string[];
   currentIndex: number;
   completedIndexes?: readonly number[];
   hrefForStep?: (index: number) => string | null;
+  onStepNavigate?: (index: number) => void;
   className?: string;
 }) {
   return (
@@ -48,7 +50,18 @@ export function Stepper({
             <li key={step} className="flex items-center gap-3">
               {index > 0 ? <span aria-hidden="true" className="h-px w-6 bg-linija" /> : null}
               {href ? (
-                <Link href={href} className={cn(classes, "underline-offset-3 hover:underline")}>
+                <Link
+                  href={href}
+                  onNavigate={
+                    onStepNavigate
+                      ? (event) => {
+                          event.preventDefault();
+                          onStepNavigate(index);
+                        }
+                      : undefined
+                  }
+                  className={cn(classes, "underline-offset-3 hover:underline")}
+                >
                   {content}
                 </Link>
               ) : (

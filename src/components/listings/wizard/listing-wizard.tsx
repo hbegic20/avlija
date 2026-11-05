@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, type MouseEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition, type MouseEvent } from "react";
 import { Stepper } from "@/components/ui/stepper";
+import { cn } from "@/lib/cn";
 import { bs } from "@/lib/i18n/bs";
 import { listingRoutes } from "@/lib/listings/routes";
 import type { EditableListing, ListingImage, MunicipalityRow, WizardStep } from "@/lib/listings/types";
@@ -40,6 +41,9 @@ export function ListingWizard({
 }: ListingWizardProps) {
   const router = useRouter();
   const dirtyRef = useRef(false);
+  const [navigating, startNavigation] = useTransition();
+  const [requestedStep, setRequestedStep] = useState<WizardStep | null>(null);
+  const pendingStep = navigating ? requestedStep : null;
 
   useEffect(() => {
     const warnBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -62,7 +66,8 @@ export function ListingWizard({
       if (!id) {
         return;
       }
-      router.push(listingRoutes.editStep(id, target));
+      setRequestedStep(target);
+      startNavigation(() => router.push(listingRoutes.editStep(id, target)));
     },
     [listing?.id, router],
   );
@@ -76,8 +81,8 @@ export function ListingWizard({
   };
 
   const context = useMemo<WizardContextValue>(
-    () => ({ listing, images, municipalities, userId, hasPhone, isNew, missingSteps, goToStep, setDirty }),
-    [listing, images, municipalities, userId, hasPhone, isNew, missingSteps, goToStep, setDirty],
+    () => ({ listing, images, municipalities, userId, hasPhone, isNew, missingSteps, goToStep, pendingStep, setDirty }),
+    [listing, images, municipalities, userId, hasPhone, isNew, missingSteps, goToStep, pendingStep, setDirty],
   );
 
   return (
@@ -91,8 +96,12 @@ export function ListingWizard({
             const target = (index + 1) as WizardStep;
             return listing && unlockedSteps.includes(target) ? listingRoutes.editStep(listing.id, target) : null;
           }}
+          onStepNavigate={(index) => goToStep((index + 1) as WizardStep)}
         />
-        <div className="max-w-[880px]">
+        <div
+          aria-busy={navigating}
+          className={cn("max-w-[880px] transition-opacity", navigating && "pointer-events-none opacity-60")}
+        >
           {step === 1 ? <StepBasics /> : null}
           {step === 2 ? <StepLocation /> : null}
           {step === 3 ? <StepDetails /> : null}

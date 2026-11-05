@@ -63,7 +63,7 @@ export function StepPhotos() {
 }
 
 function PhotoManager({ listingId }: { listingId: string }) {
-  const { images: initialImages, userId, goToStep } = useWizard();
+  const { images: initialImages, userId, goToStep, pendingStep } = useWizard();
   const [images, setImages] = useState<ListingImage[]>(initialImages);
   const [messages, setMessages] = useState<string[]>([]);
   const [dragOver, setDragOver] = useState(false);
@@ -238,10 +238,10 @@ function PhotoManager({ listingId }: { listingId: string }) {
       ) : null}
 
       <WizardFooter>
-        <Button variant="ghost" onClick={() => goToStep(3)}>
+        <Button variant="ghost" loading={pendingStep === 3} disabled={pendingStep !== null} onClick={() => goToStep(3)}>
           {bs.listingForm.back}
         </Button>
-        <Button size="lg" disabled={!canContinue} onClick={() => goToStep(5)}>
+        <Button size="lg" loading={pendingStep === 5} disabled={!canContinue} onClick={() => goToStep(5)}>
           {bs.listingForm.next}
         </Button>
       </WizardFooter>

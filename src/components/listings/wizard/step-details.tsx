@@ -48,7 +48,7 @@ function requiredMark(label: string, required: boolean): string {
 }
 
 export function StepDetails() {
-  const { listing, goToStep } = useWizard();
+  const { listing, goToStep, pendingStep } = useWizard();
   const [errorCode, setErrorCode] = useState<ListingErrorCode | null>(null);
   const type = listing?.type ?? "kuca";
   const schema = useMemo(() => detailsSchemaFor(type), [type]);
@@ -221,10 +221,10 @@ export function StepDetails() {
       </section>
 
       <WizardFooter>
-        <Button variant="ghost" onClick={() => goToStep(2)}>
+        <Button variant="ghost" loading={pendingStep === 2} disabled={pendingStep !== null} onClick={() => goToStep(2)}>
           {bs.listingForm.back}
         </Button>
-        <Button type="submit" size="lg" loading={isSubmitting}>
+        <Button type="submit" size="lg" loading={isSubmitting || pendingStep === 4}>
           {bs.listingForm.next}
         </Button>
       </WizardFooter>

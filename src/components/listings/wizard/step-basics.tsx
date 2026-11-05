@@ -42,7 +42,7 @@ const typeOptions: readonly SegmentedOption<PropertyType>[] = propertyTypes.map(
 const text = bs.listingForm.basics;
 
 export function StepBasics() {
-  const { listing, goToStep } = useWizard();
+  const { listing, goToStep, pendingStep } = useWizard();
   const [errorCode, setErrorCode] = useState<ListingErrorCode | null>(null);
   const {
     register,
@@ -129,7 +129,7 @@ export function StepBasics() {
       </div>
       <WizardFooter>
         <span />
-        <Button type="submit" size="lg" loading={isSubmitting}>
+        <Button type="submit" size="lg" loading={isSubmitting || pendingStep === 2}>
           {bs.listingForm.next}
         </Button>
       </WizardFooter>
