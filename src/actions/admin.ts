@@ -10,12 +10,15 @@ import { listingCacheTag } from "@/lib/listings/public-listing";
 import { logIfUnexpected, logServerError } from "@/lib/logging/log-server-error";
 import { listingsCacheTag } from "@/lib/search/cache-tags";
 import {
+  deleteUserSchema,
   hideListingSchema,
   reportResolutionSchema,
   userRoleSchema,
+  type DeleteUserInput,
   type HideListingInput,
   type ReportResolution,
 } from "@/lib/validation/admin";
+import { deleteUserCompletely } from "@/lib/users/delete-user";
 import { idSchema } from "@/lib/validation/id";
 
 type AdminResult<Data = undefined> = ActionResult<Data, AdminErrorCode>;
@@ -155,4 +158,35 @@ export async function setUserRole(userId: string, role: UserRole): Promise<Admin
   }
   revalidatePath(adminRoutes.users);
   return success({ role: data });
+}
+
+export async function deleteUserAccount(userId: string, input: DeleteUserInput): Promise<AdminResult> {
+  if (!deleteUserSchema.safeParse(input).success || !idSchema.safeParse(userId).success) {
+    return failure("validation");
+  }
+  const admin = await getAdminSession();
+  if (!admin) {
+    return failure("forbidden");
+  }
+  if (userId === admin.userId) {
+    return failure("self_deletion");
+  }
+  const [{ data: target }, { data: listings }] = await Promise.all([
+    admin.supabase.from("profiles").select("role").eq("id", userId).maybeSingle(),
+    admin.supabase.from("listings").select("number").eq("owner_id", userId),
+  ]);
+  if (!target) {
+    return failure("not_found");
+  }
+  if (target.role === "admin") {
+    return failure("target_is_admin");
+  }
+  try {
+    await deleteUserCompletely(userId);
+  } catch (error) {
+    logServerError("admin.deleteUserAccount", error);
+    return failure("unexpected");
+  }
+  revalidateAdmin((listings ?? []).map((row) => row.number));
+  return success();
 }

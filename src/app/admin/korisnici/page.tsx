@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { DeleteUserButton } from "@/components/admin/delete-user-button";
 import { HideAllButton } from "@/components/admin/hide-all-button";
 import { RoleButton } from "@/components/admin/role-button";
 import { sellerPath } from "@/components/listings/detail/seller-box";
@@ -94,6 +95,9 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
                         ) : null}
                         {total.public > 0 && profile.role !== "admin" ? (
                           <HideAllButton userId={profile.id} userName={profile.full_name} />
+                        ) : null}
+                        {profile.id !== currentUser.id && profile.role !== "admin" ? (
+                          <DeleteUserButton userId={profile.id} userName={profile.full_name} listingCount={total.all} />
                         ) : null}
                       </div>
                     </td>

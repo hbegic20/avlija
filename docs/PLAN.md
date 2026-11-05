@@ -188,6 +188,7 @@ Done when: all lifecycle transitions work and respect limits (10 active).
 - [x] All listings table with search by number or title, filter by status, hide/unhide
 - [x] Users list with listing counts, ability to hide all listings of a user
 - [x] Promote or demote admins from the users list (2026-11-05, `set_user_role`); admins cannot demote themselves or accounts on the admin email list
+- [x] Delete a user from the users list (2026-11-05): typed `OBRIŠI` confirmation, removes the auth account (cascading to profile, contacts, listings, images, favourites, reports on their listings, contact reveals) and their storage files via `deleteUserCompletely` (shared with self-service account deletion); admins cannot delete themselves or another admin. Needs `SUPABASE_SECRET_KEY` on the server
 - [x] Make the owner's account admin via a one-off SQL statement documented in README (README rewritten with setup, commands and the admin SQL)
 
 ## Phase 11 — SEO and sharing

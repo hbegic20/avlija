@@ -709,6 +709,12 @@ export const bs = {
       roleChanged: (name: string, role: string) => `${name}: uloga je sada ${role}.`,
       cancel: "Odustani",
       you: "vi",
+      deleteUser: "Obriši korisnika",
+      deleteUserTitle: (name: string) => `Trajno obrisati korisnika ${name}?`,
+      deleteUserBody: (listingCount: number) =>
+        `Briše se račun, profil, kontakt podaci, svi oglasi (${listingCount}) sa fotografijama, sačuvani oglasi i prijave koje je korisnik poslao. Ovo se ne može poništiti.`,
+      deleteUserConfirm: "Obriši trajno",
+      userDeleted: (name: string) => `Korisnik ${name} je obrisan.`,
       empty: "Nema korisnika.",
     },
     hideDialog: {
@@ -723,6 +729,8 @@ export const bs = {
     errors: {
       forbidden: "Nemate pravo za ovu radnju.",
       selfDemotion: "Ne možete ukloniti vlastita administratorska prava.",
+      selfDeletion: "Vlastiti račun brišete na stranici profila.",
+      targetIsAdmin: "Administratora nije moguće obrisati. Prvo uklonite administratorska prava.",
       listedAdmin: "Ovaj račun je na stalnoj listi administratora. Uklonite ga s liste u migraciji, pa promijenite ulogu.",
       unhideRequirements: "Oglas se ne može vratiti: nedostaju podaci ili vlasnik već ima 10 aktivnih oglasa.",
     },

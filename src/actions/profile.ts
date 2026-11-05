@@ -10,9 +10,9 @@ import { authRoutes, noticeParam, notices } from "@/lib/auth/routes";
 import { logIfUnexpected, logServerError } from "@/lib/logging/log-server-error";
 import type { ProfileErrorCode } from "@/lib/profile/profile-errors";
 import { authCallbackUrl } from "@/lib/auth/site-origin";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { supabasePublishableKey, supabaseUrl } from "@/lib/supabase/env";
-import { avatarsBucket, listingImagesBucket } from "@/lib/supabase/storage-url";
+import { avatarsBucket } from "@/lib/supabase/storage-url";
+import { deleteUserCompletely } from "@/lib/users/delete-user";
 import {
   avatarPathFor,
   basicInfoSchema,
@@ -183,30 +183,6 @@ export async function changeEmail(input: ChangeEmailInput): Promise<ProfileResul
   }
 }
 
-async function listAllPaths(
-  admin: ReturnType<typeof createAdminClient>,
-  bucket: string,
-  prefix: string,
-): Promise<string[]> {
-  const { data } = await admin.storage.from(bucket).list(prefix, { limit: 1000 });
-  const entries = data ?? [];
-  const nested = await Promise.all(
-    entries.map((entry) =>
-      entry.id === null ? listAllPaths(admin, bucket, `${prefix}/${entry.name}`) : Promise.resolve([`${prefix}/${entry.name}`]),
-    ),
-  );
-  return nested.flat();
-}
-
-async function removeUserFiles(admin: ReturnType<typeof createAdminClient>, userId: string) {
-  for (const bucket of [listingImagesBucket, avatarsBucket]) {
-    const paths = await listAllPaths(admin, bucket, userId);
-    for (let start = 0; start < paths.length; start += 100) {
-      await admin.storage.from(bucket).remove(paths.slice(start, start + 100));
-    }
-  }
-}
-
 export async function deleteAccount(input: DeleteAccountInput): Promise<ProfileResult> {
   const parsed = deleteAccountSchema.safeParse(input);
   if (!parsed.success) {
@@ -217,13 +193,7 @@ export async function deleteAccount(input: DeleteAccountInput): Promise<ProfileR
     return failure("unauthenticated");
   }
   try {
-    const admin = createAdminClient();
-    await removeUserFiles(admin, session.userId);
-    const { error } = await admin.auth.admin.deleteUser(session.userId);
-    if (error) {
-      logServerError("profile.deleteAccount", error);
-      return failure("unexpected");
-    }
+    await deleteUserCompletely(session.userId);
     await session.supabase.auth.signOut({ scope: "local" });
   } catch (error) {
     logServerError("profile.deleteAccount", error);

@@ -7,6 +7,8 @@ export type AdminErrorCode =
   | "unhide_requirements"
   | "self_demotion"
   | "listed_admin"
+  | "self_deletion"
+  | "target_is_admin"
   | "unexpected";
 
 const messages: Record<AdminErrorCode, string> = {
@@ -16,6 +18,8 @@ const messages: Record<AdminErrorCode, string> = {
   unhide_requirements: bs.admin.errors.unhideRequirements,
   self_demotion: bs.admin.errors.selfDemotion,
   listed_admin: bs.admin.errors.listedAdmin,
+  self_deletion: bs.admin.errors.selfDeletion,
+  target_is_admin: bs.admin.errors.targetIsAdmin,
   unexpected: bs.auth.errors.unexpected,
 };
 

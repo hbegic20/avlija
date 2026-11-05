@@ -13,5 +13,10 @@ export type HideListingInput = z.infer<typeof hideListingSchema>;
 
 export const userRoleSchema = z.enum(userRoles);
 
+export const deleteUserSchema = z.object({
+  confirmation: z.literal(bs.profile.danger.confirmWord),
+});
+export type DeleteUserInput = z.infer<typeof deleteUserSchema>;
+
 export const reportResolutionSchema = z.enum(["resolved", "dismissed"]);
 export type ReportResolution = z.infer<typeof reportResolutionSchema>;
