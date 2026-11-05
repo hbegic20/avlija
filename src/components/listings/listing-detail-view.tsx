@@ -24,7 +24,7 @@ function LedgerSection({ title, rows }: { title: string; rows: LedgerRow[] }) {
     return null;
   }
   return (
-    <Ledger title={title}>
+    <Ledger title={title} className="print:break-inside-avoid">
       {rows.map((row) => (
         <DataRow key={row.label} label={row.label} value={row.value} tone={row.tone} />
       ))}
@@ -46,7 +46,7 @@ export function ListingDetailView({
   const features = featureLabels(view);
 
   return (
-    <article className="flex flex-col gap-8">
+    <article className="flex flex-col gap-8 print:gap-6">
       <div className="relative">
         <ListingGallery
           images={images}
@@ -55,7 +55,7 @@ export function ListingDetailView({
         {stamp ? <Stamp variant={stamp} className="absolute top-4 left-4" /> : null}
       </div>
 
-      <div className="grid gap-10 lg:grid-cols-[1fr_340px]">
+      <div className="grid gap-10 lg:grid-cols-[1fr_340px] print:grid-cols-[1fr_200px] print:gap-6">
         <div className="flex min-w-0 flex-col gap-8">
           <header className="flex flex-col gap-3">
             <p className="font-mono text-mono text-tinta-2">
@@ -66,7 +66,7 @@ export function ListingDetailView({
             {afterHeader}
           </header>
 
-          <div className="grid gap-8 md:grid-cols-2">
+          <div className="grid gap-8 md:grid-cols-2 print:grid-cols-1 print:gap-5">
             <LedgerSection title={bs.listing.sections.basic} rows={basicRows(view)} />
             <LedgerSection title={bs.listing.sections.building} rows={buildingRows(view)} />
             <LedgerSection title={bs.listing.sections.documents} rows={documentRows(view)} />
@@ -87,25 +87,27 @@ export function ListingDetailView({
 
           {listing.description ? (
             <section className="flex flex-col gap-3">
-              <h2 className="border-t-2 border-t-tinta pt-3 font-display text-h2">{bs.listing.sections.description}</h2>
+              <h2 className="border-t-2 border-t-tinta pt-3 font-display text-h2 print:break-after-avoid">{bs.listing.sections.description}</h2>
               <p className="max-w-[70ch] whitespace-pre-line">{listing.description}</p>
             </section>
           ) : null}
 
           {listing.public_lat !== null && listing.public_lng !== null ? (
             <section className="flex flex-col gap-3">
-              <h2 className="border-t-2 border-t-tinta pt-3 font-display text-h2">{bs.listing.sections.location}</h2>
+              <h2 className="border-t-2 border-t-tinta pt-3 font-display text-h2 print:break-after-avoid">{bs.listing.sections.location}</h2>
               <p className="text-small text-tinta-2">
                 {listing.location_precise ? bs.listing.exactLocation : bs.listing.approximateLocation}
                 {listing.public_address ? ` · ${listing.public_address}` : null}
               </p>
-              <VisibleLocationMap lat={listing.public_lat} lng={listing.public_lng} precise={listing.location_precise} />
+              <div className="print:hidden">
+                <VisibleLocationMap lat={listing.public_lat} lng={listing.public_lng} precise={listing.location_precise} />
+              </div>
               {listing.location_precise ? (
                 <a
                   href={`https://www.google.com/maps/search/?api=1&query=${listing.public_lat},${listing.public_lng}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-fit text-small font-medium text-vranica underline underline-offset-3 hover:text-crijep"
+                  className="w-fit text-small font-medium text-vranica underline underline-offset-3 hover:text-crijep print:hidden"
                 >
                   {bs.detail.openInGoogleMaps}
                 </a>

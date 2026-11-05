@@ -60,7 +60,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <ThemeScript />
       </head>
-      <body suppressHydrationWarning className="flex min-h-dvh flex-col bg-papir font-sans text-body text-tinta">
+      <body suppressHydrationWarning className="flex min-h-dvh flex-col bg-papir print:block print:min-h-0 font-sans text-body text-tinta">
         <ToastProvider>
           {children}
           <Suspense fallback={null}>

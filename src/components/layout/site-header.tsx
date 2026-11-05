@@ -14,7 +14,7 @@ import { listingRoutes } from "@/lib/listings/routes";
 
 export function SiteHeader() {
   return (
-    <header>
+    <header className="print:hidden">
       <a
         href="#sadrzaj"
         className="sr-only z-50 bg-tinta px-4 py-2 font-medium text-papir focus:not-sr-only focus:fixed focus:top-2 focus:left-2"

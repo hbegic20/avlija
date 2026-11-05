@@ -235,7 +235,7 @@ Phases 0–12 are built. Phase 13 (pre-launch features) is in progress, Phase 14
 - [x] Seller stats in "Moji oglasi": views, saved by (favourites, excluding the owner) and phone revealed (distinct users) per listing via the `my_listing_stats()` RPC
 - [x] Price history and reduced price: `listing_price_history` written by the `listings_25_price_history` trigger on every price change after first publish; cards, map list, dashboard and detail show the struck-through old price and `sniženo N%` for 30 days. The reference is the price before the earliest change in the last 30 days, so raising and then lowering the price does not fake a reduction. Shown as a PriceTag line, not a stamp (owner decision)
 - [x] Share to Viber and WhatsApp: "Pošalji na Viber" (`viber://forward?text=`) and "Pošalji na WhatsApp" (`https://wa.me/?text=`) links under Sačuvaj / Podijeli on the listing detail, message is title plus absolute listing URL from `NEXT_PUBLIC_SITE_URL`; plain links, no SDK or brand icons. Viber Desktop does not support `forward`, so on devices without a touch pointer the Viber link copies the message and shows a toast instead
-- [ ] Print version of the listing detail styled as a land registry extract (print stylesheet, no PDF library)
+- [x] Print version of the listing detail styled as a land registry extract: `Ispiši` button, print-only header with parcel number and URL, light tokens on paper, rules in DESIGN.md "Print"
 
 Done when: all items work in both themes and on mobile, RLS tests cover any new table or RPC.
 

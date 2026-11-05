@@ -29,7 +29,7 @@ export function SellerBox({ seller, children }: { seller: PublicSeller; children
       {children}
       <Link
         href={sellerPath(seller.id)}
-        className="w-fit text-small font-medium text-vranica underline underline-offset-3 hover:text-crijep"
+        className="w-fit text-small font-medium text-vranica underline underline-offset-3 hover:text-crijep print:hidden"
       >
         {bs.detail.sellerListings}
       </Link>

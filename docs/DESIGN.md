@@ -130,7 +130,7 @@ All live in `src/components/ui/`. Build them in Phase 1 before any feature work.
 | `FilterBar` | Desktop: sticky left column 280px with grouped fields under `text-label` headings separated by linija rules. Mobile: a full-screen sheet opened by a `Filteri (3)` button. Active filters appear as removable `Tag`s above results. |
 | `Tag` | Inline, 1px linija border, radius 2px, `text-small`. Removable tags have a × button. |
 | `Pagination` | Mono page numbers in a bordered row, current page tinta fill. Plus `Prikazano 1–24 od 312` in mono. |
-| `Gallery` | Main image 4:3 plus a strip of thumbnails. Fullscreen lightbox on tinta background with mono counter `03 / 12`. Keyboard arrows and swipe. |
+| `Gallery` | Main image 4:3 on mobile, 16:9 from `md` up (same as the detail map; owner decision, the lightbox shows the full photo), plus a strip of thumbnails. Fullscreen lightbox on tinta background with mono counter `03 / 12`. Keyboard arrows and swipe. |
 | `EmptyState` | Cadastral hatch block, `text-h3` title, one line of help, one action. |
 | `Toast` | Bottom-left on desktop, top on mobile. papir-2 background, 1px border, left 4px colour bar in status colour. Auto-dismiss 5s. |
 | `Dialog` | Max 520px, papir background, 2px tinta top rule, title in `text-h3`, actions right-aligned. |
@@ -141,7 +141,7 @@ All live in `src/components/ui/`. Build them in Phase 1 before any feature work.
 ## 7. Iconography and imagery
 
 - Icons: **Lucide**, stroke width 1.5, size 18 or 20, colour inherits text. No filled icons, no emoji in UI.
-- Photos: always `object-cover`, 4:3 in grids, no radius, no overlays or gradients on top of photos. Text never sits on top of a photo except the Stamp.
+- Photos: always `object-cover`, 4:3 in grids (the detail gallery is 16:9 from `md`), no radius, no overlays or gradients on top of photos. Text never sits on top of a photo except the Stamp.
 - Home hero: no stock photo. Use the interactive `CantonMap`: a stylised cadastral map of the canton built from real municipality outlines (SVG, linija strokes on papir with the hatch pattern, municipality names in mono label style, Vrbas river in vrbas), with the search form beside it. The selected or hovered municipality fills with `crijep` at 16% opacity and a 1.5px `crijep` outline.
 
 ### The four maps
@@ -246,6 +246,18 @@ Put this in `src/app/globals.css`. Components use classes like `bg-papir`, `text
 ```
 
 Components never use `dark:` variants for colours: every colour comes from a token, and the tokens switch. The `dark:` variant exists only for the rare non-colour difference (e.g. the extra map tile filter).
+
+In `globals.css` both dark blocks are wrapped in `@media screen` (`@media screen` and `@media screen and (prefers-color-scheme: dark)`), so printing always uses the light paper tokens.
+
+### Print: "Izvod iz registra"
+
+The listing detail prints as a land registry extract (button `Ispiši`, `window.print()`, no PDF library). Rules:
+
+- Always the light tokens, A4 with `@page { margin: 14mm 16mm }`, no transitions (`transition: none` in print, otherwise the theme fade is captured mid-way).
+- A print-only header: `Avlija.` in Fraunces, `IZVOD IZ REGISTRA NEKRETNINA · SREDNJOBOSANSKI KANTON` in `text-label`, and on the right the parcel number and the absolute listing URL in mono, closed by a 2px `tinta` rule.
+- Hidden (`print:hidden`): site header and footer, owner bar, buttons and share links, contact reveal, gallery arrows, counter and thumbnails, the map and "Otvori u Google Maps", similar listings.
+- Kept: the active photo (max 100mm wide) with its stamp, the title block, ledgers in one column, features, description, location line, and the price and seller boxes in a 200px right column.
+- Ledger blocks do not break across pages, section headings do not stay alone at the bottom of a page.
 
 ## 11. Anti-patterns (never do these)
 

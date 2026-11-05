@@ -96,25 +96,27 @@
   color-scheme: light;
 }
 
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --color-papir: #171A18;
-  --color-papir-2: #1F2320;
-  --color-papir-3: #2A2F2B;
-  --color-linija: #353B36;
-  --color-tinta: #ECE6D8;
-  --color-tinta-2: #B3AE9F;
-  --color-tinta-3: #7D7A6E;
-  --color-crijep: #D2674A;
-  --color-crijep-tamni: #E07E62;
-  --color-vranica: #7FA88E;
-  --color-vrbas: #7DB0BC;
-  --color-greska: #E0645F;
-  --color-upozorenje: #D9A441;
-  --color-na-crijep: #171A18;
+@media screen {
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --color-papir: #171A18;
+    --color-papir-2: #1F2320;
+    --color-papir-3: #2A2F2B;
+    --color-linija: #353B36;
+    --color-tinta: #ECE6D8;
+    --color-tinta-2: #B3AE9F;
+    --color-tinta-3: #7D7A6E;
+    --color-crijep: #D2674A;
+    --color-crijep-tamni: #E07E62;
+    --color-vranica: #7FA88E;
+    --color-vrbas: #7DB0BC;
+    --color-greska: #E0645F;
+    --color-upozorenje: #D9A441;
+    --color-na-crijep: #171A18;
+  }
 }
 
-@media (prefers-color-scheme: dark) {
+@media screen and (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --color-papir: #171A18;
     --color-papir-2: #1F2320;
@@ -130,6 +132,24 @@
     --color-greska: #E0645F;
     --color-upozorenje: #D9A441;
     --color-na-crijep: #171A18;
+  }
+}
+
+@media print {
+  :root,
+  :root[data-theme="dark"] {
+    color-scheme: light;
+  }
+
+  @page {
+    size: A4;
+    margin: 14mm 16mm;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
   }
 }
 

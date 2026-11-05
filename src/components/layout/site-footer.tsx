@@ -14,7 +14,7 @@ const legalLinks = [
 
 export function SiteFooter() {
   return (
-    <footer className="mt-16 border-t">
+    <footer className="mt-16 border-t print:hidden">
       <Container className="grid gap-8 py-8 md:grid-cols-[2fr_1fr]">
         <nav aria-labelledby="footer-municipalities">
           <h2 id="footer-municipalities" className="mb-3 text-label text-tinta-2 uppercase">

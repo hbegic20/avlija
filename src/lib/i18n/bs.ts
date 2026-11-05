@@ -583,6 +583,8 @@ export const bs = {
     favoriteAdded: "Oglas je sačuvan.",
     favoriteRemoved: "Oglas je uklonjen iz sačuvanih.",
     share: "Podijeli",
+    print: "Ispiši",
+    printTitle: "Izvod iz registra nekretnina · Srednjobosanski kanton",
     linkCopied: "Link je kopiran.",
     shareVia: "Podijeli putem aplikacije",
     shareViber: "Pošalji na Viber",

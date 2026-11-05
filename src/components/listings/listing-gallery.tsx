@@ -39,7 +39,7 @@ export function ListingGallery({ images, altBase }: { images: ListingImage[]; al
 
   if (!active) {
     return (
-      <div className="hatch flex aspect-4/3 w-full items-center justify-center border">
+      <div className="hatch flex aspect-4/3 w-full items-center justify-center border md:aspect-16/9">
         <span className="bg-papir px-2 py-1 font-mono text-label text-tinta-2 uppercase">{bs.listing.noPhotos}</span>
       </div>
     );
@@ -74,7 +74,7 @@ export function ListingGallery({ images, altBase }: { images: ListingImage[]; al
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="relative aspect-4/3 w-full overflow-hidden border bg-papir-2" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      <div className="relative aspect-4/3 w-full overflow-hidden border bg-papir-2 md:aspect-16/9 print:aspect-4/3 print:max-w-[100mm]" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <button
           type="button"
           onClick={() => setLightboxOpen(true)}
@@ -85,7 +85,7 @@ export function ListingGallery({ images, altBase }: { images: ListingImage[]; al
             src={active.publicUrl}
             alt={altFor(safeIndex)}
             fill
-            sizes="(min-width: 1024px) 800px, 100vw"
+            sizes="(min-width: 1280px) 1200px, 100vw"
             className="object-cover"
             loading="eager"
             fetchPriority="high"
@@ -97,7 +97,7 @@ export function ListingGallery({ images, altBase }: { images: ListingImage[]; al
               type="button"
               onClick={() => go(-1)}
               aria-label={bs.detail.gallery.previous}
-              className="absolute top-1/2 left-3 inline-flex size-10 -translate-y-1/2 items-center justify-center rounded-xs border bg-papir text-tinta hover:bg-papir-2"
+              className="absolute top-1/2 left-3 inline-flex size-10 print:hidden -translate-y-1/2 items-center justify-center rounded-xs border bg-papir text-tinta hover:bg-papir-2"
             >
               <ChevronLeft aria-hidden="true" size={20} strokeWidth={1.5} />
             </button>
@@ -105,19 +105,19 @@ export function ListingGallery({ images, altBase }: { images: ListingImage[]; al
               type="button"
               onClick={() => go(1)}
               aria-label={bs.detail.gallery.next}
-              className="absolute top-1/2 right-3 inline-flex size-10 -translate-y-1/2 items-center justify-center rounded-xs border bg-papir text-tinta hover:bg-papir-2"
+              className="absolute top-1/2 right-3 inline-flex size-10 print:hidden -translate-y-1/2 items-center justify-center rounded-xs border bg-papir text-tinta hover:bg-papir-2"
             >
               <ChevronRight aria-hidden="true" size={20} strokeWidth={1.5} />
             </button>
           </>
         ) : null}
-        <span className="pointer-events-none absolute right-3 bottom-3 bg-papir px-2 py-1 font-mono text-label text-tinta">
+        <span className="pointer-events-none absolute right-3 bottom-3 bg-papir print:hidden px-2 py-1 font-mono text-label text-tinta">
           {counter(safeIndex, total)}
         </span>
       </div>
 
       {total > 1 ? (
-        <ul className="flex gap-2 overflow-x-auto pb-1" aria-label={bs.detail.gallery.label}>
+        <ul className="flex gap-2 overflow-x-auto pb-1 print:hidden" aria-label={bs.detail.gallery.label}>
           {images.map((image, index) => (
             <li key={image.id} className="shrink-0">
               <button

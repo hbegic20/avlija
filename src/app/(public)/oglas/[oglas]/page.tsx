@@ -11,6 +11,8 @@ import { OwnerBar } from "@/components/listings/detail/owner-bar";
 import { ReportButton } from "@/components/listings/detail/report-button";
 import { SellerBox } from "@/components/listings/detail/seller-box";
 import { ShareButton } from "@/components/listings/detail/share-button";
+import { PrintButton } from "@/components/listings/detail/print-button";
+import { PrintHeader } from "@/components/listings/detail/print-header";
 import { ShareLinks } from "@/components/listings/detail/share-links";
 import { ViewCounter } from "@/components/listings/detail/view-counter";
 import { FormAlert } from "@/components/auth/form-alert";
@@ -76,10 +78,11 @@ async function ViewerActions({ bundle }: { bundle: PublicListingBundle }) {
   const user = await getCurrentUser();
   const loginHref = loginPathWithNext(bundle.path);
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 print:hidden">
       <div className="flex flex-wrap gap-2">
         <FavoriteButton listingId={bundle.listing.id} />
         <ShareButton path={bundle.path} title={bundle.listing.title} />
+        <PrintButton />
       </div>
       <ShareLinks path={bundle.path} title={bundle.listing.title} />
       {user?.id === bundle.listing.owner_id ? null : (
@@ -117,7 +120,7 @@ async function SimilarListings({ bundle }: { bundle: PublicListingBundle }) {
     return null;
   }
   return (
-    <section>
+    <section className="print:hidden">
       <SectionHeading title={bs.detail.similar} />
       <ListingSheet listings={similar} />
     </section>
@@ -144,12 +147,15 @@ export default async function ListingPage({ params }: ListingPageProps) {
   };
 
   return (
-    <Container className="flex flex-col gap-14 py-8">
+    <Container className="flex flex-col gap-14 py-8 print:gap-6 print:p-0">
       <ListingJsonLd bundle={bundle} />
+      <PrintHeader listingNumber={bundle.listing.number} path={bundle.path} />
       <ViewCounter listingId={bundle.listing.id} />
-      <Suspense fallback={null}>
-        <ViewerOwnerBar bundle={bundle} />
-      </Suspense>
+      <div className="contents print:hidden">
+        <Suspense fallback={null}>
+          <ViewerOwnerBar bundle={bundle} />
+        </Suspense>
+      </div>
       <ListingDetailView
         view={view}
         afterHeader={isSold ? <FormAlert tone="error">{bs.detail.soldNotice}</FormAlert> : null}
@@ -158,9 +164,11 @@ export default async function ListingPage({ params }: ListingPageProps) {
             {bundle.seller ? (
               <SellerBox seller={bundle.seller}>
                 {isSold ? null : (
-                  <Suspense fallback={<Skeleton className="h-12 w-full" />}>
-                    <ViewerContact bundle={bundle} />
-                  </Suspense>
+                  <div className="print:hidden">
+                    <Suspense fallback={<Skeleton className="h-12 w-full" />}>
+                      <ViewerContact bundle={bundle} />
+                    </Suspense>
+                  </div>
                 )}
               </SellerBox>
             ) : null}
