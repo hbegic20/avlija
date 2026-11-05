@@ -11,6 +11,7 @@ import { OwnerBar } from "@/components/listings/detail/owner-bar";
 import { ReportButton } from "@/components/listings/detail/report-button";
 import { SellerBox } from "@/components/listings/detail/seller-box";
 import { ShareButton } from "@/components/listings/detail/share-button";
+import { ShareLinks } from "@/components/listings/detail/share-links";
 import { ViewCounter } from "@/components/listings/detail/view-counter";
 import { FormAlert } from "@/components/auth/form-alert";
 import { ListingJsonLd } from "@/components/seo/listing-json-ld";
@@ -80,6 +81,7 @@ async function ViewerActions({ bundle }: { bundle: PublicListingBundle }) {
         <FavoriteButton listingId={bundle.listing.id} />
         <ShareButton path={bundle.path} title={bundle.listing.title} />
       </div>
+      <ShareLinks path={bundle.path} title={bundle.listing.title} />
       {user?.id === bundle.listing.owner_id ? null : (
         <ReportButton listingId={bundle.listing.id} isLoggedIn={user !== null} loginHref={loginHref} />
       )}
