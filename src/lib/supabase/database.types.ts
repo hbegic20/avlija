@@ -488,6 +488,29 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_listing_image: {
+        Args: {
+          image_height: number
+          image_path: string
+          image_width: number
+          target_listing_id: string
+        }
+        Returns: {
+          created_at: string
+          height: number | null
+          id: string
+          listing_id: string
+          position: number
+          storage_path: string
+          width: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "listing_images"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       archive_expired_listings: { Args: never; Returns: number }
       get_listing_private_location: {
         Args: { target_listing_id: string }

@@ -18,6 +18,7 @@ const password = `Rls-${runId}-check`;
 const results = [];
 const createdUserIds = [];
 const uploadedPaths = [];
+const uploadedAvatarPaths = [];
 
 function check(name, passed, detail = "") {
   results.push({ name, passed });
@@ -138,20 +139,41 @@ async function run() {
     describeError(publishEarlyError),
   );
 
-  const { error: imageError } = await userA.client
-    .from("listing_images")
-    .insert({ listing_id: draft.id, storage_path: `${userA.id}/${draft.id}/${crypto.randomUUID()}.webp`, position: 0 });
-  check("owner can add image rows", imageError === null, describeError(imageError));
+  const addImage = (user, listingId, path = `${user.id}/${listingId}/${crypto.randomUUID()}.webp`) =>
+    user.client.rpc("add_listing_image", { target_listing_id: listingId, image_path: path, image_width: 800, image_height: 600 });
 
-  const { error: foreignPathError } = await userA.client
-    .from("listing_images")
-    .insert({ listing_id: draft.id, storage_path: `${userB.id}/other/${crypto.randomUUID()}.webp`, position: 1 });
-  check("image rows must point into the owner's listing folder", foreignPathError !== null, describeError(foreignPathError));
+  const { error: imageError } = await addImage(userA, draft.id);
+  check("owner can add images through add_listing_image", imageError === null, describeError(imageError));
 
-  const { error: foreignImageError } = await userB.client
+  const { error: directInsertError } = await userA.client
     .from("listing_images")
-    .insert({ listing_id: draft.id, storage_path: `${userB.id}/${draft.id}/x.webp`, position: 1 });
-  check("other user cannot add image rows", foreignImageError !== null, describeError(foreignImageError));
+    .insert({ listing_id: draft.id, storage_path: `${userA.id}/${draft.id}/${crypto.randomUUID()}.webp`, position: 5 });
+  check("image rows cannot be inserted directly", directInsertError !== null, describeError(directInsertError));
+
+  const { error: foreignPathError } = await addImage(userA, draft.id, `${userB.id}/other/${crypto.randomUUID()}.webp`);
+  check("image paths must point into the owner's listing folder", foreignPathError?.message?.includes("INVALID_IMAGE") === true, describeError(foreignPathError));
+
+  const { error: foreignImageError } = await addImage(userB, draft.id, `${userB.id}/${draft.id}/${crypto.randomUUID()}.webp`);
+  check("other user cannot add images", foreignImageError?.message?.includes("NOT_FOUND") === true, describeError(foreignImageError));
+
+  const { data: photoDraft } = await userA.client
+    .from("listings")
+    .insert(draftListing(userA.id, "Testna kuća za paralelne slike"))
+    .select("id")
+    .single();
+  const parallel = await Promise.all([addImage(userA, photoDraft.id), addImage(userA, photoDraft.id), addImage(userA, photoDraft.id)]);
+  const parallelPositions = parallel.map((result) => result.data?.position);
+  check(
+    "parallel image adds all succeed with distinct positions",
+    parallel.every((result) => result.error === null) && new Set(parallelPositions).size === 3,
+    parallel.map((result) => describeError(result.error)).join(" | "),
+  );
+
+  const { error: unknownFeatureError } = await userA.client
+    .from("listings")
+    .update({ features: ["balkon", "helikopter"] })
+    .eq("id", draft.id);
+  check("unknown features are rejected", unknownFeatureError !== null, describeError(unknownFeatureError));
 
   await userA.client.from("listings").update({ lat: 44.0559, lng: 17.4509, price_km: 185000 }).eq("id", draft.id);
   const { data: published, error: publishError } = await userA.client
@@ -336,7 +358,7 @@ async function run() {
   check("11th active listing is rejected", limitError?.message?.includes("LISTING_LIMIT") === true, describeError(limitError));
 
   const tinyWebp = Buffer.from("UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA==", "base64");
-  const ownPath = `${userA.id}/${eleventh.id}/rls-test.webp`;
+  const ownPath = `${userA.id}/${eleventh.id}/${crypto.randomUUID()}.webp`;
   const { error: ownUploadError } = await userA.client.storage
     .from("listing-images")
     .upload(ownPath, tinyWebp, { contentType: "image/webp" });
@@ -355,6 +377,29 @@ async function run() {
     .upload(`${userB.id}/${eleventh.id}/not-mine.webp`, tinyWebp, { contentType: "image/webp" });
   check("user cannot upload for someone else's listing id", wrongListingUploadError !== null, describeError(wrongListingUploadError));
 
+  const { error: badNameUploadError } = await userA.client.storage
+    .from("listing-images")
+    .upload(`${userA.id}/${eleventh.id}/anything.webp`, tinyWebp, { contentType: "image/webp" });
+  check("listing image files must be named <uuid>.webp", badNameUploadError !== null, describeError(badNameUploadError));
+
+  const { error: jpegUploadError } = await userA.client.storage
+    .from("listing-images")
+    .upload(`${userA.id}/${eleventh.id}/${crypto.randomUUID()}.webp`, tinyWebp, { contentType: "image/jpeg" });
+  check("listing image files must be image/webp", jpegUploadError !== null, describeError(jpegUploadError));
+
+  const { error: ownAvatarError } = await userA.client.storage
+    .from("avatars")
+    .upload(`${userA.id}/avatar.webp`, tinyWebp, { contentType: "image/webp", upsert: true });
+  if (!ownAvatarError) {
+    uploadedAvatarPaths.push(`${userA.id}/avatar.webp`);
+  }
+  check("user can upload own avatar", ownAvatarError === null, describeError(ownAvatarError));
+
+  const { error: extraAvatarError } = await userA.client.storage
+    .from("avatars")
+    .upload(`${userA.id}/extra.webp`, tinyWebp, { contentType: "image/webp" });
+  check("avatar folder only accepts avatar.webp", extraAvatarError !== null, describeError(extraAvatarError));
+
   const { error: anonUploadError } = await anon.storage
     .from("avatars")
     .upload(`${userA.id}/avatar.webp`, tinyWebp, { contentType: "image/webp" });
@@ -364,6 +409,9 @@ async function run() {
 async function cleanUp() {
   if (uploadedPaths.length > 0) {
     await admin.storage.from("listing-images").remove(uploadedPaths);
+  }
+  if (uploadedAvatarPaths.length > 0) {
+    await admin.storage.from("avatars").remove(uploadedAvatarPaths);
   }
   for (const id of createdUserIds) {
     await admin.auth.admin.deleteUser(id);

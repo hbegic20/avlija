@@ -172,7 +172,7 @@ as $$ select extensions.unaccent('extensions.unaccent'::regdictionary, replace(r
 
 The two `replace` calls map `đ` to `dj`, the way people type it without diacritics, so `djurdjevak` matches `Đurđevak`.
 
-`features` allowed values (validated in Zod, labels in i18n): `balkon`, `terasa`, `lift`, `parking`, `garaza`, `podrum`, `tavan`, `basta`, `bazen`, `klima`, `namjesteno`, `internet`, `alarm`, `pristup_asfaltu`, `struja_na_placu`, `voda_na_placu`, `kanalizacija`.
+`features` allowed values (validated in Zod, enforced by the `listings_features_known` check constraint, labels in i18n; adding a value needs a migration that replaces the constraint): `balkon`, `terasa`, `lift`, `parking`, `garaza`, `podrum`, `tavan`, `basta`, `bazen`, `klima`, `namjesteno`, `internet`, `alarm`, `pristup_asfaltu`, `struja_na_placu`, `voda_na_placu`, `kanalizacija`.
 
 Field rules per type (enforced in Zod, not in SQL):
 - `plac`, `poljoprivredno`: require `land_area_m2`; hide rooms, floor, heating, bathrooms.
@@ -208,7 +208,8 @@ Max 20 images per listing (trigger). Position `0` is the cover image.
 
 RLS:
 - `select`: allowed when the parent listing is visible (`exists` subquery with the same rule as listings select).
-- `insert`, `update`, `delete`: the parent listing's `owner_id = auth.uid()`. Insert also requires `storage_path` to match `<auth.uid()>/<listing_id>/<uuid>.webp`.
+- `update` (only `position`), `delete`: the parent listing's `owner_id = auth.uid()`.
+- `insert`: not granted to `anon` or `authenticated`. New rows go through the `add_listing_image` RPC so the position and the 20-image limit are decided under a lock.
 - `authenticated` may update only `position`.
 - `prevent_removing_last_active_image` (before delete) raises `LAST_IMAGE` when the row is the last image of an `active` listing. Cascading deletes from a removed listing are not affected.
 
@@ -271,6 +272,7 @@ RLS:
 | `enforce_listing_limits()` | before insert/update trigger on listings, named `listings_30_limits` | Max 10 listings with status `active` per non-admin owner. Raise a clear error code `LISTING_LIMIT`. |
 | `enforce_listing_publish_requirements()` | before insert/update trigger on listings, named `listings_40_publish` | When status becomes `active`: requires at least 1 row in `listing_images`, `lat` and `lng` set, and `price_km` set or `price_negotiable = true` (raises `PUBLISH_REQUIREMENTS`), and a phone number in the owner's `profile_contacts` (raises `PHONE_REQUIRED`). |
 | `enforce_image_limit()` | before insert trigger on listing_images | Max 20 images per listing, error `IMAGE_LIMIT`. |
+| `add_listing_image(target_listing_id uuid, image_path text, image_width integer, image_height integer)` | `security definer` RPC, `authenticated` only | Locks the owner's listing row (`for update`), so parallel uploads are serialised. Requires `image_path` to match `<auth.uid()>/<listing_id>/<uuid>.webp` and width/height between 1 and 10000 (raises `INVALID_IMAGE`), raises `NOT_FOUND` for listings the caller does not own, then inserts at `max(position) + 1` and returns the row. |
 | `increment_listing_view(listing_id uuid)` | `security definer` RPC | Increments `view_count` for active listings. Called once per session per listing from the detail page. |
 | `renew_listing(listing_id uuid)` | `security definer` RPC | Owner only. Allowed when the listing is `archived`, or `active` with less than 14 days left. Sets `status = 'active'` and `expires_at = now() + interval '90 days'`. Respects the 10-active-listings limit. |
 | `reorder_listing_images(target_listing_id uuid, ordered_image_ids uuid[])` | `security invoker` RPC | Owner only (RLS applies). Rewrites `position` for all images of the listing in one transaction so the deferred unique `(listing_id, position)` constraint is checked once. Position 0 is the cover. Raises `IMAGE_ORDER_MISMATCH` unless the array contains exactly the listing's images. |
@@ -288,13 +290,13 @@ RLS:
 
 - Public read.
 - Object path: `{owner_id}/{listing_id}/{uuid}.webp`.
-- Insert/update/delete policy: `(storage.foldername(name))[1] = auth.uid()::text`.
-- Max file size 2 MB, allowed MIME `image/webp`, `image/jpeg`. The client compresses to WebP, max 1920px long edge, quality 0.8, before upload.
+- Insert and update (`with check`) require the full name to match `{auth.uid()}/{uuid}/{uuid}.webp`; insert also requires the listing to belong to the caller. Delete requires `(storage.foldername(name))[1] = auth.uid()::text`.
+- Max file size 2 MB, allowed MIME `image/webp` only. The client compresses to WebP, max 1920px long edge, quality 0.8, before upload.
 - When a listing is deleted, a server action removes its folder from storage.
 
 ### `avatars` bucket
 
-- Public read. Path `{user_id}/avatar.webp`. Same owner policy. Max 512 KB. Client crops to 256×256.
+- Public read. Insert and update only for the exact path `{auth.uid()}/avatar.webp`; delete within the caller's folder. Max 512 KB, allowed MIME `image/webp` only. Client crops to 256×256.
 
 ## Type generation
 

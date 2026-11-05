@@ -7,7 +7,7 @@ import { failure, success, type ActionResult } from "@/lib/action-result";
 import { getActionSession, type ActionSession } from "@/lib/auth/action-session";
 import { noticeParam } from "@/lib/auth/routes";
 import type { PropertyType } from "@/lib/domain/enums";
-import { allowedFeaturesFor, isFieldVisible, maxListingImages } from "@/lib/domain/listing-fields";
+import { allowedFeaturesFor, isFieldVisible } from "@/lib/domain/listing-fields";
 import { isPointInMunicipality } from "@/lib/geo/point-in-municipality";
 import { listingNotices, listingRoutes } from "@/lib/listings/routes";
 import { listingsCacheTag } from "@/lib/search/cache-tags";
@@ -75,6 +75,7 @@ const databaseErrorMarkers: ReadonlyArray<readonly [marker: string, code: Listin
   ["LAST_IMAGE", "last_image"],
   ["RENEW_NOT_ALLOWED", "renew_not_allowed"],
   ["NOT_FOUND", "not_found"],
+  ["INVALID_IMAGE", "validation"],
 ];
 
 function databaseErrorCode(message: string | undefined): ListingErrorCode {
@@ -251,37 +252,19 @@ async function listImages(current: ActionSession, listingId: string): Promise<Li
 
 export async function registerImage(listingId: string, input: ImageRegistration): Promise<ListingResult<ListingImage>> {
   const parsed = imageRegistrationSchema.safeParse(input);
-  if (!parsed.success) {
+  if (!parsed.success || !listingIdSchema.safeParse(listingId).success) {
     return failure("validation");
   }
-  const access = await requireOwnedListing(listingId, { editable: false });
-  if (!access.ok) {
-    return access;
+  const current = await getActionSession();
+  if (!current) {
+    return failure("unauthenticated");
   }
-  const { current } = access.data;
-  const expectedPrefix = `${current.userId}/${listingId}/`;
-  const fileName = parsed.data.storagePath.slice(expectedPrefix.length);
-  if (!parsed.data.storagePath.startsWith(expectedPrefix) || !/^[0-9a-f-]{36}\.webp$/.test(fileName)) {
-    return failure("validation");
-  }
-
-  const images = await listImages(current, listingId);
-  if (images.length >= maxListingImages) {
-    await current.supabase.storage.from(listingImagesBucket).remove([parsed.data.storagePath]);
-    return failure("image_limit");
-  }
-  const nextPosition = images.reduce((highest, image) => Math.max(highest, image.position + 1), 0);
-  const { data, error } = await current.supabase
-    .from("listing_images")
-    .insert({
-      listing_id: listingId,
-      storage_path: parsed.data.storagePath,
-      position: nextPosition,
-      width: parsed.data.width,
-      height: parsed.data.height,
-    })
-    .select(listingImageColumns)
-    .single();
+  const { data, error } = await current.supabase.rpc("add_listing_image", {
+    target_listing_id: listingId,
+    image_path: parsed.data.storagePath,
+    image_width: parsed.data.width,
+    image_height: parsed.data.height,
+  });
   if (error || !data) {
     await current.supabase.storage.from(listingImagesBucket).remove([parsed.data.storagePath]);
     return failure(databaseErrorCode(error?.message));
