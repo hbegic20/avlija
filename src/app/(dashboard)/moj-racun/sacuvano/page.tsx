@@ -3,11 +3,13 @@ import Link from "next/link";
 import { ListingSheet } from "@/components/listings/listing-card";
 import { buttonStyles } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Pagination } from "@/components/ui/pagination";
 import { requireUser } from "@/lib/auth/current-user";
 import { favoritesRoutes } from "@/lib/favorites/routes";
 import { bs } from "@/lib/i18n/bs";
 import type { ListingSummary } from "@/lib/listings/summary";
-import { listingsBasePath } from "@/lib/search/filters";
+import { pageHref, parsePageParam } from "@/lib/pagination/page-param";
+import { listingsBasePath, pageSize } from "@/lib/search/filters";
 import { toSummary, type SummaryRow } from "@/lib/search/queries";
 import { createClient } from "@/lib/supabase/server";
 
@@ -19,27 +21,32 @@ export const metadata: Metadata = {
 };
 
 const favoriteListingColumns =
-  "created_at, listings(id, number, title, type, status, price_km, price_negotiable, previous_price_km, price_reduced_at, area_m2, land_area_m2, rooms, floor, total_floors, neighborhood, is_registered, published_at, public_lat, public_lng, location_precise, municipalities(name, slug), listing_images(storage_path, position))";
+  "created_at, listings!inner(id, number, title, type, status, price_km, price_negotiable, previous_price_km, price_reduced_at, area_m2, land_area_m2, rooms, floor, total_floors, neighborhood, is_registered, published_at, public_lat, public_lng, location_precise, municipalities(name, slug), listing_images(storage_path, position))";
 
-async function loadFavorites(userId: string): Promise<ListingSummary[]> {
+async function loadFavorites(userId: string, page: number): Promise<{ items: ListingSummary[]; total: number }> {
   const supabase = await createClient();
-  const { data } = await supabase
+  const from = (page - 1) * pageSize;
+  const { data, count } = await supabase
     .from("favorites")
-    .select(favoriteListingColumns)
+    .select(favoriteListingColumns, { count: "exact" })
     .eq("user_id", userId)
+    .in("listings.status", ["active", "sold"])
     .order("created_at", { ascending: false })
     .order("position", { referencedTable: "listings.listing_images" })
-    .limit(1, { referencedTable: "listings.listing_images" });
+    .limit(1, { referencedTable: "listings.listing_images" })
+    .range(from, from + pageSize - 1);
 
-  return ((data ?? []) as unknown as Array<{ listings: SummaryRow | null }>)
+  const items = ((data ?? []) as unknown as Array<{ listings: SummaryRow | null }>)
     .map((row) => row.listings)
-    .filter((listing): listing is SummaryRow => listing !== null && (listing.status === "active" || listing.status === "sold"))
+    .filter((listing): listing is SummaryRow => listing !== null)
     .map(toSummary);
+  return { items, total: count ?? 0 };
 }
 
-export default async function FavoritesPage() {
+export default async function FavoritesPage({ searchParams }: PageProps<"/moj-racun/sacuvano">) {
   const user = await requireUser(favoritesRoutes.page);
-  const favorites = await loadFavorites(user.id);
+  const page = parsePageParam((await searchParams).stranica);
+  const { items: favorites, total } = await loadFavorites(user.id, page);
 
   return (
     <div className="flex flex-col gap-8">
@@ -47,7 +54,7 @@ export default async function FavoritesPage() {
         <h1 className="font-display text-h1">{bs.favorites.title}</h1>
         <p className="max-w-[60ch] text-tinta-2">{bs.favorites.description}</p>
       </header>
-      {favorites.length === 0 ? (
+      {total === 0 ? (
         <EmptyState
           title={bs.favorites.emptyTitle}
           description={bs.favorites.emptyDescription}
@@ -58,7 +65,15 @@ export default async function FavoritesPage() {
           }
         />
       ) : (
-        <ListingSheet listings={favorites} eagerCount={4} />
+        <>
+          <ListingSheet listings={favorites} eagerCount={4} />
+          <Pagination
+            page={page}
+            pageSize={pageSize}
+            totalItems={total}
+            hrefForPage={(target) => pageHref(favoritesRoutes.page, target)}
+          />
+        </>
       )}
     </div>
   );

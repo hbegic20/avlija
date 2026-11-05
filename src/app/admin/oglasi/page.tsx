@@ -10,6 +10,7 @@ import { listingStatuses, type ListingStatus } from "@/lib/domain/enums";
 import { formatDate, formatListingNumber } from "@/lib/format";
 import { bs } from "@/lib/i18n/bs";
 import { listingPath } from "@/lib/listings/listing-path";
+import { parsePageParam } from "@/lib/pagination/page-param";
 import { createClient } from "@/lib/supabase/server";
 import { HatchNotice } from "@/components/ui/hatch-notice";
 
@@ -43,7 +44,7 @@ export default async function AdminListingsPage({ searchParams }: PageProps<"/ad
   const query = first(params.q).trim().slice(0, 100);
   const statusParam = first(params.status);
   const status = (listingStatuses as readonly string[]).includes(statusParam) ? (statusParam as ListingStatus) : null;
-  const page = Math.max(1, Math.floor(Number(first(params.stranica)) || 1));
+  const page = parsePageParam(params.stranica);
 
   const supabase = await createClient();
   let request = supabase

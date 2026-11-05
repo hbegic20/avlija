@@ -10,12 +10,15 @@ import { bs } from "@/lib/i18n/bs";
 import { listingPath } from "@/lib/listings/listing-path";
 import { createClient } from "@/lib/supabase/server";
 import { HatchNotice } from "@/components/ui/hatch-notice";
+import { Pagination } from "@/components/ui/pagination";
+import { pageHref, parsePageParam } from "@/lib/pagination/page-param";
 
 export const instant = false;
 
 export const metadata: Metadata = { title: bs.admin.reports.title };
 
 const text = bs.admin.reports;
+const reportsPageSize = 50;
 
 type ReportRow = {
   id: string;
@@ -33,16 +36,20 @@ function parseStatus(value: string | string[] | undefined): ReportStatus {
 }
 
 export default async function AdminReportsPage({ searchParams }: PageProps<"/admin/prijave">) {
-  const status = parseStatus((await searchParams).status);
+  const params = await searchParams;
+  const status = parseStatus(params.status);
+  const page = parsePageParam(params.stranica);
+  const from = (page - 1) * reportsPageSize;
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data, count } = await supabase
     .from("reports")
     .select(
       "id, reason, details, status, created_at, listing:listings(id, number, title, status), reporter:profiles!reports_reporter_id_fkey(full_name)",
+      { count: "exact" },
     )
     .eq("status", status)
-    .order("created_at", { ascending: status !== "open" ? false : true })
-    .limit(100);
+    .order("created_at", { ascending: status === "open" })
+    .range(from, from + reportsPageSize - 1);
   const reports = (data ?? []) as unknown as ReportRow[];
 
   return (
@@ -111,6 +118,14 @@ export default async function AdminReportsPage({ searchParams }: PageProps<"/adm
           ))}
         </ul>
       )}
+      {(count ?? 0) > 0 ? (
+        <Pagination
+          page={page}
+          pageSize={reportsPageSize}
+          totalItems={count ?? 0}
+          hrefForPage={(target) => pageHref(adminRoutes.reports, target, { status })}
+        />
+      ) : null}
     </div>
   );
 }

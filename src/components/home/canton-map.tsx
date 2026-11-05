@@ -16,6 +16,16 @@ export type CantonMapShape = {
 };
 
 const desktopQuery = "(min-width: 768px)";
+const maxSingleLineLabel = 14;
+const labelLineHeightEm = 1.2;
+
+function labelLines(name: string): string[] {
+  const hyphen = name.indexOf("-");
+  if (name.length <= maxSingleLineLabel || hyphen === -1) {
+    return [name];
+  }
+  return [name.slice(0, hyphen + 1), name.slice(hyphen + 1)];
+}
 
 export function CantonMap({
   viewBox,
@@ -66,7 +76,7 @@ export function CantonMap({
               <path
                 d={shape.path}
                 className={cn(
-                  "fill-[url(#canton-hatch)] stroke-linija transition-colors [stroke-width:1.5]",
+                  "fill-[url(#canton-hatch)] stroke-tinta-3 transition-colors [stroke-width:1.5] [vector-effect:non-scaling-stroke]",
                   "group-hover:fill-crijep/16 group-hover:stroke-crijep",
                   "group-focus-visible:fill-crijep/16 group-focus-visible:stroke-vranica group-focus-visible:[stroke-width:3]",
                   selected && "fill-crijep/16 stroke-crijep",
@@ -78,6 +88,7 @@ export function CantonMap({
         {shapes.map((shape) => {
           const selected = shape.slug === selectedSlug;
           const showCount = selected || shape.slug === activeSlug;
+          const lines = labelLines(shape.name);
           return (
             <g key={`label-${shape.slug}`} className="pointer-events-none" aria-hidden="true">
               <text
@@ -85,17 +96,25 @@ export function CantonMap({
                 y={shape.labelY}
                 textAnchor="middle"
                 className={cn(
-                  "fill-tinta-2 font-mono text-[15px] tracking-[0.08em] uppercase",
+                  "fill-tinta-2 font-mono text-[28px] tracking-[0.06em] uppercase md:text-[22px] lg:text-[20px]",
                   selected && "fill-crijep font-semibold",
                 )}
               >
-                {shape.name}
+                {lines.map((line, index) => (
+                  <tspan key={line} x={shape.labelX} dy={index === 0 ? 0 : `${labelLineHeightEm}em`}>
+                    {line}
+                  </tspan>
+                ))}
               </text>
               <text
                 x={shape.labelX}
-                y={shape.labelY + 20}
+                y={shape.labelY}
+                dy={`${lines.length * labelLineHeightEm + 0.2}em`}
                 textAnchor="middle"
-                className={cn("fill-crijep font-mono text-[13px] font-semibold", showCount ? "opacity-100" : "opacity-0")}
+                className={cn(
+                  "fill-crijep font-mono text-[26px] font-semibold md:text-[20px] lg:text-[18px]",
+                  showCount ? "opacity-100" : "opacity-0",
+                )}
               >
                 {shape.count}
               </text>

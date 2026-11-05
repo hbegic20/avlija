@@ -3,6 +3,7 @@ import Link from "next/link";
 import { HideAllButton } from "@/components/admin/hide-all-button";
 import { sellerPath } from "@/components/listings/detail/seller-box";
 import { Pagination } from "@/components/ui/pagination";
+import { pageHref, parsePageParam } from "@/lib/pagination/page-param";
 import { adminRoutes } from "@/lib/admin/routes";
 import type { ListingStatus, UserRole } from "@/lib/domain/enums";
 import { formatDate, formatInteger } from "@/lib/format";
@@ -20,8 +21,7 @@ const usersPageSize = 50;
 type ProfileRow = { id: string; full_name: string; role: UserRole; created_at: string };
 
 export default async function AdminUsersPage({ searchParams }: PageProps<"/admin/korisnici">) {
-  const pageValue = (await searchParams).stranica;
-  const page = Math.max(1, Math.floor(Number(Array.isArray(pageValue) ? pageValue[0] : pageValue) || 1));
+  const page = parsePageParam((await searchParams).stranica);
   const supabase = await createClient();
   const from = (page - 1) * usersPageSize;
   const { data, count } = await supabase
@@ -98,7 +98,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
           page={page}
           pageSize={usersPageSize}
           totalItems={count ?? 0}
-          hrefForPage={(target) => (target > 1 ? `${adminRoutes.users}?stranica=${target}` : adminRoutes.users)}
+          hrefForPage={(target) => pageHref(adminRoutes.users, target)}
         />
       ) : null}
     </div>
