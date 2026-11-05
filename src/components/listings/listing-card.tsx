@@ -63,9 +63,9 @@ function ListingCard({
 
 export function ListingSheet({ listings, eagerCount = 0 }: { listings: ListingSummary[]; eagerCount?: number }) {
   return (
-    <ul className="grid grid-cols-1 border-t border-l min-[520px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+    <ul className="grid grid-cols-1 gap-4 min-[520px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
       {listings.map((listing, index) => (
-        <li key={listing.id} className="border-r border-b bg-papir">
+        <li key={listing.id} className="border bg-papir">
           <ListingCard listing={listing} eager={index < eagerCount} />
         </li>
       ))}

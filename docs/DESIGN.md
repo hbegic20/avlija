@@ -7,7 +7,7 @@ This is the opposite of the generic real-estate template (white cards, blue butt
 ## 1. Principles
 
 1. **Paper, not glass.** Flat surfaces, hairline borders, no shadows, no blur, no glow.
-2. **Ledger over cards.** Information is shown as rows with labels and values, like an official document. Listing grids share borders like cells of a cadastral sheet instead of floating cards with gaps.
+2. **Ledger over cards.** Information is shown as rows with labels and values, like an official document. Stat, municipality and step grids share borders like cells of a cadastral sheet. Listing card grids are the exception (owner decision): each card has its own 1px `linija` border with a 16px gap (`gap-4`), still no radius and no shadow.
 3. **Numbers are first-class.** Prices, m², parcel numbers and coordinates are set in monospace and aligned. They are what buyers scan.
 4. **One loud colour.** Terracotta (`crijep`) is the only attention colour: main action, price, map pins. Everything else is ink, paper and green.
 5. **Local, honest, calm.** Real place names, real units (KM, m², dunum where relevant), plain Bosnian copy. No marketing exclamation marks.
@@ -110,12 +110,12 @@ These make the product recognisable. Use them consistently.
 4. **Coordinates strip.** The site header has a thin top strip with the selected municipality's coordinates in mono, e.g. `44.0567° N · 17.4508° E · BUGOJNO`. It updates with the municipality filter.
 5. **Cadastral hatch.** Missing images and map loading states show a 45° hatch (`repeating-linear-gradient` of `papir-3` 1px lines every 8px on `papir-2`). This is the only pattern allowed.
 6. **Muted map.** OpenStreetMap tiles get `filter: grayscale(1) sepia(.25) contrast(.95)` so the map looks like a printed survey. Pins are **small squares** (14px, `crijep` fill, 2px `papir` border) like parcel markers, not teardrops. Approximate locations are a dashed `crijep` circle instead of a pin.
-7. **Sheet grid.** Listing grids use `gap-px` on a `linija` background so cells share 1px borders like a cadastral sheet.
+7. **Sheet grid.** Stat, municipality and step grids share 1px borders like a cadastral sheet. Listing cards (`ListingSheet`) are separate bordered cells with `gap-4`.
 
 ### Logo mark and wordmark
 
 - Wordmark: `Avlija.` in Fraunces with the full stop in `crijep`. Used in the header, footer and OG images.
-- Mark (owner decision): a Fraunces `A.` in `papir` with the full stop in `crijep`, centred on a solid `tinta` square, no radius, no border. The glyph is 74% of the square side. Built once in `src/components/seo/logo-mark.tsx` and used for the favicon (`favicon.ico` 16/32/48), `icon` (32, 192, 512), `apple-icon` (180), the web manifest and next to the wordmark in OG images. The mark never changes colour with the theme.
+- Mark (owner decision): a Fraunces `A.` in `papir` with the full stop in `crijep`, centred on a solid `tinta` square, no radius, no border. The glyph is 74% of the square side. Built once in `src/components/seo/logo-mark.tsx` and used for the favicon (`favicon.ico` 16/32/48), `icon` (32, 192, 512), `apple-icon` (180), the web manifest and next to the wordmark in OG images. In those images the mark is fixed (dark square). In the UI (`Logo` in `src/components/layout/logo.tsx`, header, mobile menu and the first footer column above the site description) it is a 36px square built from tokens (`bg-tinta`, `text-papir`, `text-crijep`, Fraunces at `text-h2`) placed left of the wordmark with a 10px gap, so in dark mode it follows the tokens and shows as a light square with a dark `A`.
 
 ## 6. Components
 
