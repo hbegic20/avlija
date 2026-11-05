@@ -537,6 +537,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_emails: { Args: never; Returns: string[] }
       archive_expired_listings: { Args: never; Returns: number }
       get_listing_private_location: {
         Args: { target_listing_id: string }
@@ -581,6 +582,13 @@ export type Database = {
       reorder_listing_images: {
         Args: { ordered_image_ids: string[]; target_listing_id: string }
         Returns: undefined
+      }
+      set_user_role: {
+        Args: {
+          new_role: Database["public"]["Enums"]["user_role"]
+          target_user_id: string
+        }
+        Returns: Database["public"]["Enums"]["user_role"]
       }
     }
     Enums: {

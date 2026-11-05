@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { HideAllButton } from "@/components/admin/hide-all-button";
+import { RoleButton } from "@/components/admin/role-button";
 import { sellerPath } from "@/components/listings/detail/seller-box";
 import { Pagination } from "@/components/ui/pagination";
 import { pageHref, parsePageParam } from "@/lib/pagination/page-param";
 import { adminRoutes } from "@/lib/admin/routes";
+import { requireUser } from "@/lib/auth/current-user";
 import type { ListingStatus, UserRole } from "@/lib/domain/enums";
 import { formatDate, formatInteger } from "@/lib/format";
 import { bs } from "@/lib/i18n/bs";
@@ -21,7 +23,8 @@ const usersPageSize = 50;
 type ProfileRow = { id: string; full_name: string; role: UserRole; created_at: string };
 
 export default async function AdminUsersPage({ searchParams }: PageProps<"/admin/korisnici">) {
-  const page = parsePageParam(await searchParams);
+  const [currentUser, params] = await Promise.all([requireUser(adminRoutes.users), searchParams]);
+  const page = parsePageParam(params);
   const supabase = await createClient();
   const from = (page - 1) * usersPageSize;
   const { data, count } = await supabase
@@ -76,15 +79,23 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
                         {profile.full_name}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-small">{bs.enums.userRole[profile.role]}</td>
+                    <td className="px-4 py-3 text-small">
+                      {bs.enums.userRole[profile.role]}
+                      {profile.id === currentUser.id ? <span className="text-tinta-2"> ({text.you})</span> : null}
+                    </td>
                     <td className="px-4 py-3 font-mono text-mono text-tinta-2">{formatDate(profile.created_at)}</td>
                     <td className="px-4 py-3 font-mono text-mono">
                       {formatInteger(total.active)} {text.active} · {formatInteger(total.all)} {text.total}
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      {total.public > 0 && profile.role !== "admin" ? (
-                        <HideAllButton userId={profile.id} userName={profile.full_name} />
-                      ) : null}
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap justify-end gap-2">
+                        {profile.id !== currentUser.id ? (
+                          <RoleButton userId={profile.id} userName={profile.full_name} role={profile.role} />
+                        ) : null}
+                        {total.public > 0 && profile.role !== "admin" ? (
+                          <HideAllButton userId={profile.id} userName={profile.full_name} />
+                        ) : null}
+                      </div>
                     </td>
                   </tr>
                 );

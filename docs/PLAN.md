@@ -187,6 +187,7 @@ Done when: all lifecycle transitions work and respect limits (10 active).
 - [x] Reports queue: listing preview, reason, details, reporter, actions Sakrij oglas (with reason, sets `hidden`), Odbaci prijavu, Riješeno
 - [x] All listings table with search by number or title, filter by status, hide/unhide
 - [x] Users list with listing counts, ability to hide all listings of a user
+- [x] Promote or demote admins from the users list (2026-11-05, `set_user_role`); admins cannot demote themselves or accounts on the admin email list
 - [x] Make the owner's account admin via a one-off SQL statement documented in README (README rewritten with setup, commands and the admin SQL)
 
 ## Phase 11 — SEO and sharing
@@ -244,7 +245,7 @@ Done when: all items work in both themes and on mobile, RLS tests cover any new 
 
 ## Phase 14 — Deploy
 
-- [ ] Separate Supabase project for production, apply migrations
+- [ ] Separate Supabase project for production, apply migrations, then register and confirm `` there: it becomes admin automatically (`admin_emails()`, see README)
 - [ ] Custom SMTP for auth emails (e.g. Resend) since Supabase's built-in email is rate-limited; then push the Bosnian templates from `supabase/templates/` (see Phase 3)
 - [ ] Vercel project, env vars, custom domain, update Supabase redirect URLs and Google OAuth origins
 - [ ] Smoke test all flows on production

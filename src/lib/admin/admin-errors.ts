@@ -1,12 +1,21 @@
 import { bs } from "@/lib/i18n/bs";
 
-export type AdminErrorCode = "forbidden" | "validation" | "not_found" | "unhide_requirements" | "unexpected";
+export type AdminErrorCode =
+  | "forbidden"
+  | "validation"
+  | "not_found"
+  | "unhide_requirements"
+  | "self_demotion"
+  | "listed_admin"
+  | "unexpected";
 
 const messages: Record<AdminErrorCode, string> = {
   forbidden: bs.admin.errors.forbidden,
   validation: bs.auth.errors.unexpected,
   not_found: bs.listingForm.errors.notFound,
   unhide_requirements: bs.admin.errors.unhideRequirements,
+  self_demotion: bs.admin.errors.selfDemotion,
+  listed_admin: bs.admin.errors.listedAdmin,
   unexpected: bs.auth.errors.unexpected,
 };
 

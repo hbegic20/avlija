@@ -30,7 +30,30 @@ Project rules and conventions are in [CLAUDE.md](CLAUDE.md). The build plan, sch
 
 ## Making an account admin
 
-Admins can open `/admin` (reports queue, hiding listings, users). The `role` column cannot be changed through the API, so promote an account once with SQL.
+Admins can open `/admin` (reports queue, hiding listings, users). The `role` column cannot be changed through the API.
+
+### Automatic: the admin email list
+
+Emails in `public.admin_emails()` (migration `promote_listed_admins`) become admin automatically as soon as the account's email is confirmed, including on a fresh production database: deploy, register with that email, click the confirmation link, refresh. An unconfirmed account is never promoted, so registering someone else's email does not grant anything. The list only promotes; it never demotes.
+
+To change the list, add a new migration that replaces the function (never edit an applied migration):
+
+```sql
+create or replace function public.admin_emails()
+returns text[]
+language sql
+immutable
+set search_path = ''
+as $$ select array['prvi@primjer.ba', 'drugi@primjer.ba'] $$;
+```
+
+### From the admin area
+
+An admin can open `/admin/korisnici` and use **Postavi za admina** or **Ukloni admina** on any other user (database function `set_user_role`). Admins cannot remove their own rights, and accounts on the admin email list cannot be demoted there. No SQL, migration or deploy is needed.
+
+### Manual: one-off SQL
+
+For an account not on the list, when nobody can log in as admin yet:
 
 1. Register and confirm the account in the app.
 2. In Supabase → SQL Editor, run (replace the email):
@@ -50,6 +73,6 @@ join auth.users u on u.id = p.id
 where p.role = 'admin';
 ```
 
-4. Log out and back in. The account menu now shows **Administracija**.
+4. Refresh the page. The account menu now shows **Administracija**.
 
-To remove admin rights, run the same `update` with `role = 'user'`.
+To remove admin rights, run the same `update` with `role = 'user'`. If the email is on the admin list, also remove it from `admin_emails()` in a new migration, or the account is promoted again the next time its email is confirmed or changed.

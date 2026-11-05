@@ -5,10 +5,17 @@ import { failure, success, type ActionResult } from "@/lib/action-result";
 import type { AdminErrorCode } from "@/lib/admin/admin-errors";
 import { adminRoutes } from "@/lib/admin/routes";
 import { getAdminSession } from "@/lib/auth/action-session";
+import type { UserRole } from "@/lib/domain/enums";
 import { listingCacheTag } from "@/lib/listings/public-listing";
 import { logIfUnexpected, logServerError } from "@/lib/logging/log-server-error";
 import { listingsCacheTag } from "@/lib/search/cache-tags";
-import { hideListingSchema, reportResolutionSchema, type HideListingInput, type ReportResolution } from "@/lib/validation/admin";
+import {
+  hideListingSchema,
+  reportResolutionSchema,
+  userRoleSchema,
+  type HideListingInput,
+  type ReportResolution,
+} from "@/lib/validation/admin";
 import { idSchema } from "@/lib/validation/id";
 
 type AdminResult<Data = undefined> = ActionResult<Data, AdminErrorCode>;
@@ -120,4 +127,32 @@ export async function hideAllUserListings(userId: string, input: HideListingInpu
   const numbers = (data ?? []).map((row) => row.number);
   revalidateAdmin(numbers);
   return success({ count: numbers.length });
+}
+
+const roleErrorMarkers: ReadonlyArray<readonly [marker: string, code: AdminErrorCode]> = [
+  ["FORBIDDEN", "forbidden"],
+  ["NOT_FOUND", "not_found"],
+  ["SELF_DEMOTION", "self_demotion"],
+  ["LISTED_ADMIN", "listed_admin"],
+];
+
+export async function setUserRole(userId: string, role: UserRole): Promise<AdminResult<{ role: UserRole }>> {
+  const parsedRole = userRoleSchema.safeParse(role);
+  if (!parsedRole.success || !idSchema.safeParse(userId).success) {
+    return failure("validation");
+  }
+  const admin = await getAdminSession();
+  if (!admin) {
+    return failure("forbidden");
+  }
+  const { data, error } = await admin.supabase.rpc("set_user_role", {
+    target_user_id: userId,
+    new_role: parsedRole.data,
+  });
+  if (error || !data) {
+    const code = roleErrorMarkers.find(([marker]) => error?.message.includes(marker))?.[1] ?? "unexpected";
+    return failure(logIfUnexpected("admin.setUserRole", error ?? "no role returned", code));
+  }
+  revalidatePath(adminRoutes.users);
+  return success({ role: data });
 }
