@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { publicPageMetadata } from "@/lib/seo/page-metadata";
 import { notFound } from "next/navigation";
 import { Avatar } from "@/components/layout/avatar";
 import { Container } from "@/components/layout/container";
 import { SectionHeading } from "@/components/home/section-heading";
 import { ListingSheet } from "@/components/listings/listing-card";
+import { sellerPath } from "@/components/listings/detail/seller-box";
 import { formatDate } from "@/lib/format";
 import { bs } from "@/lib/i18n/bs";
 import { getPublicSeller } from "@/lib/listings/public-listing";
@@ -19,8 +21,18 @@ type SellerPageProps = PageProps<"/prodavac/[id]">;
 
 export async function generateMetadata({ params }: SellerPageProps): Promise<Metadata> {
   const { id } = await params;
-  const seller = listingIdSchema.safeParse(id).success ? await getPublicSeller(id) : null;
-  return seller ? { title: bs.sellerPage.title(seller.fullName) } : {};
+  if (!listingIdSchema.safeParse(id).success) {
+    return {};
+  }
+  const [seller, listings] = await Promise.all([getPublicSeller(id), sellerActiveListings(id)]);
+  if (!seller) {
+    return {};
+  }
+  return publicPageMetadata({
+    title: bs.sellerPage.title(seller.fullName),
+    description: bs.sellerPage.description(seller.fullName, listings.length),
+    path: sellerPath(seller.id),
+  });
 }
 
 export default async function SellerPage({ params }: SellerPageProps) {

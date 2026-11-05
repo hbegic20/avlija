@@ -6,12 +6,13 @@ import { ResultsSkeleton } from "@/components/search/results-skeleton";
 import { SearchPageHeader } from "@/components/search/search-page-header";
 import { bs } from "@/lib/i18n/bs";
 import { parseSearchFilters } from "@/lib/search/filters";
+import { publicPageMetadata } from "@/lib/seo/page-metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicPageMetadata({
   title: bs.search.title,
   description: bs.search.intro,
-  alternates: { canonical: "/nekretnine" },
-};
+  path: "/nekretnine",
+});
 
 async function Results({ searchParams }: { searchParams: PageProps<"/nekretnine">["searchParams"] }) {
   const filters = parseSearchFilters(await searchParams);

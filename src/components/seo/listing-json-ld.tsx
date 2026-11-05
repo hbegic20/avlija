@@ -1,17 +1,35 @@
 import { bs } from "@/lib/i18n/bs";
 import type { PublicListingBundle } from "@/lib/listings/public-listing";
 import { descriptionSnippet } from "@/lib/seo/description";
+import { listingsBasePath } from "@/lib/search/filters";
 import { absoluteUrl } from "@/lib/seo/site-url";
+import { JsonLd } from "./json-ld";
 
-function serialize(value: unknown): string {
-  return JSON.stringify(value).replace(/</g, "\\u003c");
+function breadcrumbs(bundle: PublicListingBundle) {
+  const trail = [
+    { name: bs.nav.listings, path: listingsBasePath },
+    ...(bundle.municipalityName && bundle.municipalitySlug
+      ? [{ name: bundle.municipalityName, path: `${listingsBasePath}/${bundle.municipalitySlug}` }]
+      : []),
+    { name: bundle.listing.title, path: bundle.path },
+  ];
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: trail.map((entry, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: entry.name,
+      item: absoluteUrl(entry.path),
+    })),
+  };
 }
 
 export function ListingJsonLd({ bundle }: { bundle: PublicListingBundle }) {
   const { listing } = bundle;
   const url = absoluteUrl(bundle.path);
   const offer =
-    listing.price_km !== null && !listing.price_negotiable
+    listing.price_km !== null
       ? {
           "@type": "Offer",
           price: listing.price_km,
@@ -46,5 +64,10 @@ export function ListingJsonLd({ bundle }: { bundle: PublicListingBundle }) {
           : undefined,
     },
   };
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serialize(data) }} />;
+  return (
+    <>
+      <JsonLd data={data} />
+      <JsonLd data={breadcrumbs(bundle)} />
+    </>
+  );
 }

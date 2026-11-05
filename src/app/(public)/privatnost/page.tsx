@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
+import { publicPageMetadata } from "@/lib/seo/page-metadata";
 import Link from "next/link";
 import { LegalDocument } from "@/components/legal/legal-document";
 import { routes } from "@/components/layout/routes";
 import { operator } from "@/lib/legal/operator";
 import { legalCommon, privacyPage } from "@/lib/i18n/legal-bs";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicPageMetadata({
   title: privacyPage.title,
   description: privacyPage.intro,
-  alternates: { canonical: "/privatnost" },
-};
+  path: "/privatnost",
+});
 
 export default function PrivacyPage() {
   return (

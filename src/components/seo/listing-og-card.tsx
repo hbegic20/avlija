@@ -1,4 +1,5 @@
 import { municipalityOutline } from "@/lib/geo/canton-svg";
+import { LogoMark } from "./logo-mark";
 import { formatListingNumber } from "@/lib/format";
 import { bs } from "@/lib/i18n/bs";
 import { cardFacts } from "@/lib/listings/card-facts";
@@ -62,14 +63,17 @@ export function ListingOgCard({ bundle }: { bundle: PublicListingBundle }) {
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div style={{ display: "flex", alignItems: "baseline", gap: 12, fontFamily: "JetBrains Mono", fontWeight: 600, fontSize: 64, color: c.crijep }}>
-              {listingPriceLabel(listing.price_km, listing.price_negotiable)}
+              {listingPriceLabel(listing.price_km)}
             </div>
             {facts.length > 0 ? (
               <div style={{ display: "flex", fontFamily: "JetBrains Mono", fontSize: 26, color: c.tinta2 }}>{facts.join(" · ")}</div>
             ) : null}
-            <div style={{ display: "flex", fontFamily: "Fraunces", fontSize: 34, marginTop: 8 }}>
-              {bs.site.name}
-              <span style={{ color: c.crijep }}>.</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8 }}>
+              <LogoMark size={40} />
+              <div style={{ display: "flex", fontFamily: "Fraunces", fontSize: 34 }}>
+                {bs.site.name}
+                <span style={{ color: c.crijep }}>.</span>
+              </div>
             </div>
           </div>
         </div>

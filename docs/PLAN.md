@@ -207,9 +207,9 @@ Done when: all lifecycle transitions work and respect limits (10 active).
 - [x] Performance pass: `next/image` everywhere with `sizes` (Next optimizer; Supabase image transformations need a paid plan), detail map loaded only when near the viewport
 - [x] Rate limiting on sign-up (Supabase `sign_in_sign_ups` 30 per 5 min per IP), reports (10 per day) and contact reveal (30 per hour) via database counters
 
-## Status and open items (2026-10-30)
+## Status and open items (updated 2026-11-05)
 
-Phases 0–12 are built. Phase 13 (pre-launch features) is in progress, Phase 14 (deploy) has not started. Before deploying, work through this list top to bottom.
+Phases 0–13 are built. Phase 14 (deploy) has not started. Before deploying, work through this list top to bottom.
 
 ### Before deploy
 - [ ] Add `SUPABASE_SECRET_KEY` to `.env.local`, then run `npm run test:rls` (never run yet) and a full logged-in walk: profile setup, listing wizard, dashboard, favourites, admin. Logged-in pages have only been tested by the owner by hand

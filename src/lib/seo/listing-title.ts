@@ -9,11 +9,10 @@ export type ListingTitleInput = {
   landAreaM2: number | null;
   municipalityName: string | null;
   priceKm: number | null;
-  priceNegotiable: boolean;
 };
 
-export function listingPriceLabel(priceKm: number | null, priceNegotiable: boolean): string {
-  return priceKm !== null && !priceNegotiable ? formatKM(priceKm) : bs.price.negotiable;
+export function listingPriceLabel(priceKm: number | null): string {
+  return priceKm !== null ? formatKM(priceKm) : bs.price.negotiable;
 }
 
 export function listingSeoTitle(listing: ListingTitleInput): string {
@@ -23,5 +22,5 @@ export function listingSeoTitle(listing: ListingTitleInput): string {
     area !== null ? formatArea(area) : null,
     listing.municipalityName,
   ].filter(Boolean);
-  return `${parts.join(", ")} — ${listingPriceLabel(listing.priceKm, listing.priceNegotiable)}`;
+  return `${parts.join(", ")} — ${listingPriceLabel(listing.priceKm)}`;
 }

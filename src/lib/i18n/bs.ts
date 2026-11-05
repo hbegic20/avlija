@@ -15,6 +15,7 @@ import { pluralForm } from "./plural";
 const listingWords = { one: "oglas", few: "oglasa", many: "oglasa" };
 const roomWords = { one: "soba", few: "sobe", many: "soba" };
 const dayWords = { one: "dan", few: "dana", many: "dana" };
+const activeListingWords = { one: "aktivan oglas", few: "aktivna oglasa", many: "aktivnih oglasa" };
 
 function roomWord(rooms: number): string {
   return Number.isInteger(rooms) ? pluralForm(rooms, roomWords) : roomWords.few;
@@ -116,7 +117,7 @@ export const bs = {
   site: {
     name: "Avlija",
     homeTitle: "Avlija — nekretnine u Bugojnu i Srednjoj Bosni",
-    ogTagline: "Kuće, stanovi i placevi direktno od vlasnika",
+    ogTagline: "Direktno od vlasnika, bez posrednika",
     description: "Kuće, stanovi i placevi u Bugojnu i Srednjobosanskom kantonu, direktno od vlasnika.",
     region: "Srednjobosanski kanton",
   },
@@ -716,6 +717,10 @@ export const bs = {
   },
   sellerPage: {
     title: (name: string) => `Prodavac: ${name}`,
+    description: (name: string, activeCount: number) =>
+      activeCount > 0
+        ? `${name}: ${activeCount} ${pluralForm(activeCount, activeListingWords)} u Srednjobosanskom kantonu, direktno od vlasnika.`
+        : `${name} trenutno nema aktivnih oglasa na Avliji.`,
     activeListings: "Aktivni oglasi",
     noListings: "Prodavac trenutno nema aktivnih oglasa.",
   },

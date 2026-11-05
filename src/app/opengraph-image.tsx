@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { LogoMark } from "@/components/seo/logo-mark";
 import { cantonSvg } from "@/lib/geo/canton-svg";
 import { bs } from "@/lib/i18n/bs";
 import { loadOgFonts, ogColours as c, ogSize } from "@/lib/seo/og-fonts";
@@ -14,9 +15,12 @@ export default async function SiteOpenGraphImage() {
       <div style={{ display: "flex", width: "100%", height: "100%", background: c.papir, color: c.tinta }}>
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", width: 620, padding: 64 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 24, borderTop: `4px solid ${c.tinta}`, paddingTop: 28 }}>
-            <div style={{ display: "flex", fontFamily: "Fraunces", fontSize: 96, letterSpacing: -3 }}>
-              {bs.site.name}
-              <span style={{ color: c.crijep }}>.</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
+              <LogoMark size={104} />
+              <div style={{ display: "flex", fontFamily: "Fraunces", fontSize: 96, letterSpacing: -3 }}>
+                {bs.site.name}
+                <span style={{ color: c.crijep }}>.</span>
+              </div>
             </div>
             <div style={{ fontFamily: "Fraunces", fontSize: 44, lineHeight: 1.15 }}>{bs.home.title}</div>
           </div>

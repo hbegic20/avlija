@@ -11,13 +11,15 @@ import { bs } from "@/lib/i18n/bs";
 import { listingsBasePath } from "@/lib/search/filters";
 import { latestListings, municipalitiesWithCounts } from "@/lib/search/queries";
 import { HatchNotice } from "@/components/ui/hatch-notice";
+import { SiteJsonLd } from "@/components/seo/site-json-ld";
 import { listingRoutes } from "@/lib/listings/routes";
+import { publicPageMetadata } from "@/lib/seo/page-metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicPageMetadata({
   title: { absolute: bs.site.homeTitle },
   description: bs.site.description,
-  alternates: { canonical: "/" },
-};
+  path: "/",
+});
 
 export default async function HomePage() {
   const [latest, municipalities] = await Promise.all([latestListings(8), municipalitiesWithCounts()]);
@@ -26,6 +28,7 @@ export default async function HomePage() {
 
   return (
     <Container>
+      <SiteJsonLd />
       <HomeSearch viewBox={cantonSvg.viewBox} shapes={shapes} />
 
       <section className="mt-6">

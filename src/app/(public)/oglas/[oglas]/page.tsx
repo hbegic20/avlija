@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { defaultOpenGraph } from "@/lib/seo/page-metadata";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
 import { Container } from "@/components/layout/container";
@@ -50,14 +51,13 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
     landAreaM2: bundle.listing.land_area_m2,
     municipalityName: bundle.municipalityName,
     priceKm: bundle.listing.price_km,
-    priceNegotiable: bundle.listing.price_negotiable,
   });
   const description = descriptionSnippet(bundle.listing.description) || bundle.listing.title;
   return {
     title,
     description,
     alternates: { canonical: bundle.path },
-    openGraph: { title, description, url: bundle.path, type: "website" },
+    openGraph: { ...defaultOpenGraph, title, description, url: bundle.path },
   };
 }
 

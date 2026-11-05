@@ -112,6 +112,11 @@ These make the product recognisable. Use them consistently.
 6. **Muted map.** OpenStreetMap tiles get `filter: grayscale(1) sepia(.25) contrast(.95)` so the map looks like a printed survey. Pins are **small squares** (14px, `crijep` fill, 2px `papir` border) like parcel markers, not teardrops. Approximate locations are a dashed `crijep` circle instead of a pin.
 7. **Sheet grid.** Listing grids use `gap-px` on a `linija` background so cells share 1px borders like a cadastral sheet.
 
+### Logo mark and wordmark
+
+- Wordmark: `Avlija.` in Fraunces with the full stop in `crijep`. Used in the header, footer and OG images.
+- Mark (owner decision): a Fraunces `A.` in `papir` with the full stop in `crijep`, centred on a solid `tinta` square, no radius, no border. The glyph is 74% of the square side. Built once in `src/components/seo/logo-mark.tsx` and used for the favicon (`favicon.ico` 16/32/48), `icon` (32, 192, 512), `apple-icon` (180), the web manifest and next to the wordmark in OG images. The mark never changes colour with the theme.
+
 ## 6. Components
 
 All live in `src/components/ui/`. Build them in Phase 1 before any feature work.

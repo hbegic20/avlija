@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { defaultOpenGraph } from "@/lib/seo/page-metadata";
 import { Fraunces, JetBrains_Mono, Schibsted_Grotesk } from "next/font/google";
 import { Suspense } from "react";
 import { NoticeToast } from "@/components/auth/notice-toast";
@@ -36,11 +37,7 @@ export const metadata: Metadata = {
   },
   description: bs.site.description,
   applicationName: bs.site.name,
-  openGraph: {
-    siteName: bs.site.name,
-    locale: "bs_BA",
-    type: "website",
-  },
+  openGraph: defaultOpenGraph,
   twitter: {
     card: "summary_large_image",
   },

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { publicPageMetadata } from "@/lib/seo/page-metadata";
 import { Container } from "@/components/layout/container";
 import { DataRow } from "@/components/ui/data-row";
 import { Ledger } from "@/components/ui/ledger";
@@ -6,11 +7,11 @@ import { contactPage } from "@/lib/i18n/legal-bs";
 import { operator } from "@/lib/legal/operator";
 import { PageTitle } from "@/components/ui/page-title";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicPageMetadata({
   title: contactPage.title,
   description: contactPage.intro,
-  alternates: { canonical: "/kontakt" },
-};
+  path: "/kontakt",
+});
 
 export default function ContactPage() {
   return (
