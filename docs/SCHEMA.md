@@ -13,6 +13,7 @@ Postgres on Supabase. Every table has RLS enabled. Migrations live in `supabase/
 | `listing_images` | Photos per listing, ordered. |
 | `favorites` | Saved listings per user. |
 | `reports` | Users reporting fake or wrong listings. |
+| `listing_views` | One row per listing, visitor and day (`visitor_hash` is an HMAC of the user id, or of IP and user agent for guests). RLS on, no policies, no grants: only `increment_listing_view` writes it, and `prune_listing_views` deletes rows older than yesterday every night. |
 | `contact_reveals` | Log of phone reveals, used only for rate limiting. RLS on, no policies, no grants: only `get_seller_contact` (security definer) reads and writes it. |
 
 Storage buckets: `listing-images` (public read), `avatars` (public read).
@@ -273,7 +274,8 @@ RLS:
 | `enforce_listing_publish_requirements()` | before insert/update trigger on listings, named `listings_40_publish` | When status becomes `active`: requires at least 1 row in `listing_images`, `lat` and `lng` set, and `price_km` set or `price_negotiable = true` (raises `PUBLISH_REQUIREMENTS`), and a phone number in the owner's `profile_contacts` (raises `PHONE_REQUIRED`). |
 | `enforce_image_limit()` | before insert trigger on listing_images | Max 20 images per listing, error `IMAGE_LIMIT`. |
 | `add_listing_image(target_listing_id uuid, image_path text, image_width integer, image_height integer)` | `security definer` RPC, `authenticated` only | Locks the owner's listing row (`for update`), so parallel uploads are serialised. Requires `image_path` to match `<auth.uid()>/<listing_id>/<uuid>.webp` and width/height between 1 and 10000 (raises `INVALID_IMAGE`), raises `NOT_FOUND` for listings the caller does not own, then inserts at `max(position) + 1` and returns the row. |
-| `increment_listing_view(listing_id uuid)` | `security definer` RPC | Increments `view_count` for active listings. Called once per session per listing from the detail page. |
+| `increment_listing_view(listing_id uuid, visitor_hash text)` | `security definer` RPC, `service_role` only | For active listings, records the visitor in `listing_views` and increments `view_count` only the first time that visitor is seen that day. Called by the `recordView` server action with the admin client; the hash comes from `src/lib/listings/visitor-hash.ts`. |
+| `prune_listing_views()` | `security definer`, cron `prune-listing-views` at 01:30 | Deletes `listing_views` rows older than yesterday. |
 | `renew_listing(listing_id uuid)` | `security definer` RPC | Owner only. Allowed when the listing is `archived`, or `active` with less than 14 days left. Sets `status = 'active'` and `expires_at = now() + interval '90 days'`. Respects the 10-active-listings limit. |
 | `reorder_listing_images(target_listing_id uuid, ordered_image_ids uuid[])` | `security invoker` RPC | Owner only (RLS applies). Rewrites `position` for all images of the listing in one transaction so the deferred unique `(listing_id, position)` constraint is checked once. Position 0 is the cover. Raises `IMAGE_ORDER_MISMATCH` unless the array contains exactly the listing's images. |
 | `get_listing_private_location(target_listing_id uuid)` | `security definer` RPC | Owner or admin only. Returns exact `lat`, `lng`, `address`, which are not selectable through the API. |

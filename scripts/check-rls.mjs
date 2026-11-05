@@ -304,9 +304,14 @@ async function run() {
     describeError(revealsError),
   );
 
-  const { error: viewError } = await anon.rpc("increment_listing_view", { listing_id: draft.id });
+  const { error: anonViewError } = await anon.rpc("increment_listing_view", { listing_id: draft.id, visitor_hash: "a".repeat(64) });
+  check("anon cannot call increment_listing_view", anonViewError !== null, describeError(anonViewError));
+
+  const visitor = "b".repeat(64);
+  await admin.rpc("increment_listing_view", { listing_id: draft.id, visitor_hash: visitor });
+  await admin.rpc("increment_listing_view", { listing_id: draft.id, visitor_hash: visitor });
   const { data: afterView } = await admin.from("listings").select("view_count, updated_at").eq("id", draft.id).single();
-  check("anon can increment views", viewError === null && afterView?.view_count === 1, describeError(viewError));
+  check("the same visitor is counted once per day", afterView?.view_count === 1, `view_count ${afterView?.view_count}`);
 
   const { error: renewError } = await userA.client.rpc("renew_listing", { listing_id: draft.id });
   check(

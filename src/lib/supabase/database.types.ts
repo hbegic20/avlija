@@ -178,6 +178,32 @@ export type Database = {
           },
         ]
       }
+      listing_views: {
+        Row: {
+          listing_id: string
+          viewed_on: string
+          visitor_hash: string
+        }
+        Insert: {
+          listing_id: string
+          viewed_on?: string
+          visitor_hash: string
+        }
+        Update: {
+          listing_id?: string
+          viewed_on?: string
+          visitor_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_views_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listings: {
         Row: {
           address: string | null
@@ -531,7 +557,7 @@ export type Database = {
       }
       immutable_unaccent: { Args: { input: string }; Returns: string }
       increment_listing_view: {
-        Args: { listing_id: string }
+        Args: { listing_id: string; visitor_hash: string }
         Returns: undefined
       }
       is_admin: { Args: never; Returns: boolean }
@@ -550,6 +576,7 @@ export type Database = {
           listing_id: string
         }[]
       }
+      prune_listing_views: { Args: never; Returns: number }
       renew_listing: { Args: { listing_id: string }; Returns: string }
       reorder_listing_images: {
         Args: { ordered_image_ids: string[]; target_listing_id: string }

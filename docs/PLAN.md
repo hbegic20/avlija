@@ -215,11 +215,13 @@ Phases 0–13 are built. Phase 14 (deploy) has not started. Before deploying, wo
 - [ ] Add `SUPABASE_SECRET_KEY` to `.env.local`, then run `npm run test:rls` (never run yet) and a full logged-in walk: profile setup, listing wizard, dashboard, favourites, admin. Logged-in pages have only been tested by the owner by hand
 - [x] Migration: block deleting the last image of an active listing (today the publish rule is only checked when a listing becomes active)
 - [x] Migration review (2026-11-04, `harden_listings_and_profiles`): approximate location no longer reversible from the public listing id (random hidden `location_seed`), listing `number` and other system columns not insertable by users, owner status changes limited to publish / sold / archive, republishing an expired listing gets a fresh 90-day expiry, image rows must point into the owner's own folder, profiles readable only for sellers with active or sold listings (seller page returns 404 for users without public listings)
-- [ ] Migration: limit `increment_listing_view` so views cannot be inflated by calling the RPC repeatedly
+- [x] Migration: limit `increment_listing_view` so views cannot be inflated by calling the RPC repeatedly (2026-11-05, `deduplicate_listing_views`: callable only by the server with the secret key, one view per visitor per listing per day; without `SUPABASE_SECRET_KEY` in `.env.local` views are not counted locally)
+- [x] Database and auth review (2026-11-05): parallel photo uploads no longer collide and the 20-image limit holds (`add_listing_image` RPC under a row lock, direct inserts revoked); storage accepts only `{uid}/{listing}/{uuid}.webp` and `{uid}/avatar.webp`, WebP only; unknown `features` values rejected by a check constraint
+- [ ] Production auth URLs: `site_url` and redirect URLs in the production Supabase project must use the real domain (`supabase/config.toml` only lists localhost)
 - [ ] Set `NEXT_PUBLIC_OPERATOR_NAME` and `NEXT_PUBLIC_CONTACT_EMAIL`; legal review of `/uslovi-koristenja` and `/privatnost` texts (`src/lib/i18n/legal-bs.ts`)
 
 ### Soon after
-- [ ] Daily cleanup job: delete drafts untouched for 60 days and their images; remove orphaned files in `listing-images` without a `listing_images` row; keep `contact_reveals` (seller stats count distinct viewers from it), or roll old rows up into per-listing counts if it grows large
+- [ ] Daily cleanup job: delete drafts untouched for 60 days and their images; remove orphaned files in `listing-images` without a `listing_images` row (uploads interrupted before registration); keep `contact_reveals` (seller stats count distinct viewers from it), or roll old rows up into per-listing counts if it grows large
 - [ ] Cache the 410 lookup in `src/lib/listings/gone-response.ts` (one REST query per `/oglas/...` request today)
 
 ### Owner decisions pending

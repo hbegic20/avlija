@@ -7,8 +7,9 @@ import { favoritesRoutes } from "@/lib/favorites/routes";
 import type { InteractionErrorCode } from "@/lib/listings/interaction-errors";
 import { listingCacheTag } from "@/lib/listings/public-listing";
 import { listingRoutes } from "@/lib/listings/routes";
+import { visitorHash } from "@/lib/listings/visitor-hash";
 import { listingsCacheTag } from "@/lib/search/cache-tags";
-import { createPublicClient } from "@/lib/supabase/public";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { listingIdSchema } from "@/lib/validation/listing";
 import { reportSchema, type ReportInput } from "@/lib/validation/report";
 
@@ -24,7 +25,15 @@ export async function recordView(listingId: string): Promise<void> {
   if (!listingIdSchema.safeParse(listingId).success) {
     return;
   }
-  await createPublicClient().rpc("increment_listing_view", { listing_id: listingId });
+  try {
+    const session = await getActionSession();
+    await createAdminClient().rpc("increment_listing_view", {
+      listing_id: listingId,
+      visitor_hash: await visitorHash(session?.userId ?? null),
+    });
+  } catch {
+    return;
+  }
 }
 
 export async function revealContact(listingId: string): Promise<InteractionResult<SellerContact>> {
