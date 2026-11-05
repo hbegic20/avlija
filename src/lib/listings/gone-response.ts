@@ -5,13 +5,26 @@ import { parseListingSegment } from "./public-listing-segment";
 import { isGoneSoldListing } from "./sold-grace";
 
 const lookupTimeoutMs = 1500;
+const cacheTtlMs = 5 * 60_000;
+const maxCachedListings = 1000;
 
-export async function isGoneListingPath(pathname: string): Promise<boolean> {
-  const match = /^\/oglas\/([^/]+)$/.exec(pathname);
-  const listingNumber = match ? parseListingSegment(match[1]) : null;
-  if (listingNumber === null) {
-    return false;
+type ListingLifecycle = { status: string; soldAt: string | null } | null;
+type CachedLifecycle = { lifecycle: ListingLifecycle; expiresAt: number };
+
+const lifecycleCache = new Map<number, CachedLifecycle>();
+
+function rememberLifecycle(listingNumber: number, lifecycle: ListingLifecycle, now: number) {
+  lifecycleCache.delete(listingNumber);
+  if (lifecycleCache.size >= maxCachedListings) {
+    const oldest = lifecycleCache.keys().next().value;
+    if (oldest !== undefined) {
+      lifecycleCache.delete(oldest);
+    }
   }
+  lifecycleCache.set(listingNumber, { lifecycle, expiresAt: now + cacheTtlMs });
+}
+
+async function fetchLifecycle(listingNumber: number): Promise<ListingLifecycle | undefined> {
   try {
     const url = `${supabaseUrl}/rest/v1/listings?select=status,sold_at&number=eq.${listingNumber}&limit=1`;
     const response = await fetch(url, {
@@ -19,14 +32,37 @@ export async function isGoneListingPath(pathname: string): Promise<boolean> {
       signal: AbortSignal.timeout(lookupTimeoutMs),
     });
     if (!response.ok) {
-      return false;
+      return undefined;
     }
     const rows = (await response.json()) as Array<{ status: string; sold_at: string | null }>;
     const row = rows[0];
-    return row !== undefined && isGoneSoldListing(row.status, row.sold_at, Date.now());
+    return row ? { status: row.status, soldAt: row.sold_at } : null;
   } catch {
+    return undefined;
+  }
+}
+
+async function listingLifecycle(listingNumber: number, now: number): Promise<ListingLifecycle | undefined> {
+  const cached = lifecycleCache.get(listingNumber);
+  if (cached && cached.expiresAt > now) {
+    return cached.lifecycle;
+  }
+  const lifecycle = await fetchLifecycle(listingNumber);
+  if (lifecycle !== undefined) {
+    rememberLifecycle(listingNumber, lifecycle, now);
+  }
+  return lifecycle;
+}
+
+export async function isGoneListingPath(pathname: string): Promise<boolean> {
+  const match = /^\/oglas\/([^/]+)$/.exec(pathname);
+  const listingNumber = match ? parseListingSegment(match[1]) : null;
+  if (listingNumber === null) {
     return false;
   }
+  const now = Date.now();
+  const lifecycle = await listingLifecycle(listingNumber, now);
+  return lifecycle ? isGoneSoldListing(lifecycle.status, lifecycle.soldAt, now) : false;
 }
 
 export function goneResponseBody(): string {

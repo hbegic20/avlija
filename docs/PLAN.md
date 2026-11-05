@@ -222,7 +222,8 @@ Phases 0–13 are built. Phase 14 (deploy) has not started. Before deploying, wo
 
 ### Soon after
 - [ ] Daily cleanup job: delete drafts untouched for 60 days and their images; remove orphaned files in `listing-images` without a `listing_images` row (uploads interrupted before registration); keep `contact_reveals` (seller stats count distinct viewers from it), or roll old rows up into per-listing counts if it grows large
-- [ ] Cache the 410 lookup in `src/lib/listings/gone-response.ts` (one REST query per `/oglas/...` request today)
+- [x] Cache the 410 lookup in `src/lib/listings/gone-response.ts` (2026-11-05: in-memory per instance, 5 minutes, max 1000 listings; safe because `sold` is final and the 30-day rule is evaluated on every request)
+- [x] Server-side error logging (2026-11-05): every action path that returns `unexpected` or `network` logs `[avlija] <file>.<action>` with the error's code, message and hint (never `details`, which can contain row data) via `src/lib/logging/log-server-error.ts`; visible in Vercel function logs
 
 ### Owner decisions pending
 - [ ] Darker `upozorenje` for text contrast (3.56:1 on `papir`; suggested `#8A6114`), and `tinta-3` (2.95:1, placeholders only)

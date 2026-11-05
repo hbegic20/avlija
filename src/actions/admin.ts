@@ -6,6 +6,7 @@ import type { AdminErrorCode } from "@/lib/admin/admin-errors";
 import { adminRoutes } from "@/lib/admin/routes";
 import { getAdminSession } from "@/lib/auth/action-session";
 import { listingCacheTag } from "@/lib/listings/public-listing";
+import { logIfUnexpected, logServerError } from "@/lib/logging/log-server-error";
 import { listingsCacheTag } from "@/lib/search/cache-tags";
 import { hideListingSchema, reportResolutionSchema, type HideListingInput, type ReportResolution } from "@/lib/validation/admin";
 import { idSchema } from "@/lib/validation/id";
@@ -36,7 +37,7 @@ export async function hideListing(listingId: string, input: HideListingInput): P
     .select("number")
     .maybeSingle();
   if (error || !data) {
-    return failure(error ? "unexpected" : "not_found");
+    return failure(logIfUnexpected("admin.hideListing", error, error ? "unexpected" : "not_found"));
   }
   await admin.supabase
     .from("reports")
@@ -69,7 +70,7 @@ export async function unhideListing(listingId: string): Promise<AdminResult> {
     .update({ status: stillValid ? "active" : "archived", hidden_reason: null })
     .eq("id", listingId);
   if (error) {
-    return failure(/PUBLISH_REQUIREMENTS|PHONE_REQUIRED|LISTING_LIMIT/.test(error.message) ? "unhide_requirements" : "unexpected");
+    return failure(logIfUnexpected("admin.unhideListing", error, /PUBLISH_REQUIREMENTS|PHONE_REQUIRED|LISTING_LIMIT/.test(error.message) ? "unhide_requirements" : "unexpected"));
   }
   revalidateAdmin([listing.number]);
   return success();
@@ -91,7 +92,7 @@ export async function resolveReport(reportId: string, resolution: ReportResoluti
     .select("id")
     .maybeSingle();
   if (error || !data) {
-    return failure(error ? "unexpected" : "not_found");
+    return failure(logIfUnexpected("admin.resolveReport", error, error ? "unexpected" : "not_found"));
   }
   revalidatePath(adminRoutes.overview, "layout");
   return success();
@@ -113,6 +114,7 @@ export async function hideAllUserListings(userId: string, input: HideListingInpu
     .in("status", ["active", "sold"])
     .select("number");
   if (error) {
+    logServerError("admin.hideAllUserListings", error);
     return failure("unexpected");
   }
   const numbers = (data ?? []).map((row) => row.number);

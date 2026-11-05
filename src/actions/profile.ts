@@ -7,6 +7,7 @@ import { failure, success, type ActionResult } from "@/lib/action-result";
 import { getActionSession } from "@/lib/auth/action-session";
 import { toAuthErrorCode } from "@/lib/auth/auth-errors";
 import { authRoutes, noticeParam, notices } from "@/lib/auth/routes";
+import { logIfUnexpected, logServerError } from "@/lib/logging/log-server-error";
 import type { ProfileErrorCode } from "@/lib/profile/profile-errors";
 import { authCallbackUrl } from "@/lib/auth/site-origin";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -50,6 +51,7 @@ export async function updateBasicInfo(input: BasicInfoInput): Promise<ProfileRes
     })
     .eq("id", session.userId);
   if (error) {
+    logServerError("profile.updateBasicInfo", error);
     return failure("unexpected");
   }
   revalidateProfile();
@@ -76,6 +78,7 @@ export async function updateAvatar(storagePath: string | null): Promise<ProfileR
 
   const { error } = await session.supabase.from("profiles").update({ avatar_url: avatarUrl }).eq("id", session.userId);
   if (error) {
+    logServerError("profile.updateAvatar", error);
     return failure("unexpected");
   }
   revalidateProfile();
@@ -109,6 +112,7 @@ export async function updateContacts(input: ContactInput): Promise<ProfileResult
     .update({ phone, has_viber: parsed.data.hasViber, has_whatsapp: parsed.data.hasWhatsapp })
     .eq("profile_id", session.userId);
   if (error) {
+    logServerError("profile.updateContacts", error);
     return failure("unexpected");
   }
   revalidateProfile();
@@ -133,17 +137,18 @@ export async function changePassword(input: ChangePasswordInput): Promise<Profil
       password: parsed.data.currentPassword,
     });
     if (verifyError) {
-      const code = toAuthErrorCode(verifyError);
+      const code = logIfUnexpected("profile.changePassword", verifyError, toAuthErrorCode(verifyError));
       return failure(code === "invalid_credentials" ? "wrong_current_password" : code);
     }
     await verifier.auth.signOut({ scope: "local" });
 
     const { error } = await session.supabase.auth.updateUser({ password: parsed.data.password });
     if (error) {
-      return failure(toAuthErrorCode(error));
+      return failure(logIfUnexpected("profile.changePassword", error, toAuthErrorCode(error)));
     }
     return success();
-  } catch {
+  } catch (error) {
+    logServerError("profile.changePassword", error);
     return failure("network");
   }
 }
@@ -169,10 +174,11 @@ export async function changeEmail(input: ChangeEmailInput): Promise<ProfileResul
       if (error.code === "email_exists" || error.code === "user_already_exists") {
         return failure("email_taken");
       }
-      return failure(toAuthErrorCode(error));
+      return failure(logIfUnexpected("profile.changeEmail", error, toAuthErrorCode(error)));
     }
     return success();
-  } catch {
+  } catch (error) {
+    logServerError("profile.changeEmail", error);
     return failure("network");
   }
 }
@@ -215,10 +221,12 @@ export async function deleteAccount(input: DeleteAccountInput): Promise<ProfileR
     await removeUserFiles(admin, session.userId);
     const { error } = await admin.auth.admin.deleteUser(session.userId);
     if (error) {
+      logServerError("profile.deleteAccount", error);
       return failure("unexpected");
     }
     await session.supabase.auth.signOut({ scope: "local" });
-  } catch {
+  } catch (error) {
+    logServerError("profile.deleteAccount", error);
     return failure("unexpected");
   }
   redirect(`/?${noticeParam}=${notices.accountDeleted}`);

@@ -8,6 +8,7 @@ import type { InteractionErrorCode } from "@/lib/listings/interaction-errors";
 import { listingCacheTag } from "@/lib/listings/public-listing";
 import { listingRoutes } from "@/lib/listings/routes";
 import { visitorHash } from "@/lib/listings/visitor-hash";
+import { logIfUnexpected } from "@/lib/logging/log-server-error";
 import { listingsCacheTag } from "@/lib/search/cache-tags";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { listingIdSchema } from "@/lib/validation/listing";
@@ -46,7 +47,7 @@ export async function revealContact(listingId: string): Promise<InteractionResul
   }
   const { data, error } = await current.supabase.rpc("get_seller_contact", { listing_id: listingId });
   if (error) {
-    return failure(error.message.includes("RATE_LIMIT") ? "reveal_rate_limited" : "unexpected");
+    return failure(logIfUnexpected("interactions.revealContact", error, error.message.includes("RATE_LIMIT") ? "reveal_rate_limited" : "unexpected"));
   }
   const contact = data?.[0];
   if (!contact) {
@@ -69,7 +70,7 @@ export async function setFavorite(listingId: string, favorite: boolean): Promise
         .upsert({ user_id: current.userId, listing_id: listingId }, { onConflict: "user_id,listing_id", ignoreDuplicates: true })
     : await current.supabase.from("favorites").delete().eq("user_id", current.userId).eq("listing_id", listingId);
   if (error) {
-    return failure(error.code === "23503" ? "not_found" : "unexpected");
+    return failure(logIfUnexpected("interactions.setFavorite", error, error.code === "23503" ? "not_found" : "unexpected"));
   }
   revalidatePath(favoritesRoutes.page);
   return success({ favorite });
@@ -94,7 +95,7 @@ export async function reportListing(listingId: string, input: ReportInput): Prom
     if (error.message.includes("RATE_LIMIT")) {
       return failure("report_rate_limited");
     }
-    return failure(error.code === "23505" ? "duplicate" : error.code === "23503" ? "not_found" : "unexpected");
+    return failure(logIfUnexpected("interactions.reportListing", error, error.code === "23505" ? "duplicate" : error.code === "23503" ? "not_found" : "unexpected"));
   }
   return success();
 }
@@ -119,7 +120,7 @@ export async function changeOwnListingStatus(
     .select("number")
     .maybeSingle();
   if (error || !data) {
-    return failure(error ? "unexpected" : "not_found");
+    return failure(logIfUnexpected("interactions.changeOwnListingStatus", error, error ? "unexpected" : "not_found"));
   }
   updateTag(listingsCacheTag);
   updateTag(listingCacheTag(data.number));

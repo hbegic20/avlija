@@ -6,6 +6,7 @@ import { toAuthErrorCode, type AuthErrorCode } from "@/lib/auth/auth-errors";
 import { authRoutes, noticeParam, notices } from "@/lib/auth/routes";
 import { safeNextPath } from "@/lib/auth/safe-next-path";
 import { authCallbackUrl } from "@/lib/auth/site-origin";
+import { logIfUnexpected, logServerError } from "@/lib/logging/log-server-error";
 import { createClient } from "@/lib/supabase/server";
 import {
   emailOnlySchema,
@@ -29,9 +30,10 @@ export async function signIn(input: SignInInput, next?: string): Promise<AuthRes
     const supabase = await createClient();
     const { error } = await supabase.auth.signInWithPassword(parsed.data);
     if (error) {
-      return failure(toAuthErrorCode(error));
+      return failure(logIfUnexpected("auth.signIn", error, toAuthErrorCode(error)));
     }
-  } catch {
+  } catch (error) {
+    logServerError("auth.signIn", error);
     return failure("network");
   }
   redirect(safeNextPath(next));
@@ -53,10 +55,11 @@ export async function signUp(input: SignUpInput): Promise<AuthResult<{ email: st
       },
     });
     if (error) {
-      return failure(toAuthErrorCode(error));
+      return failure(logIfUnexpected("auth.signUp", error, toAuthErrorCode(error)));
     }
     return success({ email: parsed.data.email });
-  } catch {
+  } catch (error) {
+    logServerError("auth.signUp", error);
     return failure("network");
   }
 }
@@ -74,10 +77,11 @@ export async function resendConfirmation(input: EmailOnlyInput): Promise<AuthRes
       options: { emailRedirectTo: await authCallbackUrl(authRoutes.dashboard) },
     });
     if (error) {
-      return failure(toAuthErrorCode(error));
+      return failure(logIfUnexpected("auth.resendConfirmation", error, toAuthErrorCode(error)));
     }
     return success();
-  } catch {
+  } catch (error) {
+    logServerError("auth.resendConfirmation", error);
     return failure("network");
   }
 }
@@ -92,11 +96,12 @@ export async function requestPasswordReset(input: EmailOnlyInput): Promise<AuthR
     const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
       redirectTo: await authCallbackUrl(authRoutes.newPassword),
     });
-    if (error && toAuthErrorCode(error) === "too_many_requests") {
+    if (error && logIfUnexpected("auth.requestPasswordReset", error, toAuthErrorCode(error)) === "too_many_requests") {
       return failure("too_many_requests");
     }
     return success();
-  } catch {
+  } catch (error) {
+    logServerError("auth.requestPasswordReset", error);
     return failure("network");
   }
 }
@@ -114,10 +119,11 @@ export async function updatePassword(input: NewPasswordInput): Promise<AuthResul
     }
     const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
     if (error) {
-      return failure(toAuthErrorCode(error));
+      return failure(logIfUnexpected("auth.updatePassword", error, toAuthErrorCode(error)));
     }
     await supabase.auth.signOut({ scope: "global" });
-  } catch {
+  } catch (error) {
+    logServerError("auth.updatePassword", error);
     return failure("network");
   }
   redirect(`${authRoutes.login}?${noticeParam}=${notices.passwordChanged}`);
@@ -132,10 +138,11 @@ export async function signInWithGoogle(next?: string): Promise<AuthResult> {
       options: { redirectTo: await authCallbackUrl(safeNextPath(next)) },
     });
     if (error || !data.url) {
-      return failure(error ? toAuthErrorCode(error) : "unexpected");
+      return failure(logIfUnexpected("auth.signInWithGoogle", error ?? "no provider url", error ? toAuthErrorCode(error) : "unexpected"));
     }
     providerUrl = data.url;
-  } catch {
+  } catch (error) {
+    logServerError("auth.signInWithGoogle", error);
     return failure("network");
   }
   redirect(providerUrl);

@@ -10,6 +10,7 @@ import type { PropertyType } from "@/lib/domain/enums";
 import { allowedFeaturesFor, isFieldVisible } from "@/lib/domain/listing-fields";
 import { isPointInMunicipality } from "@/lib/geo/point-in-municipality";
 import { listingNotices, listingRoutes } from "@/lib/listings/routes";
+import { logServerError } from "@/lib/logging/log-server-error";
 import { listingsCacheTag } from "@/lib/search/cache-tags";
 import type { ListingErrorCode } from "@/lib/listings/listing-errors";
 import { listingImageColumns, toListingImage } from "@/lib/listings/listing-image";
@@ -78,8 +79,12 @@ const databaseErrorMarkers: ReadonlyArray<readonly [marker: string, code: Listin
   ["INVALID_IMAGE", "validation"],
 ];
 
-function databaseErrorCode(message: string | undefined): ListingErrorCode {
-  return databaseErrorMarkers.find(([marker]) => message?.includes(marker))?.[1] ?? "unexpected";
+function databaseFailure(context: string, error: { message: string } | null): ListingResult<never> {
+  const code = databaseErrorMarkers.find(([marker]) => error?.message.includes(marker))?.[1] ?? "unexpected";
+  if (code === "unexpected") {
+    logServerError(`listings.${context}`, error ?? "no row returned");
+  }
+  return failure(code);
 }
 
 function revalidateListing(listingId: string) {
@@ -128,7 +133,7 @@ async function createListing(values: BasicsValues): Promise<ListingResult<{ id: 
     .select("id")
     .single();
   if (error || !data) {
-    return failure(databaseErrorCode(error?.message));
+    return databaseFailure("createListing", error);
   }
   revalidatePath(listingRoutes.mine);
   return success({ id: data.id });
@@ -144,7 +149,7 @@ async function updateBasics(listingId: string, values: BasicsValues): Promise<Li
     existing.type === values.type ? values : { ...clearedFieldsForType(values.type, existing.features), ...values };
   const { error } = await current.supabase.from("listings").update(update).eq("id", listingId);
   if (error) {
-    return failure(databaseErrorCode(error.message));
+    return databaseFailure("updateBasics", error);
   }
   revalidateListing(listingId);
   return success({ id: listingId });
@@ -199,7 +204,7 @@ export async function saveLocation(listingId: string, input: LocationFormValues)
     })
     .eq("id", listingId);
   if (error) {
-    return failure(databaseErrorCode(error.message));
+    return databaseFailure("saveLocation", error);
   }
   revalidateListing(listingId);
   return success();
@@ -235,7 +240,7 @@ export async function saveDetails(listingId: string, input: DetailsFormValues): 
     })
     .eq("id", listingId);
   if (error) {
-    return failure(databaseErrorCode(error.message));
+    return databaseFailure("saveDetails", error);
   }
   revalidateListing(listingId);
   return success();
@@ -267,7 +272,7 @@ export async function registerImage(listingId: string, input: ImageRegistration)
   });
   if (error || !data) {
     await current.supabase.storage.from(listingImagesBucket).remove([parsed.data.storagePath]);
-    return failure(databaseErrorCode(error?.message));
+    return databaseFailure("registerImage", error);
   }
   revalidateListing(listingId);
   return success(toListingImage(data));
@@ -287,7 +292,7 @@ export async function reorderImages(listingId: string, orderedImageIds: string[]
     ordered_image_ids: parsed.data,
   });
   if (error) {
-    return failure(databaseErrorCode(error.message));
+    return databaseFailure("reorderImages", error);
   }
   revalidateListing(listingId);
   return success();
@@ -309,7 +314,7 @@ export async function deleteImage(listingId: string, imageId: string): Promise<L
     .select("storage_path")
     .maybeSingle();
   if (error) {
-    return failure(databaseErrorCode(error.message));
+    return databaseFailure("deleteImage", error);
   }
   if (!removed) {
     return failure("not_found");
@@ -372,7 +377,7 @@ export async function publishListing(listingId: string): Promise<ListingResult> 
   if (listing.status !== "active") {
     const { error } = await current.supabase.from("listings").update({ status: "active" }).eq("id", listingId);
     if (error) {
-      return failure(databaseErrorCode(error.message));
+      return databaseFailure("publishListing", error);
     }
   }
   revalidateListing(listingId);
@@ -397,7 +402,7 @@ export async function renewListing(listingId: string): Promise<ListingResult<{ e
   }
   const { data, error } = await current.supabase.rpc("renew_listing", { listing_id: listingId });
   if (error || !data) {
-    return failure(databaseErrorCode(error?.message));
+    return databaseFailure("renewListing", error);
   }
   revalidateListing(listingId);
   return success({ expiresAt: data });
@@ -425,7 +430,7 @@ export async function deleteListing(listingId: string): Promise<ListingResult> {
   }
   const { error } = await current.supabase.from("listings").delete().eq("id", listingId).eq("owner_id", current.userId);
   if (error) {
-    return failure("unexpected");
+    return databaseFailure("deleteListing", error);
   }
   revalidateListing(listingId);
   return success();
