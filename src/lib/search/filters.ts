@@ -1,5 +1,6 @@
 import { listingFeatures, propertyTypes, type ListingFeature, type PropertyType } from "@/lib/domain/enums";
 import { sbkMunicipalities } from "@/lib/domain/municipalities";
+import { pageParamName, parsePageParam } from "@/lib/pagination/page-param";
 
 export const searchParamNames = {
   municipality: "opcina",
@@ -15,10 +16,12 @@ export const searchParamNames = {
   feature: "oprema",
   query: "q",
   sort: "sort",
-  page: "stranica",
+  page: pageParamName,
   view: "prikaz",
   includeSold: "prodani",
 } as const;
+
+const maxSearchPage = 500;
 
 export const sortOptions = ["najnovije", "najjeftinije", "najskuplje", "cijena-m2", "povrsina"] as const;
 export type SortOption = (typeof sortOptions)[number];
@@ -83,7 +86,7 @@ function unique<Value>(values: Value[]): Value[] {
 
 export function parseSearchFilters(params: RawSearchParams, fixedMunicipality?: string): SearchFilters {
   const names = searchParamNames;
-  const page = Math.floor(Number(first(params, names.page)) || 1);
+  const page = parsePageParam(params);
   return {
     municipalities: fixedMunicipality
       ? [fixedMunicipality]
@@ -106,7 +109,7 @@ export function parseSearchFilters(params: RawSearchParams, fixedMunicipality?: 
     ),
     query: first(params, names.query).trim().slice(0, maxQueryLength),
     sort: oneOf(sortOptions, first(params, names.sort), "najnovije"),
-    page: Math.min(Math.max(page, 1), 500),
+    page: Math.min(page, maxSearchPage),
     view: oneOf(viewOptions, first(params, names.view), "mreza"),
     includeSold: first(params, names.includeSold) === "1",
   };

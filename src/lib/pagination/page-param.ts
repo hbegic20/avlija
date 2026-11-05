@@ -1,6 +1,7 @@
 export const pageParamName = "stranica";
 
-export function parsePageParam(value: string | string[] | undefined): number {
+export function parsePageParam(params: Record<string, string | string[] | undefined>): number {
+  const value = params[pageParamName];
   const raw = Array.isArray(value) ? value[0] : value;
   return Math.max(1, Math.floor(Number(raw) || 1));
 }

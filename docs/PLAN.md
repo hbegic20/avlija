@@ -142,7 +142,7 @@ Done when: a user can create, publish and edit each property type; validation ru
 - [x] Filters (in URL params): municipality (multi), type (multi), price from/to, area from/to, land area from/to, rooms min, Uknjiženo only, features, text search (uses `search` tsvector; pass the query through `immutable_unaccent` so `cipuljic` finds `Čipuljić`), "Samo s fotografijama" is implicit
 - [x] Sort: Najnovije, Najjeftinije, Najskuplje, Cijena po m², Najveća površina
 - [x] Results header: count in mono, active filter Tags with remove, "Očisti sve"
-- [x] Grid view (sheet grid of ListingCards) and Map view (split: list left, muted Leaflet map right with square pins, clustering when zoomed out, hovering a row highlights its pin). Clustering is a small built-in grid clusterer, no extra dependency
+- [x] Grid view (`ListingSheet`: separately bordered ListingCards with a 16px gap) and Map view (split: list left, muted Leaflet map right with square pins, clustering when zoomed out, hovering a row highlights its pin). Clustering is a small built-in grid clusterer, no extra dependency
 - [x] Mobile: filter sheet, map view full screen with bottom carousel
 - [x] `/nekretnine/[opcina]` pages with municipality name in title and intro line
 - [x] Empty state with suggestion to widen filters

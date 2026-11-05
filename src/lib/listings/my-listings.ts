@@ -1,11 +1,10 @@
 import "server-only";
 import type { ListingStatus } from "@/lib/domain/enums";
 import { createClient } from "@/lib/supabase/server";
-import { listingImagesBucket, publicStorageUrl } from "@/lib/supabase/storage-url";
 import { canRenew, daysUntil, isExpiringSoon } from "./expiry";
-import { recentPreviousPrice } from "./price-reduction";
-import { listingPath } from "./listing-path";
+import { isNewListing } from "./listing-view";
 import type { ListingSummary } from "./summary";
+import { listingSummaryFields, toSummary, type SummaryRow } from "./summary-row";
 
 export type OwnerListing = ListingSummary & {
   viewCount: number;
@@ -37,40 +36,15 @@ export function parseStatusTab(value: string | string[] | undefined): StatusTab 
   return (statusTabs as readonly string[]).includes(raw ?? "") ? (raw as StatusTab) : "aktivni";
 }
 
-const ownerColumns =
-  "id, number, title, type, status, price_km, price_negotiable, previous_price_km, price_reduced_at, area_m2, land_area_m2, rooms, floor, total_floors, neighborhood, is_registered, published_at, expires_at, sold_at, updated_at, view_count, hidden_reason, public_lat, public_lng, location_precise, municipalities(name, slug), listing_images(storage_path, position)";
+const ownerColumns = `${listingSummaryFields}, expires_at, sold_at, updated_at, view_count, hidden_reason, municipalities(name, slug)`;
 
-type OwnerRow = {
-  id: string;
-  number: number;
-  title: string;
-  type: OwnerListing["type"];
-  status: ListingStatus;
-  price_km: number | null;
-  price_negotiable: boolean;
-  previous_price_km: number | null;
-  price_reduced_at: string | null;
-  area_m2: number | null;
-  land_area_m2: number | null;
-  rooms: number | null;
-  floor: number | null;
-  total_floors: number | null;
-  neighborhood: string | null;
-  is_registered: boolean | null;
-  published_at: string | null;
+type OwnerRow = SummaryRow & {
   expires_at: string | null;
   sold_at: string | null;
   updated_at: string;
   view_count: number;
   hidden_reason: string | null;
-  public_lat: number | null;
-  public_lng: number | null;
-  location_precise: boolean;
-  municipalities: { name: string; slug: string } | null;
-  listing_images: { storage_path: string; position: number }[];
 };
-
-const newListingMs = 7 * 86_400_000;
 
 export async function loadMyListings(ownerId: string): Promise<OwnerListing[]> {
   const now = Date.now();
@@ -88,32 +62,9 @@ export async function loadMyListings(ownerId: string): Promise<OwnerListing[]> {
   const statsById = new Map((stats ?? []).map((entry) => [entry.listing_id, entry]));
 
   return ((data ?? []) as unknown as OwnerRow[]).map((row) => {
-    const cover = row.listing_images[0];
     const listingStats = statsById.get(row.id);
     return {
-      id: row.id,
-      number: row.number,
-      title: row.title,
-      type: row.type,
-      status: row.status,
-      priceKm: row.price_km,
-      priceNegotiable: row.price_negotiable,
-      previousPriceKm: recentPreviousPrice(row.price_km, row.previous_price_km, row.price_reduced_at, now),
-      areaM2: row.area_m2,
-      landAreaM2: row.land_area_m2,
-      rooms: row.rooms,
-      floor: row.floor,
-      totalFloors: row.total_floors,
-      neighborhood: row.neighborhood,
-      isRegistered: row.is_registered,
-      publishedAt: row.published_at,
-      publicLat: row.public_lat,
-      publicLng: row.public_lng,
-      locationPrecise: row.location_precise,
-      municipalityName: row.municipalities?.name ?? null,
-      municipalitySlug: row.municipalities?.slug ?? null,
-      coverUrl: cover ? publicStorageUrl(listingImagesBucket, cover.storage_path) : null,
-      path: listingPath(row.number, row.title),
+      ...toSummary(row),
       viewCount: row.view_count,
       favoriteCount: listingStats?.favorite_count ?? 0,
       contactCount: listingStats?.contact_count ?? 0,
@@ -124,7 +75,7 @@ export async function loadMyListings(ownerId: string): Promise<OwnerListing[]> {
       daysLeft: daysUntil(row.expires_at, now),
       expiringSoon: row.status === "active" && isExpiringSoon(row.expires_at, now),
       renewable: canRenew(row.status, row.expires_at, now),
-      isNew: row.published_at !== null && now - new Date(row.published_at).getTime() < newListingMs,
+      isNew: row.published_at !== null && isNewListing(row.published_at, now),
     };
   });
 }

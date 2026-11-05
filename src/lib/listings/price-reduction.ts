@@ -1,3 +1,5 @@
+import { dayMs } from "@/lib/time/duration";
+
 const priceReductionDays = 30;
 const minimumReductionPercent = 1;
 
@@ -14,7 +16,7 @@ export function recentPreviousPrice(
   if (priceKm === null || previousPriceKm === null || reducedAt === null) {
     return null;
   }
-  if (now - new Date(reducedAt).getTime() >= priceReductionDays * 86_400_000) {
+  if (now - new Date(reducedAt).getTime() >= priceReductionDays * dayMs) {
     return null;
   }
   return priceReductionPercent(priceKm, previousPriceKm) >= minimumReductionPercent ? previousPriceKm : null;

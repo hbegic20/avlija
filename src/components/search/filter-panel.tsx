@@ -15,6 +15,7 @@ import { cn } from "@/lib/cn";
 import { formatInteger } from "@/lib/format";
 import { bs } from "@/lib/i18n/bs";
 import { searchBasePath, searchParamNames as names, type SearchFilters } from "@/lib/search/filters";
+import { searchHrefFromForm } from "@/lib/search/form-href";
 
 const text = bs.search;
 const roomOptions = [1, 2, 3, 4, 5].map((rooms) => ({ value: String(rooms), label: `${rooms}+` }));
@@ -176,16 +177,9 @@ function useFilterSubmit(fixedMunicipality?: string) {
   const router = useRouter();
   return (event: FormEvent<HTMLFormElement>, afterSubmit?: () => void) => {
     event.preventDefault();
-    const params = new URLSearchParams();
-    for (const [name, value] of new FormData(event.currentTarget)) {
-      if (typeof value === "string" && value.trim() !== "") {
-        params.append(name, value.trim());
-      }
-    }
-    const query = params.toString();
-    const base = searchBasePath(fixedMunicipality);
+    const href = searchHrefFromForm(event.currentTarget, searchBasePath(fixedMunicipality));
     afterSubmit?.();
-    router.push(query ? `${base}?${query}` : base);
+    router.push(href);
   };
 }
 

@@ -15,8 +15,9 @@ body{background:var(--papir);color:var(--tinta);font:400 16px/1.55 var(--sans)}
 @media(min-width:768px){.wrap{padding:0 48px}}
 .strip{border-top:2px solid var(--tinta);border-bottom:1px solid var(--linija);font:400 11px/1 var(--mono);letter-spacing:.08em;color:var(--tinta-2);padding:8px 0}
 header .bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid var(--linija)}
-.logo{font:600 28px/1 var(--serif);letter-spacing:-.02em}
-.logo span{color:var(--crijep)}
+.logo{display:inline-flex;align-items:center;gap:10px;font:600 28px/1 var(--serif);letter-spacing:-.02em}
+.logo .mark{display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:var(--tinta);color:var(--papir);font-size:26.64px;letter-spacing:-.72px;padding-top:1.8px}
+.logo .dot{color:var(--crijep)}
 nav{display:flex;gap:24px;align-items:center;font-weight:500;font-size:15px}
 nav a{color:var(--tinta);text-decoration:none}
 nav a:hover{text-decoration:underline}
@@ -46,7 +47,8 @@ h3{font:600 20px/1.3 var(--serif)}
 .swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1px;background:var(--linija);border:1px solid var(--linija)}
 .sw{background:var(--papir);padding:12px}
 .sw i{display:block;height:56px;border:1px solid var(--linija);margin-bottom:8px}
-.sheet{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1px;background:var(--linija);border:1px solid var(--linija)}
+.sheet{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.sheet>.card{border:1px solid var(--linija)}
 .card{background:var(--papir);color:inherit;text-decoration:none;display:block;position:relative;transition:background .12s}
 .card:hover{background:var(--papir-2)}
 .card:hover h3{text-decoration:underline;text-underline-offset:3px}
@@ -79,7 +81,7 @@ footer{margin-top:72px;border-top:2px solid var(--tinta);padding:24px 0 48px;col
 <header>
   <div class="strip"><div class="wrap">44.0567° N · 17.4508° E · BUGOJNO · SREDNJOBOSANSKI KANTON</div></div>
   <div class="wrap bar">
-    <div class="logo">Avlija<span>.</span></div>
+    <div class="logo"><span class="mark" aria-hidden="true">A<span class="dot">.</span></span><span>Avlija<span class="dot">.</span></span></div>
     <nav><a href="#">Nekretnine</a><a href="#">Prijava</a><button class="btn btn-primary">Objavi oglas</button></nav>
   </div>
 </header>

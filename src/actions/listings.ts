@@ -2,6 +2,7 @@
 
 import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
+import type { z } from "zod";
 import { failure, success, type ActionResult } from "@/lib/action-result";
 import { getActionSession, type ActionSession } from "@/lib/auth/action-session";
 import { noticeParam } from "@/lib/auth/routes";
@@ -32,7 +33,6 @@ import {
 type ListingResult<Data = undefined> = ActionResult<Data, ListingErrorCode>;
 type ListingUpdate = Database["public"]["Tables"]["listings"]["Update"];
 
-
 async function ownedListing(current: ActionSession, listingId: string) {
   const { data } = await current.supabase
     .from("listings")
@@ -43,32 +43,42 @@ async function ownedListing(current: ActionSession, listingId: string) {
   return data;
 }
 
+type OwnedListing = NonNullable<Awaited<ReturnType<typeof ownedListing>>>;
+type OwnedListingAccess = { current: ActionSession; existing: OwnedListing };
+
+async function requireOwnedListing(
+  listingId: string,
+  { editable }: { editable: boolean },
+): Promise<ListingResult<OwnedListingAccess>> {
+  if (!listingIdSchema.safeParse(listingId).success) {
+    return failure("validation");
+  }
+  const current = await getActionSession();
+  if (!current) {
+    return failure("unauthenticated");
+  }
+  const existing = await ownedListing(current, listingId);
+  if (!existing) {
+    return failure("not_found");
+  }
+  if (editable && existing.status === "hidden") {
+    return failure("hidden");
+  }
+  return success({ current, existing });
+}
+
+const databaseErrorMarkers: ReadonlyArray<readonly [marker: string, code: ListingErrorCode]> = [
+  ["PHONE_REQUIRED", "phone_required"],
+  ["LISTING_LIMIT", "listing_limit"],
+  ["PUBLISH_REQUIREMENTS", "publish_requirements"],
+  ["IMAGE_LIMIT", "image_limit"],
+  ["LAST_IMAGE", "last_image"],
+  ["RENEW_NOT_ALLOWED", "renew_not_allowed"],
+  ["NOT_FOUND", "not_found"],
+];
+
 function databaseErrorCode(message: string | undefined): ListingErrorCode {
-  if (!message) {
-    return "unexpected";
-  }
-  if (message.includes("PHONE_REQUIRED")) {
-    return "phone_required";
-  }
-  if (message.includes("LISTING_LIMIT")) {
-    return "listing_limit";
-  }
-  if (message.includes("PUBLISH_REQUIREMENTS")) {
-    return "publish_requirements";
-  }
-  if (message.includes("IMAGE_LIMIT")) {
-    return "image_limit";
-  }
-  if (message.includes("LAST_IMAGE")) {
-    return "last_image";
-  }
-  if (message.includes("RENEW_NOT_ALLOWED")) {
-    return "renew_not_allowed";
-  }
-  if (message.includes("NOT_FOUND")) {
-    return "not_found";
-  }
-  return "unexpected";
+  return databaseErrorMarkers.find(([marker]) => message?.includes(marker))?.[1] ?? "unexpected";
 }
 
 function revalidateListing(listingId: string) {
@@ -94,50 +104,43 @@ function clearedFieldsForType(type: PropertyType, features: string[]): ListingUp
   };
 }
 
-export async function saveBasics(
-  listingId: string | null,
-  input: BasicsFormValues,
-): Promise<ListingResult<{ id: string }>> {
-  const parsed = basicsSchema.safeParse(input);
-  if (!parsed.success || (listingId !== null && !listingIdSchema.safeParse(listingId).success)) {
-    return failure("validation");
-  }
+function toBasicsValues(data: z.output<typeof basicsSchema>) {
+  return {
+    type: data.type,
+    title: data.title,
+    description: data.description,
+    price_km: data.priceKm,
+    price_negotiable: data.priceNegotiable,
+  };
+}
+
+type BasicsValues = ReturnType<typeof toBasicsValues>;
+
+async function createListing(values: BasicsValues): Promise<ListingResult<{ id: string }>> {
   const current = await getActionSession();
   if (!current) {
     return failure("unauthenticated");
   }
-  const values = {
-    type: parsed.data.type,
-    title: parsed.data.title,
-    description: parsed.data.description,
-    price_km: parsed.data.priceKm,
-    price_negotiable: parsed.data.priceNegotiable,
-  };
+  const { data, error } = await current.supabase
+    .from("listings")
+    .insert({ ...values, owner_id: current.userId, status: "draft" })
+    .select("id")
+    .single();
+  if (error || !data) {
+    return failure(databaseErrorCode(error?.message));
+  }
+  revalidatePath(listingRoutes.mine);
+  return success({ id: data.id });
+}
 
-  if (listingId === null) {
-    const { data, error } = await current.supabase
-      .from("listings")
-      .insert({ ...values, owner_id: current.userId, status: "draft" })
-      .select("id")
-      .single();
-    if (error || !data) {
-      return failure(databaseErrorCode(error?.message));
-    }
-    revalidatePath(listingRoutes.mine);
-    return success({ id: data.id });
+async function updateBasics(listingId: string, values: BasicsValues): Promise<ListingResult<{ id: string }>> {
+  const access = await requireOwnedListing(listingId, { editable: true });
+  if (!access.ok) {
+    return access;
   }
-
-  const existing = await ownedListing(current, listingId);
-  if (!existing) {
-    return failure("not_found");
-  }
-  if (existing.status === "hidden") {
-    return failure("hidden");
-  }
-  const typeChanged = existing.type !== values.type;
-  const update: ListingUpdate = typeChanged
-    ? { ...clearedFieldsForType(values.type, existing.features), ...values }
-    : values;
+  const { current, existing } = access.data;
+  const update: ListingUpdate =
+    existing.type === values.type ? values : { ...clearedFieldsForType(values.type, existing.features), ...values };
   const { error } = await current.supabase.from("listings").update(update).eq("id", listingId);
   if (error) {
     return failure(databaseErrorCode(error.message));
@@ -146,22 +149,28 @@ export async function saveBasics(
   return success({ id: listingId });
 }
 
-export async function saveLocation(listingId: string, input: LocationFormValues): Promise<ListingResult> {
-  const parsed = locationStepSchema.safeParse(input);
-  if (!parsed.success || !listingIdSchema.safeParse(listingId).success) {
+export async function saveBasics(
+  listingId: string | null,
+  input: BasicsFormValues,
+): Promise<ListingResult<{ id: string }>> {
+  const parsed = basicsSchema.safeParse(input);
+  if (!parsed.success) {
     return failure("validation");
   }
-  const current = await getActionSession();
-  if (!current) {
-    return failure("unauthenticated");
+  const values = toBasicsValues(parsed.data);
+  return listingId === null ? createListing(values) : updateBasics(listingId, values);
+}
+
+export async function saveLocation(listingId: string, input: LocationFormValues): Promise<ListingResult> {
+  const parsed = locationStepSchema.safeParse(input);
+  if (!parsed.success) {
+    return failure("validation");
   }
-  const existing = await ownedListing(current, listingId);
-  if (!existing) {
-    return failure("not_found");
+  const access = await requireOwnedListing(listingId, { editable: true });
+  if (!access.ok) {
+    return access;
   }
-  if (existing.status === "hidden") {
-    return failure("hidden");
-  }
+  const { current } = access.data;
 
   const municipalityId = Number(parsed.data.municipalityId);
   const { data: municipality } = await current.supabase
@@ -196,20 +205,11 @@ export async function saveLocation(listingId: string, input: LocationFormValues)
 }
 
 export async function saveDetails(listingId: string, input: DetailsFormValues): Promise<ListingResult> {
-  if (!listingIdSchema.safeParse(listingId).success) {
-    return failure("validation");
+  const access = await requireOwnedListing(listingId, { editable: true });
+  if (!access.ok) {
+    return access;
   }
-  const current = await getActionSession();
-  if (!current) {
-    return failure("unauthenticated");
-  }
-  const existing = await ownedListing(current, listingId);
-  if (!existing) {
-    return failure("not_found");
-  }
-  if (existing.status === "hidden") {
-    return failure("hidden");
-  }
+  const { current, existing } = access.data;
   const parsed = detailsSchemaFor(existing.type).safeParse(input);
   if (!parsed.success) {
     return failure("validation");
@@ -251,21 +251,18 @@ async function listImages(current: ActionSession, listingId: string): Promise<Li
 
 export async function registerImage(listingId: string, input: ImageRegistration): Promise<ListingResult<ListingImage>> {
   const parsed = imageRegistrationSchema.safeParse(input);
-  if (!parsed.success || !listingIdSchema.safeParse(listingId).success) {
+  if (!parsed.success) {
     return failure("validation");
   }
-  const current = await getActionSession();
-  if (!current) {
-    return failure("unauthenticated");
+  const access = await requireOwnedListing(listingId, { editable: false });
+  if (!access.ok) {
+    return access;
   }
+  const { current } = access.data;
   const expectedPrefix = `${current.userId}/${listingId}/`;
   const fileName = parsed.data.storagePath.slice(expectedPrefix.length);
   if (!parsed.data.storagePath.startsWith(expectedPrefix) || !/^[0-9a-f-]{36}\.webp$/.test(fileName)) {
     return failure("validation");
-  }
-  const existing = await ownedListing(current, listingId);
-  if (!existing) {
-    return failure("not_found");
   }
 
   const images = await listImages(current, listingId);
@@ -307,7 +304,7 @@ export async function reorderImages(listingId: string, orderedImageIds: string[]
     ordered_image_ids: parsed.data,
   });
   if (error) {
-    return failure(error.message.includes("NOT_FOUND") ? "not_found" : "unexpected");
+    return failure(databaseErrorCode(error.message));
   }
   revalidateListing(listingId);
   return success();
@@ -429,17 +426,11 @@ async function listFolder(current: ActionSession, folder: string): Promise<strin
 }
 
 export async function deleteListing(listingId: string): Promise<ListingResult> {
-  if (!listingIdSchema.safeParse(listingId).success) {
-    return failure("validation");
+  const access = await requireOwnedListing(listingId, { editable: false });
+  if (!access.ok) {
+    return access;
   }
-  const current = await getActionSession();
-  if (!current) {
-    return failure("unauthenticated");
-  }
-  const existing = await ownedListing(current, listingId);
-  if (!existing) {
-    return failure("not_found");
-  }
+  const { current } = access.data;
   const { data: imageRows } = await current.supabase
     .from("listing_images")
     .select("storage_path")

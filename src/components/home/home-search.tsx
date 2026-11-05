@@ -8,6 +8,7 @@ import { Select } from "@/components/ui/select";
 import { propertyTypes } from "@/lib/domain/enums";
 import { bs } from "@/lib/i18n/bs";
 import { listingsBasePath, searchParamNames as names } from "@/lib/search/filters";
+import { searchHrefFromForm } from "@/lib/search/form-href";
 import { CantonMap, type CantonMapShape } from "./canton-map";
 
 export function HomeSearch({ viewBox, shapes }: { viewBox: string; shapes: CantonMapShape[] }) {
@@ -16,14 +17,7 @@ export function HomeSearch({ viewBox, shapes }: { viewBox: string; shapes: Canto
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const params = new URLSearchParams();
-    for (const [name, value] of new FormData(event.currentTarget)) {
-      if (typeof value === "string" && value.trim() !== "") {
-        params.append(name, value.trim());
-      }
-    }
-    const query = params.toString();
-    router.push(query ? `${listingsBasePath}?${query}` : listingsBasePath);
+    router.push(searchHrefFromForm(event.currentTarget, listingsBasePath));
   };
 
   return (

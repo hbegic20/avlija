@@ -1,9 +1,7 @@
+import { logoMarkGeometry } from "@/lib/brand/logo-mark";
 import { ogColours as c } from "@/lib/seo/og-fonts";
 
-const glyphScale = 0.74;
-const baselineNudge = 0.05;
-
-export function LogoMark({ size }: { size: number }) {
+export function OgLogoMark({ size }: { size: number }) {
   return (
     <div
       style={{
@@ -19,11 +17,9 @@ export function LogoMark({ size }: { size: number }) {
         style={{
           display: "flex",
           fontFamily: "Fraunces",
-          fontSize: size * glyphScale,
           lineHeight: 1,
-          letterSpacing: -size * 0.02,
           color: c.papir,
-          marginTop: size * baselineNudge,
+          ...logoMarkGeometry(size),
         }}
       >
         A<span style={{ color: c.crijep }}>.</span>

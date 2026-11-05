@@ -1,5 +1,5 @@
 import { municipalityOutline } from "@/lib/geo/canton-svg";
-import { LogoMark } from "./logo-mark";
+import { OgLogoMark } from "./logo-mark";
 import { formatListingNumber } from "@/lib/format";
 import { bs } from "@/lib/i18n/bs";
 import { cardFacts } from "@/lib/listings/card-facts";
@@ -69,7 +69,7 @@ export function ListingOgCard({ bundle }: { bundle: PublicListingBundle }) {
               <div style={{ display: "flex", fontFamily: "JetBrains Mono", fontSize: 26, color: c.tinta2 }}>{facts.join(" · ")}</div>
             ) : null}
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8 }}>
-              <LogoMark size={40} />
+              <OgLogoMark size={40} />
               <div style={{ display: "flex", fontFamily: "Fraunces", fontSize: 34 }}>
                 {bs.site.name}
                 <span style={{ color: c.crijep }}>.</span>

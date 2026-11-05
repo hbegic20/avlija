@@ -2,6 +2,7 @@ import type { StampVariant } from "@/lib/domain/enums";
 import { isLandType } from "@/lib/domain/listing-fields";
 import { formatArea, formatDecimal, formatKM } from "@/lib/format";
 import { bs } from "@/lib/i18n/bs";
+import { dayMs } from "@/lib/time/duration";
 import type { EditableListing, ListingImage } from "./types";
 
 export type LedgerRow = { label: string; value: string; tone?: "default" | "positive" | "negative" };
@@ -15,7 +16,6 @@ export type ListingView = {
 };
 
 const newListingDays = 7;
-const dayMs = 86_400_000;
 
 function yesNo(value: boolean | null, label: string): LedgerRow | null {
   if (value === null) {

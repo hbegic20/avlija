@@ -3,9 +3,9 @@ import Link from "next/link";
 import { accountLinks } from "@/components/layout/account-links";
 import { PhoneRequiredNotice } from "@/components/profile/phone-required-notice";
 import { buttonStyles } from "@/components/ui/button";
+import { StatGrid } from "@/components/ui/stat-grid";
 import { requireUser } from "@/lib/auth/current-user";
 import { authRoutes } from "@/lib/auth/routes";
-import { formatInteger } from "@/lib/format";
 import { bs } from "@/lib/i18n/bs";
 import { loadDashboardSummary } from "@/lib/listings/my-listings";
 import { listingRoutes } from "@/lib/listings/routes";
@@ -58,16 +58,7 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
-      <ul className="grid grid-cols-2 border-t border-l sm:grid-cols-3 lg:grid-cols-5">
-        {stats.map((stat) => (
-          <li key={stat.label} className="border-r border-b">
-            <Link href={stat.href} className="flex h-full flex-col gap-1 bg-papir p-5 transition-colors hover:bg-papir-2">
-              <span className="text-label text-tinta-2 uppercase">{stat.label}</span>
-              <span className="font-mono text-price text-tinta">{formatInteger(stat.value)}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <StatGrid stats={stats} className="sm:grid-cols-3 lg:grid-cols-5" />
 
       {expiringCount > 0 || !phoneSet || profileIncomplete ? (
         <div className="grid gap-4 lg:grid-cols-2">

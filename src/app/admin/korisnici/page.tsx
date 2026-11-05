@@ -21,7 +21,7 @@ const usersPageSize = 50;
 type ProfileRow = { id: string; full_name: string; role: UserRole; created_at: string };
 
 export default async function AdminUsersPage({ searchParams }: PageProps<"/admin/korisnici">) {
-  const page = parsePageParam((await searchParams).stranica);
+  const page = parsePageParam(await searchParams);
   const supabase = await createClient();
   const from = (page - 1) * usersPageSize;
   const { data, count } = await supabase

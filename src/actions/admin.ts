@@ -3,11 +3,12 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { failure, success, type ActionResult } from "@/lib/action-result";
 import type { AdminErrorCode } from "@/lib/admin/admin-errors";
+import { adminRoutes } from "@/lib/admin/routes";
 import { getAdminSession } from "@/lib/auth/action-session";
 import { listingCacheTag } from "@/lib/listings/public-listing";
 import { listingsCacheTag } from "@/lib/search/cache-tags";
 import { hideListingSchema, reportResolutionSchema, type HideListingInput, type ReportResolution } from "@/lib/validation/admin";
-import { listingIdSchema } from "@/lib/validation/listing";
+import { idSchema } from "@/lib/validation/id";
 
 type AdminResult<Data = undefined> = ActionResult<Data, AdminErrorCode>;
 
@@ -16,12 +17,12 @@ function revalidateAdmin(listingNumbers: number[] = []) {
   for (const listingNumber of listingNumbers) {
     updateTag(listingCacheTag(listingNumber));
   }
-  revalidatePath("/admin", "layout");
+  revalidatePath(adminRoutes.overview, "layout");
 }
 
 export async function hideListing(listingId: string, input: HideListingInput): Promise<AdminResult> {
   const parsed = hideListingSchema.safeParse(input);
-  if (!parsed.success || !listingIdSchema.safeParse(listingId).success) {
+  if (!parsed.success || !idSchema.safeParse(listingId).success) {
     return failure("validation");
   }
   const admin = await getAdminSession();
@@ -47,7 +48,7 @@ export async function hideListing(listingId: string, input: HideListingInput): P
 }
 
 export async function unhideListing(listingId: string): Promise<AdminResult> {
-  if (!listingIdSchema.safeParse(listingId).success) {
+  if (!idSchema.safeParse(listingId).success) {
     return failure("validation");
   }
   const admin = await getAdminSession();
@@ -76,7 +77,7 @@ export async function unhideListing(listingId: string): Promise<AdminResult> {
 
 export async function resolveReport(reportId: string, resolution: ReportResolution): Promise<AdminResult> {
   const parsedResolution = reportResolutionSchema.safeParse(resolution);
-  if (!parsedResolution.success || !listingIdSchema.safeParse(reportId).success) {
+  if (!parsedResolution.success || !idSchema.safeParse(reportId).success) {
     return failure("validation");
   }
   const admin = await getAdminSession();
@@ -92,13 +93,13 @@ export async function resolveReport(reportId: string, resolution: ReportResoluti
   if (error || !data) {
     return failure(error ? "unexpected" : "not_found");
   }
-  revalidatePath("/admin", "layout");
+  revalidatePath(adminRoutes.overview, "layout");
   return success();
 }
 
 export async function hideAllUserListings(userId: string, input: HideListingInput): Promise<AdminResult<{ count: number }>> {
   const parsed = hideListingSchema.safeParse(input);
-  if (!parsed.success || !listingIdSchema.safeParse(userId).success) {
+  if (!parsed.success || !idSchema.safeParse(userId).success) {
     return failure("validation");
   }
   const admin = await getAdminSession();

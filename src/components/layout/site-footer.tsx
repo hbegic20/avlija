@@ -16,7 +16,7 @@ const legalLinks = [
 export function SiteFooter() {
   return (
     <footer className="mt-16 border-t print:hidden">
-      <Container className="grid gap-8 py-8 md:grid-cols-[1fr_2fr_1fr]">
+      <Container className="grid gap-8 py-8 md:grid-cols-[1fr_2fr] lg:grid-cols-[1fr_2fr_1fr]">
         <div className="flex flex-col gap-3">
           <Logo />
           <p className="max-w-[32ch] text-small text-tinta-2">{bs.site.description}</p>

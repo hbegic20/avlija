@@ -38,7 +38,7 @@ function parseStatus(value: string | string[] | undefined): ReportStatus {
 export default async function AdminReportsPage({ searchParams }: PageProps<"/admin/prijave">) {
   const params = await searchParams;
   const status = parseStatus(params.status);
-  const page = parsePageParam(params.stranica);
+  const page = parsePageParam(params);
   const from = (page - 1) * reportsPageSize;
   const supabase = await createClient();
   const { data, count } = await supabase

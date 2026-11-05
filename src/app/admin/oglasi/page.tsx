@@ -10,7 +10,7 @@ import { listingStatuses, type ListingStatus } from "@/lib/domain/enums";
 import { formatDate, formatListingNumber } from "@/lib/format";
 import { bs } from "@/lib/i18n/bs";
 import { listingPath } from "@/lib/listings/listing-path";
-import { parsePageParam } from "@/lib/pagination/page-param";
+import { pageHref, parsePageParam } from "@/lib/pagination/page-param";
 import { createClient } from "@/lib/supabase/server";
 import { HatchNotice } from "@/components/ui/hatch-notice";
 
@@ -44,7 +44,7 @@ export default async function AdminListingsPage({ searchParams }: PageProps<"/ad
   const query = first(params.q).trim().slice(0, 100);
   const statusParam = first(params.status);
   const status = (listingStatuses as readonly string[]).includes(statusParam) ? (statusParam as ListingStatus) : null;
-  const page = parsePageParam(params.stranica);
+  const page = parsePageParam(params);
 
   const supabase = await createClient();
   let request = supabase
@@ -63,14 +63,8 @@ export default async function AdminListingsPage({ searchParams }: PageProps<"/ad
   const { data, count } = await request.order("created_at", { ascending: false }).range(from, from + adminPageSize - 1);
   const listings = (data ?? []) as unknown as AdminListingRow[];
 
-  const hrefForPage = (target: number) => {
-    const next = new URLSearchParams();
-    if (query) next.set("q", query);
-    if (status) next.set("status", status);
-    if (target > 1) next.set("stranica", String(target));
-    const value = next.toString();
-    return value ? `${adminRoutes.listings}?${value}` : adminRoutes.listings;
-  };
+  const filterParams: Record<string, string> = { ...(query ? { q: query } : {}), ...(status ? { status } : {}) };
+  const hrefForPage = (target: number) => pageHref(adminRoutes.listings, target, filterParams);
 
   return (
     <div className="flex flex-col gap-6">

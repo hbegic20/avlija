@@ -1,4 +1,5 @@
-const dayMs = 86_400_000;
+import { dayMs } from "@/lib/time/duration";
+
 const expiringSoonDays = 7;
 const renewWindowDays = 14;
 export const maxActiveListings = 10;

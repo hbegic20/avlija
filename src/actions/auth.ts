@@ -3,9 +3,9 @@
 import { redirect } from "next/navigation";
 import { failure, success, type ActionResult } from "@/lib/action-result";
 import { toAuthErrorCode, type AuthErrorCode } from "@/lib/auth/auth-errors";
-import { authRoutes, nextParam, noticeParam, notices } from "@/lib/auth/routes";
+import { authRoutes, noticeParam, notices } from "@/lib/auth/routes";
 import { safeNextPath } from "@/lib/auth/safe-next-path";
-import { siteOrigin } from "@/lib/auth/site-origin";
+import { authCallbackUrl } from "@/lib/auth/site-origin";
 import { createClient } from "@/lib/supabase/server";
 import {
   emailOnlySchema,
@@ -19,12 +19,6 @@ import {
 } from "@/lib/validation/auth";
 
 type AuthResult<Data = undefined> = ActionResult<Data, AuthErrorCode>;
-
-async function callbackUrl(next: string): Promise<string> {
-  const url = new URL(authRoutes.callback, await siteOrigin());
-  url.searchParams.set(nextParam, next);
-  return url.toString();
-}
 
 export async function signIn(input: SignInInput, next?: string): Promise<AuthResult> {
   const parsed = signInSchema.safeParse(input);
@@ -55,7 +49,7 @@ export async function signUp(input: SignUpInput): Promise<AuthResult<{ email: st
       password: parsed.data.password,
       options: {
         data: { full_name: parsed.data.fullName },
-        emailRedirectTo: await callbackUrl(authRoutes.dashboard),
+        emailRedirectTo: await authCallbackUrl(authRoutes.dashboard),
       },
     });
     if (error) {
@@ -77,7 +71,7 @@ export async function resendConfirmation(input: EmailOnlyInput): Promise<AuthRes
     const { error } = await supabase.auth.resend({
       type: "signup",
       email: parsed.data.email,
-      options: { emailRedirectTo: await callbackUrl(authRoutes.dashboard) },
+      options: { emailRedirectTo: await authCallbackUrl(authRoutes.dashboard) },
     });
     if (error) {
       return failure(toAuthErrorCode(error));
@@ -96,7 +90,7 @@ export async function requestPasswordReset(input: EmailOnlyInput): Promise<AuthR
   try {
     const supabase = await createClient();
     const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-      redirectTo: await callbackUrl(authRoutes.newPassword),
+      redirectTo: await authCallbackUrl(authRoutes.newPassword),
     });
     if (error && toAuthErrorCode(error) === "too_many_requests") {
       return failure("too_many_requests");
@@ -135,7 +129,7 @@ export async function signInWithGoogle(next?: string): Promise<AuthResult> {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: await callbackUrl(safeNextPath(next)) },
+      options: { redirectTo: await authCallbackUrl(safeNextPath(next)) },
     });
     if (error || !data.url) {
       return failure(error ? toAuthErrorCode(error) : "unexpected");

@@ -6,9 +6,9 @@ import { redirect } from "next/navigation";
 import { failure, success, type ActionResult } from "@/lib/action-result";
 import { getActionSession } from "@/lib/auth/action-session";
 import { toAuthErrorCode } from "@/lib/auth/auth-errors";
-import { authRoutes, nextParam, noticeParam, notices } from "@/lib/auth/routes";
+import { authRoutes, noticeParam, notices } from "@/lib/auth/routes";
 import type { ProfileErrorCode } from "@/lib/profile/profile-errors";
-import { siteOrigin } from "@/lib/auth/site-origin";
+import { authCallbackUrl } from "@/lib/auth/site-origin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { supabasePublishableKey, supabaseUrl } from "@/lib/supabase/env";
 import { avatarsBucket, listingImagesBucket } from "@/lib/supabase/storage-url";
@@ -27,7 +27,6 @@ import {
 } from "@/lib/validation/profile";
 
 type ProfileResult<Data = undefined> = ActionResult<Data, ProfileErrorCode>;
-
 
 function revalidateProfile() {
   revalidatePath(authRoutes.profile);
@@ -162,11 +161,9 @@ export async function changeEmail(input: ChangeEmailInput): Promise<ProfileResul
     return failure("same_email");
   }
   try {
-    const redirectTo = new URL(authRoutes.callback, await siteOrigin());
-    redirectTo.searchParams.set(nextParam, authRoutes.profile);
     const { error } = await session.supabase.auth.updateUser(
       { email: parsed.data.email },
-      { emailRedirectTo: redirectTo.toString() },
+      { emailRedirectTo: await authCallbackUrl(authRoutes.profile) },
     );
     if (error) {
       if (error.code === "email_exists" || error.code === "user_already_exists") {

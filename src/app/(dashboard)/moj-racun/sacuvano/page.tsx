@@ -8,9 +8,9 @@ import { requireUser } from "@/lib/auth/current-user";
 import { favoritesRoutes } from "@/lib/favorites/routes";
 import { bs } from "@/lib/i18n/bs";
 import type { ListingSummary } from "@/lib/listings/summary";
+import { listingSummaryFields, toSummary, type SummaryRow } from "@/lib/listings/summary-row";
 import { pageHref, parsePageParam } from "@/lib/pagination/page-param";
 import { listingsBasePath, pageSize } from "@/lib/search/filters";
-import { toSummary, type SummaryRow } from "@/lib/search/queries";
 import { createClient } from "@/lib/supabase/server";
 
 export const instant = false;
@@ -20,8 +20,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const favoriteListingColumns =
-  "created_at, listings!inner(id, number, title, type, status, price_km, price_negotiable, previous_price_km, price_reduced_at, area_m2, land_area_m2, rooms, floor, total_floors, neighborhood, is_registered, published_at, public_lat, public_lng, location_precise, municipalities(name, slug), listing_images(storage_path, position))";
+const favoriteListingColumns = `created_at, listings!inner(${listingSummaryFields}, municipalities(name, slug))`;
 
 async function loadFavorites(userId: string, page: number): Promise<{ items: ListingSummary[]; total: number }> {
   const supabase = await createClient();
@@ -45,7 +44,7 @@ async function loadFavorites(userId: string, page: number): Promise<{ items: Lis
 
 export default async function FavoritesPage({ searchParams }: PageProps<"/moj-racun/sacuvano">) {
   const user = await requireUser(favoritesRoutes.page);
-  const page = parsePageParam((await searchParams).stranica);
+  const page = parsePageParam(await searchParams);
   const { items: favorites, total } = await loadFavorites(user.id, page);
 
   return (

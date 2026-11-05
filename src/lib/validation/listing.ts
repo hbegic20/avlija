@@ -16,6 +16,7 @@ import {
   type DetailField,
 } from "@/lib/domain/listing-fields";
 import { bs } from "@/lib/i18n/bs";
+import { idSchema } from "./id";
 
 const messages = bs.listingForm.validation;
 
@@ -214,7 +215,7 @@ export const publishListingSchema = withPrice(
 );
 export type PublishListingInput = z.input<typeof publishListingSchema>;
 
-export const listingIdSchema = z.uuid();
+export const listingIdSchema = idSchema;
 
 export const imageRegistrationSchema = z.object({
   storagePath: z.string().min(1).max(300),
@@ -223,4 +224,4 @@ export const imageRegistrationSchema = z.object({
 });
 export type ImageRegistration = z.infer<typeof imageRegistrationSchema>;
 
-export const imageOrderSchema = z.array(z.uuid()).max(20);
+export const imageOrderSchema = z.array(idSchema).max(20);

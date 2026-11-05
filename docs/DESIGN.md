@@ -115,7 +115,7 @@ These make the product recognisable. Use them consistently.
 ### Logo mark and wordmark
 
 - Wordmark: `Avlija.` in Fraunces with the full stop in `crijep`. Used in the header, footer and OG images.
-- Mark (owner decision): a Fraunces `A.` in `papir` with the full stop in `crijep`, centred on a solid `tinta` square, no radius, no border. The glyph is 74% of the square side. Built once in `src/components/seo/logo-mark.tsx` and used for the favicon (`favicon.ico` 16/32/48), `icon` (32, 192, 512), `apple-icon` (180), the web manifest and next to the wordmark in OG images. In those images the mark is fixed (dark square). In the UI (`Logo` in `src/components/layout/logo.tsx`, header, mobile menu and the first footer column above the site description) it is a 36px square built from tokens (`bg-tinta`, `text-papir`, `text-crijep`, Fraunces at `text-h2`) placed left of the wordmark with a 10px gap, so in dark mode it follows the tokens and shows as a light square with a dark `A`.
+- Mark (owner decision): a Fraunces `A.` in `papir` with the full stop in `crijep`, centred on a solid `tinta` square, no radius, no border. The glyph is 74% of the square side and sits 5% of the side below centre. These ratios live once in `src/lib/brand/logo-mark.ts` and are shared by both renderings. `OgLogoMark` in `src/components/seo/logo-mark.tsx` is used for the favicon (`favicon.ico` 16/32/48), `icon` (32, 192, 512), `apple-icon` (180), the web manifest and next to the wordmark in OG images. In those images the mark is fixed (dark square). In the UI (`Logo` in `src/components/layout/logo.tsx`, header, mobile menu and the first footer column above the site description) it is `SiteLogoMark`, a 36px square built from tokens (`bg-tinta`, `text-papir`, `text-crijep`, Fraunces with the glyph size from the shared ratios) placed left of the wordmark with a 10px gap, so in dark mode it follows the tokens and shows as a light square with a dark `A`.
 
 ## 6. Components
 
@@ -270,7 +270,7 @@ The listing detail prints as a land registry extract (button `Ispiši`, `window.
 - Rounded cards, pill buttons, `rounded-xl`/`rounded-2xl`/`rounded-full` on anything but avatars.
 - Blue as a primary colour, purple gradients, default Tailwind palette colours (`bg-blue-500`, `text-gray-600`, ...).
 - Inter, Roboto, Poppins, Montserrat or any font not listed above.
-- Floating cards with gaps and shadows in a grid.
+- Floating cards with gaps and shadows in a grid. Listing cards may sit in a grid with a 16px gap only when each has its own 1px `linija` border and no shadow.
 - Big stock-photo hero with text on top.
 - Emoji in UI copy, exclamation marks in system messages, "🔥 Hot deal" style badges.
 - Spinners. Use the `···` button state or hatch skeletons.

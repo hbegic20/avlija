@@ -1,12 +1,20 @@
 import Link from "next/link";
+import { logoMarkGeometry, siteLogoMarkSize } from "@/lib/brand/logo-mark";
 import { bs } from "@/lib/i18n/bs";
 import { routes } from "./routes";
 
-function LogoMark() {
+const siteLogoMarkStyle = {
+  width: siteLogoMarkSize,
+  height: siteLogoMarkSize,
+  ...logoMarkGeometry(siteLogoMarkSize),
+};
+
+function SiteLogoMark() {
   return (
     <span
       aria-hidden="true"
-      className="flex size-9 shrink-0 items-center justify-center bg-tinta pt-1 font-display text-h2 leading-none font-semibold tracking-[-0.02em] text-papir"
+      style={siteLogoMarkStyle}
+      className="flex shrink-0 items-center justify-center bg-tinta leading-none text-papir"
     >
       A<span className="text-crijep">.</span>
     </span>
@@ -18,9 +26,9 @@ export function Logo() {
     <Link
       href={routes.home}
       aria-label={bs.nav.home}
-      className="flex items-center gap-2.5 font-display text-h2 font-semibold tracking-[-0.02em] text-tinta"
+      className="inline-flex items-center gap-2.5 font-display text-h2 font-semibold tracking-[-0.02em] text-tinta"
     >
-      <LogoMark />
+      <SiteLogoMark />
       <span>
         {bs.site.name}
         <span className="text-crijep">.</span>

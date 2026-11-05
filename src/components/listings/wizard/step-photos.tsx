@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState, type DragEvent } from "react";
+import { useEffect, useRef, useState, type DragEvent, type Ref } from "react";
 import { ArrowLeft, ArrowRight, Camera, ImagePlus, RotateCcw, Star, Trash2 } from "lucide-react";
 import { deleteImage, registerImage, reorderImages } from "@/actions/listings";
 import { FormAlert } from "@/components/auth/form-alert";
@@ -41,6 +41,37 @@ function moveItem<Item>(items: Item[], from: number, to: number): Item[] {
   const [moved] = next.splice(from, 1);
   next.splice(to, 0, moved);
   return next;
+}
+
+function HiddenImageInput({
+  ref,
+  multiple,
+  capture,
+  onFiles,
+}: {
+  ref: Ref<HTMLInputElement>;
+  multiple?: boolean;
+  capture?: "environment";
+  onFiles: (files: FileList) => void;
+}) {
+  return (
+    <input
+      ref={ref}
+      type="file"
+      accept="image/*"
+      multiple={multiple}
+      capture={capture}
+      className="sr-only"
+      tabIndex={-1}
+      aria-hidden="true"
+      onChange={(event) => {
+        if (event.target.files) {
+          onFiles(event.target.files);
+        }
+        event.target.value = "";
+      }}
+    />
+  );
 }
 
 export function StepPhotos() {
@@ -250,36 +281,8 @@ export function StepPhotos() {
             {text.camera}
           </Button>
         </div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          className="sr-only"
-          tabIndex={-1}
-          aria-hidden="true"
-          onChange={(event) => {
-            if (event.target.files) {
-              addFiles(event.target.files);
-            }
-            event.target.value = "";
-          }}
-        />
-        <input
-          ref={cameraInputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="sr-only"
-          tabIndex={-1}
-          aria-hidden="true"
-          onChange={(event) => {
-            if (event.target.files) {
-              addFiles(event.target.files);
-            }
-            event.target.value = "";
-          }}
-        />
+        <HiddenImageInput ref={fileInputRef} multiple onFiles={addFiles} />
+        <HiddenImageInput ref={cameraInputRef} capture="environment" onFiles={addFiles} />
         <p className="text-small text-tinta-2">{text.helper(maxListingImages)}</p>
       </div>
 

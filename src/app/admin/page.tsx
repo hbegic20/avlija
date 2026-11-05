@@ -1,6 +1,5 @@
-import Link from "next/link";
+import { StatGrid } from "@/components/ui/stat-grid";
 import { adminRoutes } from "@/lib/admin/routes";
-import { formatInteger } from "@/lib/format";
 import { bs } from "@/lib/i18n/bs";
 import { createClient } from "@/lib/supabase/server";
 
@@ -26,16 +25,7 @@ export default async function AdminOverviewPage() {
   return (
     <div className="flex flex-col gap-6">
       <h1 className="font-display text-h1">{bs.admin.nav.overview}</h1>
-      <ul className="grid grid-cols-2 border-t border-l lg:grid-cols-4">
-        {stats.map((stat) => (
-          <li key={stat.label} className="border-r border-b">
-            <Link href={stat.href} className="flex h-full flex-col gap-1 bg-papir p-5 transition-colors hover:bg-papir-2">
-              <span className="text-label text-tinta-2 uppercase">{stat.label}</span>
-              <span className="font-mono text-price text-tinta">{formatInteger(stat.value)}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <StatGrid stats={stats} className="lg:grid-cols-4" />
     </div>
   );
 }
