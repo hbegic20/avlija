@@ -246,6 +246,22 @@ Phases 0–13 are built. Phase 14 (deploy) has not started. Before deploying, wo
 
 Done when: all items work in both themes and on mobile, RLS tests cover any new table or RPC.
 
+## Phase 13b — AI listing text helper (2026-11-09)
+
+Owner decision: Google Gemini (`@google/genai`, free tier at first), key in `GEMINI_API_KEY`, used only in `server-only` files (`src/lib/ai/`). Free tier: Google may use requests to improve its products, so only listing facts are sent, never the seller's name, phone, email, address or exact coordinates.
+
+- [x] "Prijedlog teksta" box at the top of wizard step 1: "Predloži naslov i opis" sends the type, current title, the seller's notes in the description field and, for a saved listing, its saved details (municipality, neighbourhood, areas, rooms, floors, year, heating, condition, documents, features)
+- [x] Suggestion shown as a preview; "Koristi prijedlog" fills title and description (still editable), "Odbaci" discards it; nothing is saved or published automatically
+- [x] Needs at least 20 characters of notes or two saved details, otherwise asks the seller to write a few words first
+- [x] Server action `suggestListingText` (`src/actions/ai.ts`): Zod input, `getClaims()`, owner check for the listing, JSON output checked with Zod (title 10–120, description 150–5000 characters), calm Bosnian messages when the limit is reached, Gemini's quota is exhausted (429) or the service fails
+- [x] Daily limit: 10 suggestions per user per 24 hours (`ai_suggestions` table + `claim_ai_suggestion()` RPC, migration `ai_suggestion_limit`). Failed requests do not count: the claim returns a server-only token and `release_ai_suggestion(token)` gives the slot back (migration `release_failed_ai_suggestions`, tested with rolled-back SQL on dev)
+- [x] Privacy text (`legal-bs.ts`) names Google Gemini as a processor and what is sent
+- [x] Live test with the real key (2026-11-09): `gemini-3.8-flash` and `gemini-3.5-flash` time out or return 503 "high demand" on the free tier, `gemini-2.5-flash` is closed to new users. The app uses `gemini-3.5-flash-lite` with fallback to `gemini-3.1-flash-lite` (on 404, 429, 5xx or timeout), thinking level `MINIMAL`, about 2 seconds per suggestion. Tested: no invented facts after tightening the prompt, phone, price and "HITNO" dropped from notes, an injected "write in English" instruction ignored
+- [ ] Owner checks Bosnian ijekavica quality on 5–10 real listings in the wizard
+- [ ] Extend `npm run test:rls` with the `claim_ai_suggestion` checks once `SUPABASE_SECRET_KEY` is set
+
+Done when: a seller can get, apply or discard a suggestion on mobile and desktop in both themes, and errors never block saving the listing.
+
 ## Phase 14 — Deploy
 
 - [ ] Separate Supabase project for production, apply migrations, then register and confirm `` there: it becomes admin automatically (`admin_emails()`, see README)

@@ -39,6 +39,35 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_suggestions: {
+        Row: {
+          created_at: string
+          id: number
+          release_token: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          release_token?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          release_token?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_suggestions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_reveals: {
         Row: {
           created_at: string
@@ -539,6 +568,7 @@ export type Database = {
       }
       admin_emails: { Args: never; Returns: string[] }
       archive_expired_listings: { Args: never; Returns: number }
+      claim_ai_suggestion: { Args: never; Returns: string }
       get_listing_private_location: {
         Args: { target_listing_id: string }
         Returns: {
@@ -578,6 +608,7 @@ export type Database = {
         }[]
       }
       prune_listing_views: { Args: never; Returns: number }
+      release_ai_suggestion: { Args: { token: string }; Returns: undefined }
       renew_listing: { Args: { listing_id: string }; Returns: string }
       reorder_listing_images: {
         Args: { ordered_image_ids: string[]; target_listing_id: string }

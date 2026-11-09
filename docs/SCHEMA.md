@@ -15,6 +15,7 @@ Postgres on Supabase. Every table has RLS enabled. Migrations live in `supabase/
 | `reports` | Users reporting fake or wrong listings. |
 | `listing_views` | One row per listing, visitor and day (`visitor_hash` is an HMAC of the user id, or of IP and user agent for guests). RLS on, no policies, no grants: only `increment_listing_view` writes it, and `prune_listing_views` deletes rows older than yesterday every night. |
 | `contact_reveals` | Log of phone reveals, used only for rate limiting. RLS on, no policies, no grants: only `get_seller_contact` (security definer) reads and writes it. |
+| `ai_suggestions` | Log of AI listing-text suggestions (`user_id`, `created_at`, random `release_token`), used only for the daily limit. RLS on, no policies, no grants: only `claim_ai_suggestion` (security definer) reads and writes it. |
 
 Storage buckets: `listing-images` (public read), `avatars` (public read).
 
@@ -286,6 +287,8 @@ RLS:
 | `my_listing_stats()` | `security definer` RPC | Authenticated only. For each listing owned by the caller returns `favorite_count` (favourites by other users) and `contact_count` (distinct other users who revealed the phone, from `contact_reveals`). Owners cannot read `favorites` or `contact_reveals` directly. |
 | `municipality_listing_counts()` | `security invoker` RPC | Active listing count per municipality, for the home map and municipality grid. |
 | `get_seller_contact(listing_id uuid)` | `security definer` RPC | Returns phone, has_viber, has_whatsapp, full_name for an active listing's owner. Returns nothing if `auth.uid()` is null. Logs each reveal in `contact_reveals` and raises `RATE_LIMIT` after 30 reveals per user per hour. |
+| `claim_ai_suggestion()` | `security definer` RPC, `authenticated` only | Called by the `suggestListingText` server action before each Gemini request. Takes a per-user advisory lock, raises `RATE_LIMIT` after 10 suggestions per user in the last 24 hours, otherwise logs one row in `ai_suggestions` and returns its `release_token`. Raises `NOT_AUTHENTICATED` without a user. |
+| `release_ai_suggestion(token uuid)` | `security definer` RPC, `authenticated` only | Deletes the caller's own `ai_suggestions` row with that token if it is less than 10 minutes old, so a failed Gemini request does not count toward the limit. The token stays on the server, so a client cannot release successful suggestions. |
 | `enforce_report_rate_limit()` | before insert trigger on reports | Raises `RATE_LIMIT` after 10 reports per user per day. |
 | `archive_expired_listings()` | function run daily with `pg_cron` | Sets `status = 'archived'` where `status = 'active' and expires_at < now()`. |
 

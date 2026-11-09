@@ -1,6 +1,6 @@
 export type LegalSection = { title: string; paragraphs: readonly string[]; items?: readonly string[] };
 
-export const legalUpdatedAt = "2026-10-30";
+export const legalUpdatedAt = "2026-11-09";
 
 export const termsPage = {
   title: "Uslovi korištenja",
@@ -99,6 +99,7 @@ export const privacyPage = {
       title: "Obrađivači i treće strane",
       paragraphs: [
         "Podatke čuvamo kod pružaoca infrastrukture Supabase (baza podataka, prijava i pohrana fotografija), a stranica se isporučuje preko hosting servisa Vercel. Karte se učitavaju sa servera OpenStreetMap, koji pri tome vidi Vašu IP adresu.",
+        "Kada pri pisanju oglasa zatražite prijedlog naslova i opisa, Vaše bilješke iz opisa i podaci o nekretnini (vrsta, općina, naselje, površina, sobe, opremljenost i dokumentacija) šalju se servisu Google Gemini, koji iz njih pravi prijedlog teksta. Ne šaljemo Vaše ime, broj telefona, e-mail, adresu niti tačnu lokaciju. Google ove podatke može koristiti za poboljšanje svojih usluga, pa u bilješke ne upisujte lične podatke. Prijedlog se koristi samo ako ga Vi prihvatite.",
       ],
     },
     {

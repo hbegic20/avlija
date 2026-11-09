@@ -17,6 +17,7 @@ import { formatInteger } from "@/lib/format";
 import { bs } from "@/lib/i18n/bs";
 import { listingErrorMessage, type ListingErrorCode } from "@/lib/listings/listing-errors";
 import { basicsSchema, type BasicsData, type BasicsFormValues } from "@/lib/validation/listing";
+import { ListingTextHelper } from "./listing-text-helper";
 import { useReportDirty } from "./use-dirty-state";
 import { useWizard } from "./wizard-context";
 import { WizardFooter } from "./wizard-footer";
@@ -49,6 +50,7 @@ export function StepBasics() {
     control,
     handleSubmit,
     getValues,
+    setValue,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<BasicsFormValues, unknown, BasicsData>({
     resolver: zodResolver(basicsSchema),
@@ -77,6 +79,17 @@ export function StepBasics() {
   return (
     <form noValidate onSubmit={onSubmit} className="flex flex-col gap-6">
       {errorCode ? <FormAlert tone="error">{listingErrorMessage(errorCode)}</FormAlert> : null}
+      <ListingTextHelper
+        readRequest={() => {
+          const values = getValues();
+          return { listingId: listing?.id ?? null, type: values.type, title: values.title, notes: values.description };
+        }}
+        onApply={(suggestion) => {
+          const options = { shouldDirty: true, shouldValidate: true } as const;
+          setValue("title", suggestion.title, options);
+          setValue("description", suggestion.description, options);
+        }}
+      />
       <div className="overflow-x-auto pb-1">
         <Controller
           control={control}

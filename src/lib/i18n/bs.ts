@@ -345,6 +345,23 @@ export const bs = {
       description: "Opis",
       descriptionPlaceholder: "Opišite nekretninu, okolinu, stanje i šta je uključeno u cijenu.",
       counter: (length: string, max: string) => `${length} / ${max}`,
+      suggestion: {
+        label: "Prijedlog teksta",
+        request: "Predloži naslov i opis",
+        again: "Novi prijedlog",
+        helper:
+          "Ukratko upišite u polje Opis šta nekretnina ima (površina, sobe, okućnica, grijanje), pa zatražite prijedlog naslova i opisa. Provjerite ga prije objave.",
+        apply: "Koristi prijedlog",
+        dismiss: "Odbaci",
+        applied: "Prijedlog je upisan u naslov i opis. Pregledajte ga i prilagodite.",
+        errors: {
+          notEnoughInput:
+            "Napišite u opis nekoliko riječi o nekretnini (npr. površina, sobe, okućnica, grijanje), pa zatražite prijedlog.",
+          rateLimited: "Iskoristili ste dnevni broj prijedloga. Pokušajte ponovo sutra.",
+          busy: "Pomoć je trenutno zauzeta. Pokušajte za nekoliko minuta.",
+          unavailable: "Prijedlog trenutno nije dostupan. Napišite tekst sami ili pokušajte kasnije.",
+        },
+      },
     },
     location: {
       municipality: "Općina",

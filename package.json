@@ -12,6 +12,7 @@
     "geo:boundaries": "node scripts/generate-municipality-boundaries.mjs"
   },
   "dependencies": {
+    "@google/genai": "^3.0.0",
     "@hookform/resolvers": "^6.0.2",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.118.0",
