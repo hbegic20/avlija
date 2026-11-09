@@ -1,4 +1,5 @@
 import imageCompression from "browser-image-compression";
+import { assertEncodedAs, decodableImage, imageOutputFormat, type ImageOutputFormat } from "@/lib/images/output-format";
 import { createClient } from "@/lib/supabase/client";
 import { supabasePublishableKey, supabaseUrl } from "@/lib/supabase/env";
 import { listingImagesBucket } from "@/lib/supabase/storage-url";
@@ -7,31 +8,35 @@ const acceptedImageTypes = ["image/jpeg", "image/png", "image/webp", "image/heic
 
 export type PreparedImage = {
   blob: Blob;
+  format: ImageOutputFormat;
   width: number;
   height: number;
 };
 
 export async function prepareListingImage(file: File): Promise<PreparedImage> {
-  const compressed = await imageCompression(file, {
+  const source = await decodableImage(file);
+  const format = imageOutputFormat();
+  const compressed = await imageCompression(source, {
     maxWidthOrHeight: 1920,
     maxSizeMB: 1.8,
     initialQuality: 0.8,
-    fileType: "image/webp",
+    fileType: format.mimeType,
     useWebWorker: true,
   });
+  assertEncodedAs(compressed, format);
   const bitmap = await createImageBitmap(compressed);
-  const prepared = { blob: compressed, width: bitmap.width, height: bitmap.height };
+  const prepared = { blob: compressed, format, width: bitmap.width, height: bitmap.height };
   bitmap.close();
   return prepared;
 }
 
-export function listingImagePath(userId: string, listingId: string): string {
-  return `${userId}/${listingId}/${crypto.randomUUID()}.webp`;
+export function listingImagePath(userId: string, listingId: string, format: ImageOutputFormat): string {
+  return `${userId}/${listingId}/${crypto.randomUUID()}.${format.extension}`;
 }
 
 export async function uploadWithProgress(
   path: string,
-  blob: Blob,
+  prepared: PreparedImage,
   onProgress: (fraction: number) => void,
 ): Promise<void> {
   const { data } = await createClient().auth.getSession();
@@ -45,7 +50,7 @@ export async function uploadWithProgress(
     request.open("POST", `${supabaseUrl}/storage/v1/object/${listingImagesBucket}/${path}`);
     request.setRequestHeader("Authorization", `Bearer ${accessToken}`);
     request.setRequestHeader("apikey", supabasePublishableKey);
-    request.setRequestHeader("Content-Type", "image/webp");
+    request.setRequestHeader("Content-Type", prepared.format.mimeType);
     request.setRequestHeader("x-upsert", "false");
     request.setRequestHeader("cache-control", "max-age=31536000");
     request.upload.addEventListener("progress", (event) => {
@@ -62,7 +67,7 @@ export async function uploadWithProgress(
       }
     });
     request.addEventListener("error", () => reject(new Error("Network error")));
-    request.send(blob);
+    request.send(prepared.blob);
   });
 }
 

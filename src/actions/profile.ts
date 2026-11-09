@@ -14,7 +14,7 @@ import { supabasePublishableKey, supabaseUrl } from "@/lib/supabase/env";
 import { avatarsBucket } from "@/lib/supabase/storage-url";
 import { deleteUserCompletely } from "@/lib/users/delete-user";
 import {
-  avatarPathFor,
+  avatarPathsFor,
   basicInfoSchema,
   changeEmailSchema,
   changePasswordSchema,
@@ -63,16 +63,17 @@ export async function updateAvatar(storagePath: string | null): Promise<ProfileR
   if (!session) {
     return failure("unauthenticated");
   }
-  const expectedPath = avatarPathFor(session.userId);
-  if (storagePath !== null && storagePath !== expectedPath) {
+  const ownPaths = avatarPathsFor(session.userId);
+  if (storagePath !== null && !ownPaths.includes(storagePath)) {
     return failure("validation");
   }
 
+  const stalePaths = ownPaths.filter((path) => path !== storagePath);
+  await session.supabase.storage.from(avatarsBucket).remove(stalePaths);
+
   let avatarUrl: string | null = null;
-  if (storagePath === null) {
-    await session.supabase.storage.from(avatarsBucket).remove([expectedPath]);
-  } else {
-    const { data } = session.supabase.storage.from(avatarsBucket).getPublicUrl(expectedPath);
+  if (storagePath !== null) {
+    const { data } = session.supabase.storage.from(avatarsBucket).getPublicUrl(storagePath);
     avatarUrl = `${data.publicUrl}?v=${Date.now()}`;
   }
 

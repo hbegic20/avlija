@@ -2,11 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 import { registerImage } from "@/actions/listings";
+import { bs } from "@/lib/i18n/bs";
+import { ImagePreparationError } from "@/lib/images/output-format";
 import { listingErrorMessage } from "@/lib/listings/listing-errors";
 import type { ListingImage } from "@/lib/listings/types";
 import { listingImagePath, prepareListingImage, uploadWithProgress } from "@/lib/listings/upload-listing-image";
 
 const uploadConcurrency = 3;
+
+const text = bs.listingForm.photos;
+
+function isUnsupportedSource(error: unknown): boolean {
+  return error instanceof ImagePreparationError && error.reason === "unsupported_source";
+}
 
 export type UploadStatus = "compressing" | "uploading" | "failed";
 
@@ -59,8 +67,8 @@ export function usePhotoUploads({ listingId, userId, onUploaded, onError }: Phot
       updateUpload(upload.key, { status: "compressing", progress: 0 });
       const prepared = await prepareListingImage(upload.file);
       updateUpload(upload.key, { status: "uploading" });
-      const path = listingImagePath(userId, listingId);
-      await uploadWithProgress(path, prepared.blob, (progress) => updateUpload(upload.key, { progress }));
+      const path = listingImagePath(userId, listingId, prepared.format);
+      await uploadWithProgress(path, prepared, (progress) => updateUpload(upload.key, { progress }));
       const result = await registerImage(listingId, { storagePath: path, width: prepared.width, height: prepared.height });
       if (!result.ok) {
         onError(listingErrorMessage(result.error));
@@ -69,7 +77,13 @@ export function usePhotoUploads({ listingId, userId, onUploaded, onError }: Phot
       }
       onUploaded(result.data);
       removeUpload(upload.key);
-    } catch {
+    } catch (error) {
+      if (isUnsupportedSource(error)) {
+        onError(text.unsupportedSource(upload.file.name));
+        removeUpload(upload.key);
+        return;
+      }
+      onError(text.uploadFailed(upload.file.name));
       updateUpload(upload.key, { status: "failed" });
     }
   };

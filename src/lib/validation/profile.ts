@@ -48,4 +48,9 @@ export const deleteAccountSchema = z.object({
 });
 export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>;
 
-export const avatarPathFor = (userId: string) => `${userId}/avatar.webp`;
+export const avatarExtensions = ["webp", "jpg"] as const;
+export type AvatarExtension = (typeof avatarExtensions)[number];
+
+export const avatarPathFor = (userId: string, extension: AvatarExtension) => `${userId}/avatar.${extension}`;
+
+export const avatarPathsFor = (userId: string) => avatarExtensions.map((extension) => avatarPathFor(userId, extension));

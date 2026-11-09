@@ -120,7 +120,7 @@ Wizard at `/moj-racun/oglasi/novi` using Stepper. A draft row is created on step
   - Rejects a point outside the chosen municipality's area with an inline error (real OSM boundaries from `src/lib/geo/sbk-boundaries.ts`, 150 m border tolerance, checked again in the server action)
   - Saves `lat` / `lng` with the step; required to publish
 - [x] Step 03 Detalji: fields shown depend on type (see SCHEMA field rules): area, land area, rooms, bathrooms, floor / total floors, year built, heating, condition, Uknjiženo da/ne, građevinska / upotrebna dozvola, features checklist grouped
-- [x] Step 04 Fotografije: drag-and-drop and mobile camera input, client compression to WebP, parallel upload with per-file progress, reorder by drag (plus move/cover buttons for keyboard and touch), set cover, delete; min 1, max 20
+- [x] Step 04 Fotografije: drag-and-drop and mobile camera input, client compression to WebP (JPEG in Safari, which cannot encode WebP), parallel upload with per-file progress, reorder by drag (plus move/cover buttons for keyboard and touch), set cover, delete; min 1, max 20
 - [x] Step 05 Pregled: renders the listing exactly as the public detail page will look, with "Objavi oglas" and "Sačuvaj kao nacrt"
 - [x] Zod schema per step plus a full `publishListingSchema` (discriminated by type) used on publish
 - [x] Edit page reuses the wizard with all steps unlocked
@@ -226,6 +226,7 @@ Phases 0–13 are built. Phase 14 (deploy) has not started. Before deploying, wo
 - [ ] Daily cleanup job: delete drafts untouched for 60 days and their images; remove orphaned files in `listing-images` without a `listing_images` row (uploads interrupted before registration); keep `contact_reveals` (seller stats count distinct viewers from it), or roll old rows up into per-listing counts if it grows large
 - [x] Cache the 410 lookup in `src/lib/listings/gone-response.ts` (2026-11-05: in-memory per instance, 5 minutes, max 1000 listings; safe because `sold` is final and the 30-day rule is evaluated on every request)
 - [x] Loading feedback (2026-11-05): wizard step changes run in a transition, so the clicked button keeps its `···` state and the form is dimmed until the next step arrives (stepper links included); hatch skeleton `loading.tsx` for the wizard (new and edit), listing detail, seller page and admin
+- [x] iPhone / Safari photos (2026-11-09, `allow_jpeg_images`): Safari cannot encode WebP and silently produced PNG labelled `.webp`, often over the 2 MB limit, so uploads failed without a message. Listing images and avatars are now WebP where the browser can encode it and JPEG otherwise; storage and `add_listing_image` accept `.webp` and `.jpg`. HEIC files a browser cannot open get a clear message, and every failed upload names the file. Still to check by hand on a real iPhone
 - [x] Server-side error logging (2026-11-05): every action path that returns `unexpected` or `network` logs `[avlija] <file>.<action>` with the error's code, message and hint (never `details`, which can contain row data) via `src/lib/logging/log-server-error.ts`; visible in Vercel function logs
 
 ### Owner decisions pending

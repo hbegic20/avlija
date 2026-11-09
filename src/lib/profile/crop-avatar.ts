@@ -1,9 +1,16 @@
 import imageCompression from "browser-image-compression";
+import { assertEncodedAs, imageOutputFormat, type ImageOutputFormat } from "@/lib/images/output-format";
 
 const avatarSize = 256;
 const maxAvatarBytes = 512 * 1024;
 
-export async function cropToSquareWebp(file: File): Promise<Blob> {
+export type CroppedAvatar = {
+  blob: Blob;
+  format: ImageOutputFormat;
+};
+
+export async function cropToSquare(file: File): Promise<CroppedAvatar> {
+  const format = imageOutputFormat();
   const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
   const side = Math.min(bitmap.width, bitmap.height);
   const canvas = document.createElement("canvas");
@@ -27,11 +34,14 @@ export async function cropToSquareWebp(file: File): Promise<Blob> {
   bitmap.close();
 
   const blob = await new Promise<Blob>((resolve, reject) =>
-    canvas.toBlob((result) => (result ? resolve(result) : reject(new Error("Encoding failed"))), "image/webp", 0.85),
+    canvas.toBlob((result) => (result ? resolve(result) : reject(new Error("Encoding failed"))), format.mimeType, 0.85),
   );
+  assertEncodedAs(blob, format);
   if (blob.size <= maxAvatarBytes) {
-    return blob;
+    return { blob, format };
   }
-  const squareFile = new File([blob], "avatar.webp", { type: "image/webp" });
-  return imageCompression(squareFile, { maxSizeMB: 0.45, fileType: "image/webp", useWebWorker: true });
+  const squareFile = new File([blob], `avatar.${format.extension}`, { type: format.mimeType });
+  const compressed = await imageCompression(squareFile, { maxSizeMB: 0.45, fileType: format.mimeType, useWebWorker: true });
+  assertEncodedAs(compressed, format);
+  return { blob: compressed, format };
 }

@@ -9,7 +9,7 @@ import { bs } from "@/lib/i18n/bs";
 import { createClient } from "@/lib/supabase/client";
 import { avatarsBucket } from "@/lib/supabase/storage-url";
 import { avatarPathFor } from "@/lib/validation/profile";
-import { cropToSquareWebp } from "@/lib/profile/crop-avatar";
+import { cropToSquare } from "@/lib/profile/crop-avatar";
 
 const acceptedTypes = ["image/jpeg", "image/png", "image/webp"];
 
@@ -37,11 +37,11 @@ export function AvatarUpload({
         return;
       }
       try {
-        const blob = await cropToSquareWebp(file);
-        const path = avatarPathFor(userId);
+        const { blob, format } = await cropToSquare(file);
+        const path = avatarPathFor(userId, format.extension);
         const { error: uploadError } = await createClient()
           .storage.from(avatarsBucket)
-          .upload(path, blob, { contentType: "image/webp", upsert: true, cacheControl: "3600" });
+          .upload(path, blob, { contentType: format.mimeType, upsert: true, cacheControl: "3600" });
         if (uploadError) {
           setError(bs.profile.avatar.uploadFailed);
           return;

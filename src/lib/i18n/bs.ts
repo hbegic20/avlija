@@ -413,6 +413,9 @@ export const bs = {
       failed: "Nije poslano",
       retry: "Pokušaj ponovo",
       invalidType: (name: string) => `${name} nije fotografija.`,
+      unsupportedSource: (name: string) =>
+        `${name}: ovaj preglednik ne može otvoriti HEIC fotografije. Sačuvajte je kao JPG ili je dodajte s telefona.`,
+      uploadFailed: (name: string) => `Fotografija ${name} nije poslana. Provjerite internet vezu i pokušajte ponovo.`,
       tooMany: (max: number) => `Oglas može imati najviše ${max} fotografija.`,
     },
     review: {

@@ -276,7 +276,7 @@ RLS:
 | `enforce_listing_limits()` | before insert/update trigger on listings, named `listings_30_limits` | Max 10 listings with status `active` per non-admin owner. Raise a clear error code `LISTING_LIMIT`. |
 | `enforce_listing_publish_requirements()` | before insert/update trigger on listings, named `listings_40_publish` | When status becomes `active`: requires at least 1 row in `listing_images`, `lat` and `lng` set, and `price_km` set or `price_negotiable = true` (raises `PUBLISH_REQUIREMENTS`), and a phone number in the owner's `profile_contacts` (raises `PHONE_REQUIRED`). |
 | `enforce_image_limit()` | before insert trigger on listing_images | Max 20 images per listing, error `IMAGE_LIMIT`. |
-| `add_listing_image(target_listing_id uuid, image_path text, image_width integer, image_height integer)` | `security definer` RPC, `authenticated` only | Locks the owner's listing row (`for update`), so parallel uploads are serialised. Requires `image_path` to match `<auth.uid()>/<listing_id>/<uuid>.webp` and width/height between 1 and 10000 (raises `INVALID_IMAGE`), raises `NOT_FOUND` for listings the caller does not own, then inserts at `max(position) + 1` and returns the row. |
+| `add_listing_image(target_listing_id uuid, image_path text, image_width integer, image_height integer)` | `security definer` RPC, `authenticated` only | Locks the owner's listing row (`for update`), so parallel uploads are serialised. Requires `image_path` to match `<auth.uid()>/<listing_id>/<uuid>.webp` or `.jpg` and width/height between 1 and 10000 (raises `INVALID_IMAGE`), raises `NOT_FOUND` for listings the caller does not own, then inserts at `max(position) + 1` and returns the row. |
 | `increment_listing_view(listing_id uuid, visitor_hash text)` | `security definer` RPC, `service_role` only | For active listings, records the visitor in `listing_views` and increments `view_count` only the first time that visitor is seen that day. Called by the `recordView` server action with the admin client; the hash comes from `src/lib/listings/visitor-hash.ts`. |
 | `prune_listing_views()` | `security definer`, cron `prune-listing-views` at 01:30 | Deletes `listing_views` rows older than yesterday. |
 | `renew_listing(listing_id uuid)` | `security definer` RPC | Owner only. Allowed when the listing is `archived`, or `active` with less than 14 days left. Sets `status = 'active'` and `expires_at = now() + interval '90 days'`. Respects the 10-active-listings limit. |
@@ -294,14 +294,14 @@ RLS:
 ### `listing-images` bucket
 
 - Public read.
-- Object path: `{owner_id}/{listing_id}/{uuid}.webp`.
-- Insert and update (`with check`) require the full name to match `{auth.uid()}/{uuid}/{uuid}.webp`; insert also requires the listing to belong to the caller. Delete requires `(storage.foldername(name))[1] = auth.uid()::text`.
-- Max file size 2 MB, allowed MIME `image/webp` only. The client compresses to WebP, max 1920px long edge, quality 0.8, before upload.
+- Object path: `{owner_id}/{listing_id}/{uuid}.webp`, or `.jpg` from browsers that cannot encode WebP (Safari on iOS and macOS).
+- Insert and update (`with check`) require the full name to match `{auth.uid()}/{uuid}/{uuid}.webp` or `.jpg`; insert also requires the listing to belong to the caller. Delete requires `(storage.foldername(name))[1] = auth.uid()::text`.
+- Max file size 2 MB, allowed MIME `image/webp` and `image/jpeg`. The client compresses to WebP when the browser can encode it, otherwise to JPEG (`src/lib/images/output-format.ts`), max 1920px long edge, quality 0.8, before upload. It checks the encoded type, because Safari silently returns PNG when asked for WebP. HEIC files are decoded only where the browser supports it (Safari); elsewhere the user gets a message to save the photo as JPG.
 - When a listing is deleted, a server action removes its folder from storage.
 
 ### `avatars` bucket
 
-- Public read. Insert and update only for the exact path `{auth.uid()}/avatar.webp`; delete within the caller's folder. Max 512 KB, allowed MIME `image/webp` only. Client crops to 256×256.
+- Public read. Insert and update only for the exact paths `{auth.uid()}/avatar.webp` and `{auth.uid()}/avatar.jpg` (same WebP/JPEG choice as listing images; `updateAvatar` removes the other one); delete within the caller's folder. Max 512 KB, allowed MIME `image/webp` and `image/jpeg`. Client crops to 256×256.
 
 ## Type generation
 

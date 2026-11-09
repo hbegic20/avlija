@@ -153,6 +153,9 @@ async function run() {
   const { error: foreignPathError } = await addImage(userA, draft.id, `${userB.id}/other/${crypto.randomUUID()}.webp`);
   check("image paths must point into the owner's listing folder", foreignPathError?.message?.includes("INVALID_IMAGE") === true, describeError(foreignPathError));
 
+  const { error: pngPathError } = await addImage(userA, draft.id, `${userA.id}/${draft.id}/${crypto.randomUUID()}.png`);
+  check("image paths must end in .webp or .jpg", pngPathError?.message?.includes("INVALID_IMAGE") === true, describeError(pngPathError));
+
   const { error: foreignImageError } = await addImage(userB, draft.id, `${userB.id}/${draft.id}/${crypto.randomUUID()}.webp`);
   check("other user cannot add images", foreignImageError?.message?.includes("NOT_FOUND") === true, describeError(foreignImageError));
 
@@ -363,6 +366,7 @@ async function run() {
   check("11th active listing is rejected", limitError?.message?.includes("LISTING_LIMIT") === true, describeError(limitError));
 
   const tinyWebp = Buffer.from("UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA==", "base64");
+  const tinyJpeg = Buffer.from("/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AKp//2Q==", "base64");
   const ownPath = `${userA.id}/${eleventh.id}/${crypto.randomUUID()}.webp`;
   const { error: ownUploadError } = await userA.client.storage
     .from("listing-images")
@@ -387,10 +391,32 @@ async function run() {
     .upload(`${userA.id}/${eleventh.id}/anything.webp`, tinyWebp, { contentType: "image/webp" });
   check("listing image files must be named <uuid>.webp", badNameUploadError !== null, describeError(badNameUploadError));
 
+  const jpegPath = `${userA.id}/${eleventh.id}/${crypto.randomUUID()}.jpg`;
   const { error: jpegUploadError } = await userA.client.storage
     .from("listing-images")
-    .upload(`${userA.id}/${eleventh.id}/${crypto.randomUUID()}.webp`, tinyWebp, { contentType: "image/jpeg" });
-  check("listing image files must be image/webp", jpegUploadError !== null, describeError(jpegUploadError));
+    .upload(jpegPath, tinyJpeg, { contentType: "image/jpeg" });
+  if (!jpegUploadError) {
+    uploadedPaths.push(jpegPath);
+  }
+  check("owner can upload a <uuid>.jpg listing image", jpegUploadError === null, describeError(jpegUploadError));
+
+  const { error: jpegRegisterError } = await userA.client.rpc("add_listing_image", {
+    target_listing_id: eleventh.id,
+    image_path: jpegPath,
+    image_width: 800,
+    image_height: 600,
+  });
+  check("owner can register a .jpg image through add_listing_image", jpegRegisterError === null, describeError(jpegRegisterError));
+
+  const { error: pngUploadError } = await userA.client.storage
+    .from("listing-images")
+    .upload(`${userA.id}/${eleventh.id}/${crypto.randomUUID()}.webp`, tinyWebp, { contentType: "image/png" });
+  check("listing image files must be image/webp or image/jpeg", pngUploadError !== null, describeError(pngUploadError));
+
+  const { error: pngNameUploadError } = await userA.client.storage
+    .from("listing-images")
+    .upload(`${userA.id}/${eleventh.id}/${crypto.randomUUID()}.png`, tinyWebp, { contentType: "image/webp" });
+  check("listing image files must end in .webp or .jpg", pngNameUploadError !== null, describeError(pngNameUploadError));
 
   const { error: ownAvatarError } = await userA.client.storage
     .from("avatars")
@@ -403,7 +429,15 @@ async function run() {
   const { error: extraAvatarError } = await userA.client.storage
     .from("avatars")
     .upload(`${userA.id}/extra.webp`, tinyWebp, { contentType: "image/webp" });
-  check("avatar folder only accepts avatar.webp", extraAvatarError !== null, describeError(extraAvatarError));
+  check("avatar folder only accepts avatar.webp or avatar.jpg", extraAvatarError !== null, describeError(extraAvatarError));
+
+  const { error: jpegAvatarError } = await userA.client.storage
+    .from("avatars")
+    .upload(`${userA.id}/avatar.jpg`, tinyJpeg, { contentType: "image/jpeg", upsert: true });
+  if (!jpegAvatarError) {
+    uploadedAvatarPaths.push(`${userA.id}/avatar.jpg`);
+  }
+  check("user can upload own avatar as JPEG", jpegAvatarError === null, describeError(jpegAvatarError));
 
   const { error: anonUploadError } = await anon.storage
     .from("avatars")
