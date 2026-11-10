@@ -1,0 +1,50 @@
+name: Database backup
+
+on:
+  schedule:
+    - cron: "23 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: database-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    name: Encrypted database dump
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+    steps:
+      - name: Check secrets
+        run: |
+          test -n "$SUPABASE_DB_URL" || { echo "::error::Secret SUPABASE_DB_URL is not set"; exit 1; }
+          test -n "$BACKUP_PASSPHRASE" || { echo "::error::Secret BACKUP_PASSPHRASE is not set"; exit 1; }
+      - uses: supabase/setup-cli@v3
+        with:
+          version: latest
+      - name: Dump roles, schema and data
+        run: |
+          mkdir -p dump
+          supabase db dump --db-url "$SUPABASE_DB_URL" --role-only -f dump/roles.sql
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f dump/schema.sql
+          supabase db dump --db-url "$SUPABASE_DB_URL" --data-only --use-copy --schema public,auth,storage -f dump/data.sql
+          ls -l dump
+      - name: Encrypt
+        shell: bash
+        run: |
+          archive="avlija-db-$(date -u +%Y-%m-%d).tar.gz.enc"
+          tar -czf - -C dump . | openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 -salt -pass fd:3 -out "$archive" 3<<<"$BACKUP_PASSPHRASE"
+          rm -rf dump
+          echo "ARCHIVE=$archive" >> "$GITHUB_ENV"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ env.ARCHIVE }}
+          path: ${{ env.ARCHIVE }}
+          retention-days: 30
+          if-no-files-found: error

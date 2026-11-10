@@ -64,6 +64,40 @@ Project rules and conventions are in [CLAUDE.md](CLAUDE.md). The build plan, sch
 
 `NEXT_PUBLIC_ALLOW_INDEXING` controls whether search engines may index the site. Without it (local, demo on `*.vercel.app`) `robots.txt` disallows everything and every response carries `X-Robots-Tag: noindex, nofollow`, so test listings never end up in Google. Set it to `true` only on the real domain at launch, then submit `sitemap.xml` in Google Search Console. It is read at build time, so redeploy after changing it.
 
+## GitHub Actions
+
+Three workflows in `.github/workflows/`:
+
+| Workflow | When | What |
+|---|---|---|
+| `ci.yml` | every push and pull request to `main` | `next typegen`, `npm run typecheck`, `npm run lint` (Vercel builds but does not lint) |
+| `database-backup.yml` | daily 02:23 UTC, or by hand (Actions → Run workflow) | dumps roles, schema and data (`public`, `auth`, `storage` metadata) of the hosted project, encrypts the archive and keeps it as an artifact for 30 days |
+| `keep-alive.yml` | daily 06:41 UTC, or by hand | reads one municipality through the API so the free Supabase project is not paused after 7 idle days |
+
+Repository secrets (Settings → Secrets and variables → Actions), all for the hosted demo or production project, never dev:
+
+- `SUPABASE_DB_URL`: Connect → **Session pooler** connection string (GitHub runners have no IPv6, the direct connection does not work), with the database password filled in and percent-encoded
+- `BACKUP_PASSPHRASE`: a long random passphrase. Keep it in a password manager: without it the backups cannot be opened
+- `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`: the project URL and publishable key
+
+The repository is public, and artifacts of a public repository can be downloaded by any signed-in GitHub user, so the dump is only uploaded encrypted (AES-256, PBKDF2). GitHub disables scheduled workflows in a public repository after 60 days without commits and sends an email; re-enable them under Actions.
+
+Photos in Storage are not part of the backup, only their metadata rows.
+
+### Restoring a backup
+
+1. Actions → Database backup → a run → download the artifact and unzip it
+2. Decrypt and unpack (asks for `BACKUP_PASSPHRASE`):
+   ```
+   mkdir restore
+   openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 -in avlija-db-YYYY-MM-DD.tar.gz.enc | tar -xzf - -C restore
+   ```
+3. Restore into an empty Supabase project with `psql` (`brew install libpq`):
+   ```
+   cd restore
+   psql --single-transaction --variable ON_ERROR_STOP=1 --file roles.sql --file schema.sql --command 'SET session_replication_role = replica' --file data.sql --dbname "<session pooler connection string>"
+   ```
+
 ## Making an account admin
 
 Admins can open `/admin` (reports queue, hiding listings, users). The `role` column cannot be changed through the API.

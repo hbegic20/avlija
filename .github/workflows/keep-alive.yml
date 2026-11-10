@@ -1,0 +1,25 @@
+name: Keep Supabase awake
+
+on:
+  schedule:
+    - cron: "41 6 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    name: Read one row through the API
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+    steps:
+      - name: Request a municipality
+        run: |
+          test -n "$SUPABASE_URL" || { echo "::error::Secret SUPABASE_URL is not set"; exit 1; }
+          test -n "$SUPABASE_PUBLISHABLE_KEY" || { echo "::error::Secret SUPABASE_PUBLISHABLE_KEY is not set"; exit 1; }
+          curl --fail --silent --show-error --retry 3 --retry-delay 10 \
+            -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+            "$SUPABASE_URL/rest/v1/municipalities?select=id&limit=1"
