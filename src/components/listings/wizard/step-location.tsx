@@ -62,8 +62,8 @@ export function StepLocation() {
   const point: PickedPoint | null = lat !== null && lng !== null ? { lat, lng } : null;
 
   const placePoint = (next: PickedPoint, inside: boolean) => {
-    setValue("lat", next.lat, { shouldDirty: true, shouldValidate: true });
     setValue("lng", next.lng, { shouldDirty: true });
+    setValue("lat", next.lat, { shouldDirty: true, shouldValidate: true });
     setOutside(!inside);
   };
 
