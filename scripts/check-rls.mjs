@@ -443,6 +443,61 @@ async function run() {
     .from("avatars")
     .upload(`${userA.id}/avatar.webp`, tinyWebp, { contentType: "image/webp" });
   check("anon cannot upload avatars", anonUploadError !== null, describeError(anonUploadError));
+
+  await checkAiSuggestionLimit(userA, userB);
+}
+
+async function countAiSuggestions(userId) {
+  const { count } = await admin.from("ai_suggestions").select("id", { count: "exact", head: true }).eq("user_id", userId);
+  return count ?? 0;
+}
+
+async function checkAiSuggestionLimit(userA, userB) {
+  const { error: anonClaimError } = await anon.rpc("claim_ai_suggestion");
+  check("anon cannot claim an AI suggestion", anonClaimError !== null, describeError(anonClaimError));
+
+  const { data: firstToken, error: firstClaimError } = await userA.client.rpc("claim_ai_suggestion");
+  check(
+    "user can claim an AI suggestion and gets a release token",
+    firstClaimError === null && typeof firstToken === "string" && firstToken.length === 36,
+    describeError(firstClaimError),
+  );
+
+  const { data: visibleRows } = await userA.client.from("ai_suggestions").select("id");
+  check("users cannot read ai_suggestions", (visibleRows ?? []).length === 0);
+
+  const { error: directInsertError } = await userA.client.from("ai_suggestions").insert({ user_id: userA.id });
+  check("users cannot insert ai_suggestions directly", directInsertError !== null, describeError(directInsertError));
+
+  await userB.client.rpc("release_ai_suggestion", { token: firstToken });
+  check("other user cannot release someone else's claim", (await countAiSuggestions(userA.id)) === 1);
+
+  const { error: releaseError } = await userA.client.rpc("release_ai_suggestion", { token: firstToken });
+  check(
+    "owner can release a failed claim",
+    releaseError === null && (await countAiSuggestions(userA.id)) === 0,
+    describeError(releaseError),
+  );
+
+  const claims = [];
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    claims.push(await userA.client.rpc("claim_ai_suggestion"));
+  }
+  check(
+    "10 AI suggestions per day are allowed",
+    claims.every((claim) => claim.error === null),
+    claims.map((claim) => describeError(claim.error)).join(", "),
+  );
+
+  const { error: overLimitError } = await userA.client.rpc("claim_ai_suggestion");
+  check(
+    "11th AI suggestion within a day is rejected",
+    overLimitError?.message?.includes("RATE_LIMIT") === true,
+    describeError(overLimitError),
+  );
+
+  const { error: otherUserClaimError } = await userB.client.rpc("claim_ai_suggestion");
+  check("the AI limit is counted per user", otherUserClaimError === null, describeError(otherUserClaimError));
 }
 
 async function cleanUp() {

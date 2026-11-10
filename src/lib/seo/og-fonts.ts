@@ -31,4 +31,4 @@ export const ogColours = {
   vrbas: "#3E6E7A",
 } as const;
 
-export const ogSize = { width: 1200, height: 630 };
+export { ogSize } from "./og-size";

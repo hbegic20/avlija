@@ -1,7 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { authRoutes, guestOnlyPaths, loginPathWithNext, matchesPrefix, nextParam, protectedPrefixes } from "@/lib/auth/routes";
 import { safeNextPath } from "@/lib/auth/safe-next-path";
-import { goneResponseBody, isGoneListingPath } from "@/lib/listings/gone-response";
+import { goneResponseBody } from "@/lib/listings/gone-response";
+import { checkListingRoute, isListingPath, type ListingRouteCheck } from "@/lib/listings/listing-route-check";
+import { isMissingSellerPath, isSellerPath } from "@/lib/listings/seller-route-check";
 import { isUnknownMunicipalityPath, notFoundRewritePath } from "@/lib/search/municipality-path";
 import { updateSession } from "@/lib/supabase/session";
 
@@ -18,16 +20,48 @@ function redirectKeepingCookies(request: NextRequest, sessionResponse: NextRespo
   return redirect;
 }
 
+function notFoundRewrite(request: NextRequest): NextResponse {
+  return NextResponse.rewrite(new URL(notFoundRewritePath, request.url));
+}
+
+function listingRouteResponse(request: NextRequest, check: ListingRouteCheck): NextResponse | null {
+  switch (check.kind) {
+    case "pass":
+      return null;
+    case "missing":
+      return notFoundRewrite(request);
+    case "gone":
+      return new NextResponse(goneResponseBody(), {
+        status: 410,
+        headers: { "content-type": "text/html; charset=utf-8" },
+      });
+    case "redirect": {
+      const location = new URL(check.location, request.url);
+      location.search = request.nextUrl.search;
+      return NextResponse.redirect(location, 308);
+    }
+  }
+}
+
+async function publicRouteResponse(request: NextRequest): Promise<NextResponse | null> {
+  const { pathname } = request.nextUrl;
+  if (isUnknownMunicipalityPath(pathname)) {
+    return notFoundRewrite(request);
+  }
+  if (isListingPath(pathname)) {
+    return listingRouteResponse(request, await checkListingRoute(pathname));
+  }
+  if (isSellerPath(pathname) && (await isMissingSellerPath(pathname))) {
+    return notFoundRewrite(request);
+  }
+  return null;
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
-  if (isUnknownMunicipalityPath(pathname)) {
-    return NextResponse.rewrite(new URL(notFoundRewritePath, request.url));
-  }
-  if (await isGoneListingPath(pathname)) {
-    return new NextResponse(goneResponseBody(), {
-      status: 410,
-      headers: { "content-type": "text/html; charset=utf-8" },
-    });
+  const publicResponse = await publicRouteResponse(request);
+  if (publicResponse) {
+    return publicResponse;
   }
 
   const { response, claims } = await updateSession(request);

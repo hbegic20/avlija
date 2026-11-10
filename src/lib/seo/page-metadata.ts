@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { bs } from "@/lib/i18n/bs";
+import { ogSize, siteOgImagePath } from "./og-size";
+
+const siteOgImage = { url: siteOgImagePath, ...ogSize, alt: bs.site.homeTitle };
 
 export const defaultOpenGraph = {
   siteName: bs.site.name,
@@ -20,6 +23,6 @@ export function publicPageMetadata({
     title,
     description,
     alternates: { canonical: path },
-    openGraph: { ...defaultOpenGraph, description, url: path },
+    openGraph: { ...defaultOpenGraph, description, url: path, images: [siteOgImage] },
   };
 }

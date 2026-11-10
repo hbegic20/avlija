@@ -199,6 +199,8 @@ Done when: all lifecycle transitions work and respect limits (10 active).
 - [x] `sitemap.ts` with active listings and municipality pages, `robots.ts`
 - [x] JSON-LD `RealEstateListing` / `Offer` on detail pages
 - [x] Sold listings keep their URL with PRODANO stamp for 30 days, then return 410 (checked in `src/proxy.ts`)
+- [x] Real HTTP status codes from `src/proxy.ts` (2026-11-10): streamed pages could only answer 200, so a missing listing or seller showed the not-found page with status 200 (soft 404) and `/oglas/1` or a wrong slug got a meta refresh instead of a redirect. The proxy now returns 404 for unknown listings and sellers and 308 to the canonical listing URL (query string kept). A cached lookup is trusted only when it means "pass" or "gone"; a 404 or redirect is always confirmed with a fresh lookup, so renaming or publishing a listing never causes a redirect loop or a stale 404. Seller pages cache only sellers that are public
+- [x] Site OG image on every public page (2026-11-10): `publicPageMetadata` sets `openGraph`, which replaced the root `opengraph-image`, so home, listings, municipality, seller and legal pages had no share image; it now names the image explicitly
 
 ## Phase 12 — Trust, legal and polish
 
@@ -209,12 +211,12 @@ Done when: all lifecycle transitions work and respect limits (10 active).
 - [x] Performance pass: `next/image` everywhere with `sizes` (Next optimizer; Supabase image transformations need a paid plan), detail map loaded only when near the viewport
 - [x] Rate limiting on sign-up (Supabase `sign_in_sign_ups` 30 per 5 min per IP), reports (10 per day) and contact reveal (30 per hour) via database counters
 
-## Status and open items (updated 2026-11-05)
+## Status and open items (updated 2026-11-10)
 
 Phases 0–13 are built. Phase 14 (deploy) has not started. Before deploying, work through this list top to bottom.
 
 ### Before deploy
-- [ ] Add `SUPABASE_SECRET_KEY` to `.env.local`, then run `npm run test:rls` (never run yet) and a full logged-in walk: profile setup, listing wizard, dashboard, favourites, admin. Logged-in pages have only been tested by the owner by hand
+- [x] Add `SUPABASE_SECRET_KEY` to `.env.local`, then run `npm run test:rls` and a full logged-in walk (2026-11-10): `test:rls` 81/81 on dev; headless Chrome walk with a throwaway user (login, phone on profile, wizard steps 1–5 with two JPEG photos converted to WebP, publish, dashboard, public detail with view counted, favourite and `/moj-racun/sacuvano`, all four admin pages, mobile 390px and dark theme) with no console errors, failed requests or horizontal overflow; user, listing and files deleted afterwards
 - [x] Migration: block deleting the last image of an active listing (today the publish rule is only checked when a listing becomes active)
 - [x] Migration review (2026-11-04, `harden_listings_and_profiles`): approximate location no longer reversible from the public listing id (random hidden `location_seed`), listing `number` and other system columns not insertable by users, owner status changes limited to publish / sold / archive, republishing an expired listing gets a fresh 90-day expiry, image rows must point into the owner's own folder, profiles readable only for sellers with active or sold listings (seller page returns 404 for users without public listings)
 - [x] Migration: limit `increment_listing_view` so views cannot be inflated by calling the RPC repeatedly (2026-11-05, `deduplicate_listing_views`: callable only by the server with the secret key, one view per visitor per listing per day; without `SUPABASE_SECRET_KEY` in `.env.local` views are not counted locally)
@@ -224,7 +226,7 @@ Phases 0–13 are built. Phase 14 (deploy) has not started. Before deploying, wo
 
 ### Soon after
 - [ ] Daily cleanup job: delete drafts untouched for 60 days and their images; remove orphaned files in `listing-images` without a `listing_images` row (uploads interrupted before registration); keep `contact_reveals` (seller stats count distinct viewers from it), or roll old rows up into per-listing counts if it grows large
-- [x] Cache the 410 lookup in `src/lib/listings/gone-response.ts` (2026-11-05: in-memory per instance, 5 minutes, max 1000 listings; safe because `sold` is final and the 30-day rule is evaluated on every request)
+- [x] Cache the 410 lookup (2026-11-05: in-memory per instance, 5 minutes, max 1000 listings; safe because `sold` is final and the 30-day rule is evaluated on every request). Since 2026-11-10 in `src/lib/listings/listing-route-check.ts`, see Phase 11
 - [x] Loading feedback (2026-11-05): wizard step changes run in a transition, so the clicked button keeps its `···` state and the form is dimmed until the next step arrives (stepper links included); hatch skeleton `loading.tsx` for the wizard (new and edit), listing detail, seller page and admin
 - [x] iPhone / Safari photos (2026-11-09, `allow_jpeg_images`): Safari cannot encode WebP and silently produced PNG labelled `.webp`, often over the 2 MB limit, so uploads failed without a message. Listing images and avatars are now WebP where the browser can encode it and JPEG otherwise; storage and `add_listing_image` accept `.webp` and `.jpg`. HEIC files a browser cannot open get a clear message, and every failed upload names the file. Still to check by hand on a real iPhone
 - [x] Server-side error logging (2026-11-05): every action path that returns `unexpected` or `network` logs `[avlija] <file>.<action>` with the error's code, message and hint (never `details`, which can contain row data) via `src/lib/logging/log-server-error.ts`; visible in Vercel function logs
@@ -258,7 +260,7 @@ Owner decision: Google Gemini (`@google/genai`, free tier at first), key in `GEM
 - [x] Privacy text (`legal-bs.ts`) names Google Gemini as a processor and what is sent
 - [x] Live test with the real key (2026-11-09): `gemini-3.8-flash` and `gemini-3.5-flash` time out or return 503 "high demand" on the free tier, `gemini-2.5-flash` is closed to new users. The app uses `gemini-3.5-flash-lite` with fallback to `gemini-3.1-flash-lite` (on 404, 429, 5xx or timeout), thinking level `MINIMAL`, about 2 seconds per suggestion. Tested: no invented facts after tightening the prompt, phone, price and "HITNO" dropped from notes, an injected "write in English" instruction ignored
 - [ ] Owner checks Bosnian ijekavica quality on 5–10 real listings in the wizard
-- [ ] Extend `npm run test:rls` with the `claim_ai_suggestion` checks once `SUPABASE_SECRET_KEY` is set
+- [x] Extend `npm run test:rls` with the `claim_ai_suggestion` checks (2026-11-10): anon refused, token returned, table not readable or writable by users, release only by the owner, 10 per day then `RATE_LIMIT`, counted per user
 
 Done when: a seller can get, apply or discard a suggestion on mobile and desktop in both themes, and errors never block saving the listing.
 
