@@ -14,7 +14,7 @@ import { bs } from "@/lib/i18n/bs";
 import { signUpSchema, type SignUpInput } from "@/lib/validation/auth";
 import { CheckEmail } from "./check-email";
 import { FormAlert } from "./form-alert";
-import { GoogleButton, OrDivider } from "./google-button";
+import { GoogleSignIn } from "./google-button";
 
 const inlineLinkClasses = "text-vranica underline underline-offset-3 hover:text-crijep";
 
@@ -96,8 +96,7 @@ export function RegisterForm() {
           {bs.auth.register.submit}
         </Button>
       </form>
-      <OrDivider />
-      <GoogleButton />
+      <GoogleSignIn />
     </div>
   );
 }

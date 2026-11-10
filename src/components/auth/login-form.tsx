@@ -13,7 +13,7 @@ import { authRoutes, nextParam } from "@/lib/auth/routes";
 import { bs } from "@/lib/i18n/bs";
 import { signInSchema, type SignInInput } from "@/lib/validation/auth";
 import { FormAlert } from "./form-alert";
-import { GoogleButton, OrDivider } from "./google-button";
+import { GoogleSignIn } from "./google-button";
 
 export function LoginForm() {
   const next = useSearchParams().get(nextParam) ?? undefined;
@@ -91,8 +91,7 @@ export function LoginForm() {
           {bs.auth.login.submit}
         </Button>
       </form>
-      <OrDivider />
-      <GoogleButton next={next} />
+      <GoogleSignIn next={next} />
     </div>
   );
 }

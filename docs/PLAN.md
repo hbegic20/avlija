@@ -237,7 +237,7 @@ Phases 0–13 are built. Phase 14 (deploy) has not started. Before deploying, wo
 - [ ] Darker `upozorenje` for text contrast (3.56:1 on `papir`; suggested `#8A6114`), and `tinta-3` (2.95:1, placeholders only)
 - [ ] Stamp border: 2px as in DESIGN.md (renders solid) or 3px (renders double)
 - [ ] Add `sharp` as a direct dependency for the cover photo in listing OG images (Satori cannot decode WebP)
-- [ ] Google OAuth: create the Google Cloud client and enable the provider in Supabase
+- [ ] Google OAuth: create the Google Cloud client and enable the provider in Supabase, then set `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=true` (Vercel and `.env.local`) and add Google sign-in to the privacy text. Until then the button is hidden (2026-11-10), since the disabled provider showed a raw Supabase error page
 - [ ] Production plan: Supabase Pro (free plan pauses after a week idle, no backups), error monitoring (e.g. Sentry), unit tests (e.g. Vitest); each needs approval
 
 ## Phase 13 — Pre-launch features

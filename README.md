@@ -11,6 +11,7 @@ Project rules and conventions are in [CLAUDE.md](CLAUDE.md). The build plan, sch
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (`sb_publishable_...`)
    - `SUPABASE_SECRET_KEY` (`sb_secret_...`, server only)
+   - `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED` (optional): set to `true` only after the Google provider is enabled in Supabase (see `docs/PLAN.md`, Phase 3). Without it the "Nastavi s Google" button is hidden
 3. Log in and link the Supabase CLI: `npx supabase login`, then `npx supabase link --project-ref <ref>`
 4. Apply migrations: `npx supabase db push`
 5. Start the dev server: `npm run dev`
