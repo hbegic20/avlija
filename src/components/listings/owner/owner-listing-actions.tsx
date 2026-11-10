@@ -15,8 +15,16 @@ import { interactionErrorMessage } from "@/lib/listings/interaction-errors";
 import { listingErrorMessage } from "@/lib/listings/listing-errors";
 
 const text = bs.myListings;
+const ownerText = bs.detail.owner;
 
 type PendingAction = "renew" | "sold" | "archived" | "remove" | null;
+type ConfirmableAction = "sold" | "archived" | "remove";
+
+const confirmCopy: Record<ConfirmableAction, { title: (listingNumber: string) => string; body: string; confirm: string }> = {
+  sold: { title: () => ownerText.confirmSoldTitle, body: ownerText.confirmSoldBody, confirm: ownerText.markSold },
+  archived: { title: () => ownerText.confirmArchiveTitle, body: ownerText.confirmArchiveBody, confirm: ownerText.archive },
+  remove: { title: text.confirm.removeTitle, body: text.confirm.removeBody, confirm: text.confirm.remove },
+};
 
 export function OwnerListingActions({
   listingId,
@@ -35,7 +43,7 @@ export function OwnerListingActions({
 }) {
   const router = useRouter();
   const { showToast } = useToast();
-  const [confirmRemove, setConfirmRemove] = useState(false);
+  const [confirming, setConfirming] = useState<ConfirmableAction | null>(null);
   const [running, setRunning] = useState<PendingAction>(null);
   const [, startTransition] = useTransition();
 
@@ -51,7 +59,6 @@ export function OwnerListingActions({
         }
       } else if (action === "remove") {
         const result = await deleteListing(listingId);
-        setConfirmRemove(false);
         if (result.ok) {
           showToast(text.notices.removed, "info");
         } else {
@@ -65,6 +72,7 @@ export function OwnerListingActions({
           showToast(interactionErrorMessage(result.error), "error");
         }
       }
+      setConfirming(null);
       setRunning(null);
       router.refresh();
     });
@@ -91,33 +99,39 @@ export function OwnerListingActions({
       ) : null}
       {status === "active" ? (
         <>
-          <Button variant="secondary" size="sm" loading={running === "sold"} onClick={() => run("sold")}>
+          <Button variant="secondary" size="sm" loading={running === "sold"} onClick={() => setConfirming("sold")}>
             {text.actions.markSold}
           </Button>
-          <Button variant="secondary" size="sm" loading={running === "archived"} onClick={() => run("archived")}>
+          <Button variant="secondary" size="sm" loading={running === "archived"} onClick={() => setConfirming("archived")}>
             {text.actions.archive}
           </Button>
         </>
       ) : null}
-      <Button variant="danger" size="sm" onClick={() => setConfirmRemove(true)}>
+      <Button variant="danger" size="sm" onClick={() => setConfirming("remove")}>
         {text.actions.remove}
       </Button>
       <Dialog
-        open={confirmRemove}
-        onClose={() => setConfirmRemove(false)}
-        title={text.confirm.removeTitle(listingNumber)}
+        open={confirming !== null}
+        onClose={() => setConfirming(null)}
+        title={confirming ? confirmCopy[confirming].title(listingNumber) : ""}
         actions={
-          <>
-            <Button variant="ghost" onClick={() => setConfirmRemove(false)} disabled={running === "remove"}>
-              {text.confirm.cancel}
-            </Button>
-            <Button variant="danger" loading={running === "remove"} onClick={() => run("remove")}>
-              {text.confirm.remove}
-            </Button>
-          </>
+          confirming ? (
+            <>
+              <Button variant="ghost" onClick={() => setConfirming(null)} disabled={running !== null}>
+                {text.confirm.cancel}
+              </Button>
+              <Button
+                variant={confirming === "remove" ? "danger" : "primary"}
+                loading={running === confirming}
+                onClick={() => run(confirming)}
+              >
+                {confirmCopy[confirming].confirm}
+              </Button>
+            </>
+          ) : null
         }
       >
-        <p className="text-tinta-2">{text.confirm.removeBody}</p>
+        {confirming ? <p className="text-tinta-2">{confirmCopy[confirming].body}</p> : null}
       </Dialog>
     </div>
   );

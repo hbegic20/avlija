@@ -645,7 +645,8 @@ export const bs = {
       markSold: "Označi kao prodano",
       archive: "Arhiviraj",
       confirmSoldTitle: "Označiti oglas kao prodan?",
-      confirmSoldBody: "Oglas ostaje vidljiv s pečatom PRODANO, ali kupci više neće moći vidjeti Vaš broj.",
+      confirmSoldBody:
+        "Oglas ostaje vidljiv s pečatom PRODANO još 30 dana, ali kupci više neće moći vidjeti Vaš broj. Ovo se ne može poništiti.",
       confirmArchiveTitle: "Arhivirati oglas?",
       confirmArchiveBody: "Oglas više neće biti javno vidljiv. Možete ga obnoviti iz svojih oglasa.",
       confirm: "Potvrdi",
