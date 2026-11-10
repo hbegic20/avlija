@@ -232,13 +232,16 @@ Phases 0–13 are built. Phase 14 (deploy) has not started. Before deploying, wo
 - [x] Server-side error logging (2026-11-05): every action path that returns `unexpected` or `network` logs `[avlija] <file>.<action>` with the error's code, message and hint (never `details`, which can contain row data) via `src/lib/logging/log-server-error.ts`; visible in Vercel function logs
 - [x] Location step (2026-11-10): the first pin placed on the map or with "Postavi oznaku u centar općine" showed "Označite lokaciju na karti." although the point was set, because `lat` was validated before `lng` was stored; `lng` is now set first. Found in a logged-in mobile walk (390px) of the whole seller and buyer flow, which otherwise passed
 - [x] Confirm before "Označi kao prodano" and "Arhiviraj" in "Moji oglasi" (2026-11-10): one tap used to apply the change, and sold is final. Same dialog and texts as the owner bar on the listing detail; the sold text now says it cannot be undone
+- [x] Security headers on every response (2026-11-10, `next.config.ts`): `frame-ancestors 'none'` + `X-Frame-Options: DENY` against clickjacking, `nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (geolocation only for the site itself, for "Koristi moju lokaciju"; no camera API needed since photos use the file input), no `X-Powered-By`. Not a full CSP yet (inline theme script, Leaflet tiles, Supabase storage would need a nonce setup). HSTS is added by Vercel on custom domains. Checked on a production build: headers on pages, proxy 404/308, sitemap, OG images; full mobile walk passes
+- [x] Indexing off unless `NEXT_PUBLIC_ALLOW_INDEXING=true` (2026-11-10): the first deploy is a client demo on `*.vercel.app` with test data, so `robots.txt` disallows everything and every response sends `X-Robots-Tag: noindex, nofollow`. Turn it on at the real launch on a domain
+- [x] Hosted auth checklist in README (2026-11-10): URL configuration, password rules, SMTP (Gmail app password for the demo without a domain, Resend once there is one), Bosnian template subjects, email rate limit. Hosted projects are configured in the dashboard, never with `config push` (`site_url` is localhost)
 
 ### Owner decisions pending
 - [ ] Darker `upozorenje` for text contrast (3.56:1 on `papir`; suggested `#8A6114`), and `tinta-3` (2.95:1, placeholders only)
 - [ ] Stamp border: 2px as in DESIGN.md (renders solid) or 3px (renders double)
 - [ ] Add `sharp` as a direct dependency for the cover photo in listing OG images (Satori cannot decode WebP)
 - [ ] Google OAuth: create the Google Cloud client and enable the provider in Supabase, then set `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=true` (Vercel and `.env.local`) and add Google sign-in to the privacy text. Until then the button is hidden (2026-11-10), since the disabled provider showed a raw Supabase error page
-- [ ] Production plan: Supabase Pro (free plan pauses after a week idle, no backups), error monitoring (e.g. Sentry), unit tests (e.g. Vitest); each needs approval
+- [ ] Production plan: Supabase Pro (free plan pauses after a week idle, no backups), error monitoring (e.g. Sentry), unit tests (e.g. Vitest); each needs approval. Owner decision 2026-11-10: launch on the free plans (Supabase, Vercel Hobby) and revisit after presenting to the client. Note Vercel Hobby is for non-commercial use only
 
 ## Phase 13 — Pre-launch features
 

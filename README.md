@@ -11,6 +11,7 @@ Project rules and conventions are in [CLAUDE.md](CLAUDE.md). The build plan, sch
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (`sb_publishable_...`)
    - `SUPABASE_SECRET_KEY` (`sb_secret_...`, server only)
+   - `NEXT_PUBLIC_ALLOW_INDEXING` (optional): `true` only on the real domain at launch, see [Search engine indexing](#search-engine-indexing)
    - `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED` (optional): set to `true` only after the Google provider is enabled in Supabase (see `docs/PLAN.md`, Phase 3). Without it the "Nastavi s Google" button is hidden
 3. Log in and link the Supabase CLI: `npx supabase login`, then `npx supabase link --project-ref <ref>`
 4. Apply migrations: `npx supabase db push`
@@ -28,6 +29,40 @@ Project rules and conventions are in [CLAUDE.md](CLAUDE.md). The build plan, sch
 | `npx supabase db push` | Apply new migrations |
 | `npx supabase config push` | Push auth settings from `supabase/config.toml` |
 | `npx supabase gen types typescript --linked > src/lib/supabase/database.types.ts` | Regenerate database types after a schema change |
+
+## Auth on a hosted project (demo or production)
+
+`supabase/config.toml` holds the dev settings and has `site_url = "http://localhost:3000"`, so never run `npx supabase config push` against a demo or production project: every email link would point to localhost. Set these by hand in that project's dashboard instead.
+
+**Authentication → URL Configuration**
+- Site URL: the public address, e.g. `https://<app>.vercel.app`
+- Redirect URLs: `https://<app>.vercel.app/**` (every auth email returns to `/auth/callback?next=…`; without this entry Supabase falls back to the Site URL and the email links break)
+
+**Authentication → Sign In / Providers → Email**
+- Confirm email: on
+- Secure email change: on
+- Minimum password length: `8`, password requirements: letters and digits
+
+**Authentication → Emails → SMTP Settings** (the built-in sender only delivers to members of the Supabase team, 2 emails per hour)
+- Without a domain (demo): a dedicated Gmail account with 2-Step Verification and an app password. Host `smtp.gmail.com`, port `465`, username and sender = the Gmail address, password = the app password, sender name `Avlija`. Gmail allows about 500 emails per day
+- With a domain: Resend (`smtp.resend.com`, port `465`, username `resend`, password = an API key with sending access), sender `noreply@<domain>`, domain verified with its DKIM, SPF and DMARC records
+
+**Authentication → Emails → Templates** (only editable once custom SMTP is saved): paste the whole HTML file into each template
+
+| Template | Subject | File |
+|---|---|---|
+| Confirm signup | `Avlija: potvrdite email adresu` | `supabase/templates/confirmation.html` |
+| Reset password | `Avlija: postavite novu lozinku` | `supabase/templates/recovery.html` |
+| Change email address | `Avlija: potvrdite novu email adresu` | `supabase/templates/email-change.html` |
+
+**Authentication → Rate Limits**
+- Emails sent per hour: `30`
+
+**Test:** register with an address that is not on the Supabase team, confirm from the email (check it is not in spam), then try "Zaboravljena lozinka" and an email change in Profil.
+
+## Search engine indexing
+
+`NEXT_PUBLIC_ALLOW_INDEXING` controls whether search engines may index the site. Without it (local, demo on `*.vercel.app`) `robots.txt` disallows everything and every response carries `X-Robots-Tag: noindex, nofollow`, so test listings never end up in Google. Set it to `true` only on the real domain at launch, then submit `sitemap.xml` in Google Search Console. It is read at build time, so redeploy after changing it.
 
 ## Making an account admin
 
