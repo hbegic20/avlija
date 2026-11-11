@@ -130,7 +130,14 @@ export function ListingGallery({ images, altBase }: { images: ListingImage[]; al
                   index === safeIndex ? "border-2 border-tinta" : "opacity-70 hover:opacity-100",
                 )}
               >
-                <Image src={image.publicUrl} alt="" fill sizes="80px" className="object-cover" />
+                <Image
+                  src={image.publicUrl}
+                  alt=""
+                  fill
+                  sizes="80px"
+                  className="object-cover"
+                  loading={index === 0 ? "eager" : "lazy"}
+                />
               </button>
             </li>
           ))}

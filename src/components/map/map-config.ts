@@ -1,6 +1,6 @@
 import L from "leaflet";
 
-export const tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+export const tileUrl = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 export const tileAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 
 export const municipalityZoom = 13;

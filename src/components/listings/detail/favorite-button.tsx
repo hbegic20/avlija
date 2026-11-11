@@ -16,7 +16,7 @@ export function FavoriteButton({ listingId }: { listingId: string }) {
 
   if (!canToggle) {
     return (
-      <Link href={guestHref} onClick={onGuestClick} className={buttonStyles({ variant: "secondary" })}>
+      <Link href={guestHref} prefetch={false} onClick={onGuestClick} className={buttonStyles({ variant: "secondary" })}>
         {icon}
         {label}
       </Link>

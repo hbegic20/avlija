@@ -2,7 +2,8 @@ import { revalidatePath } from "next/cache";
 import { NextResponse, type NextRequest } from "next/server";
 import { loginPathWithNext } from "@/lib/auth/routes";
 import { safeNextPath } from "@/lib/auth/safe-next-path";
-import { addFavoriteParams, favoritesRoutes, isListingId } from "@/lib/favorites/routes";
+import { isListingId } from "@/lib/favorites/listing-id";
+import { addFavoriteParams, favoritesRoutes } from "@/lib/favorites/routes";
 import { getActionSession } from "@/lib/auth/action-session";
 
 export async function GET(request: NextRequest) {

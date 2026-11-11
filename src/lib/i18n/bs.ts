@@ -16,6 +16,7 @@ const listingWords = { one: "oglas", few: "oglasa", many: "oglasa" };
 const roomWords = { one: "soba", few: "sobe", many: "soba" };
 const dayWords = { one: "dan", few: "dana", many: "dana" };
 const activeListingWords = { one: "aktivan oglas", few: "aktivna oglasa", many: "aktivnih oglasa" };
+const fromActiveListingWords = { one: "aktivnog oglasa", few: "aktivna oglasa", many: "aktivnih oglasa" };
 
 function roomWord(rooms: number): string {
   return Number.isInteger(rooms) ? pluralForm(rooms, roomWords) : roomWords.few;
@@ -33,6 +34,26 @@ const propertyType: Record<PropertyType, string> = {
   vikendica: "Vikendica",
   poslovni_prostor: "Poslovni prostor",
   garaza: "Garaža",
+};
+
+const propertyTypePlural: Record<PropertyType, string> = {
+  stan: "Stanovi",
+  kuca: "Kuće",
+  plac: "Placevi",
+  poljoprivredno: "Poljoprivredno zemljište",
+  vikendica: "Vikendice",
+  poslovni_prostor: "Poslovni prostori",
+  garaza: "Garaže",
+};
+
+const propertyTypeForPlural: Record<PropertyType, string> = {
+  stan: "stanove",
+  kuca: "kuće",
+  plac: "placeve",
+  poljoprivredno: "poljoprivredno zemljište",
+  vikendica: "vikendice",
+  poslovni_prostor: "poslovne prostore",
+  garaza: "garaže",
 };
 
 const listingStatus: Record<ListingStatus, string> = {
@@ -536,6 +557,21 @@ export const bs = {
     sellerText: "Objava je besplatna. Kupci Vas kontaktiraju direktno, bez posrednika.",
     sellerAction: "Objavi oglas",
     noListingsYet: "Još nema objavljenih oglasa. Budite prvi.",
+  },
+  priceComparison: {
+    title: "Poređenje cijene",
+    thisListing: "Ovaj oglas",
+    median: "Srednja cijena",
+    difference: "Razlika",
+    below: (percent: string) => `${percent}% ispod srednje`,
+    above: (percent: string) => `${percent}% iznad srednje`,
+    same: "U rangu srednje cijene",
+    note: (type: PropertyType, municipality: string, count: number) =>
+      `Srednja cijena po m² za ${propertyTypeForPlural[type]} u općini ${municipality}, iz ${count} ${pluralForm(count, fromActiveListingWords)}. Oglasi s cijenom po dogovoru se ne računaju.`,
+    municipalityTitle: (municipality: string) => `Srednje cijene po m² u općini ${municipality}`,
+    municipalityRow: (type: PropertyType, count: number) => `${propertyTypePlural[type]} · ${count} ${listingWord(count)}`,
+    municipalityNote: (minimum: number) =>
+      `Srednja cijena po m² aktivnih oglasa. Prikazane su vrste nekretnina sa najmanje ${minimum} oglasa; oglasi s cijenom po dogovoru se ne računaju.`,
   },
   search: {
     title: "Nekretnine",

@@ -14,6 +14,7 @@ import { SellerBox } from "@/components/listings/detail/seller-box";
 import { ShareButton } from "@/components/listings/detail/share-button";
 import { PrintButton } from "@/components/listings/detail/print-button";
 import { PrintHeader } from "@/components/listings/detail/print-header";
+import { ListingPriceComparison } from "@/components/listings/detail/price-comparison";
 import { ShareLinks } from "@/components/listings/detail/share-links";
 import { ViewCounter } from "@/components/listings/detail/view-counter";
 import { FormAlert } from "@/components/auth/form-alert";
@@ -159,6 +160,19 @@ export default async function ListingPage({ params }: ListingPageProps) {
       <ListingDetailView
         view={view}
         afterHeader={isSold ? <FormAlert tone="error">{bs.detail.soldNotice}</FormAlert> : null}
+        priceComparison={
+          !isSold && bundle.municipalitySlug && bundle.municipalityName ? (
+            <Suspense fallback={null}>
+              <ListingPriceComparison
+                listingId={bundle.listing.id}
+                type={bundle.listing.type}
+                pricePerM2={bundle.listing.price_per_m2}
+                municipalitySlug={bundle.municipalitySlug}
+                municipalityName={bundle.municipalityName}
+              />
+            </Suspense>
+          ) : null
+        }
         aside={
           <>
             {bundle.seller ? (

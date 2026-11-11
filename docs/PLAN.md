@@ -237,6 +237,7 @@ Phases 0–13 are built. Phase 14 (deploy) has not started. Before deploying, wo
 - [x] Indexing off unless `NEXT_PUBLIC_ALLOW_INDEXING=true` (2026-11-10): the first deploy is a client demo on `*.vercel.app` with test data, so `robots.txt` disallows everything and every response sends `X-Robots-Tag: noindex, nofollow`. Turn it on at the real launch on a domain
 - [x] Hosted auth checklist in README (2026-11-10): URL configuration, password rules, SMTP (Gmail app password for the demo without a domain, Resend once there is one), Bosnian template subjects, email rate limit. Hosted projects are configured in the dashboard, never with `config push` (`site_url` is localhost)
 - [x] GitHub Actions (2026-11-10): `ci.yml` (typegen, typecheck, lint on push and PR; checked in a clean clone, where `tsc` fails without `next typegen`), `database-backup.yml` (daily encrypted dump of the hosted project kept 30 days, since the free plan has no backups; encrypted because the repository is public), `keep-alive.yml` (daily API read so the free project is not paused). Secrets and restore steps in README
+- [x] Performance pass with Lighthouse on a production build (2026-11-11): Zod was in every public page because `src/lib/favorites/routes.ts` (imported by the favourite heart and account links) imported the whole listing validation module for one id check; the check moved to `src/lib/favorites/listing-id.ts`. The report form (Zod + react-hook-form) loads only on the first click (`report-dialog.tsx` via `next/dynamic`). Guest favourite links no longer prefetch (each visible card used to prefetch the add-favourite route and `/prijava`). Optimised images cached 31 days (`minimumCacheTTL`; listing photos have unique names, avatars carry `?v=`). JS per page: home 212 → 179 KiB, listing 237 → 187 KiB, search 256 → 188 KiB. Observed LCP 0.2–0.8 s; Lighthouse's simulated mobile LCP (~5 s) on streamed pages is a model artefact. Accessibility 100 everywhere; SEO below 100 only because the demo is deliberately `noindex`
 - [ ] Owner adds the four repository secrets, runs both scheduled workflows once by hand and test-restores one backup
 
 ### Owner decisions pending
@@ -255,6 +256,13 @@ Phases 0–13 are built. Phase 14 (deploy) has not started. Before deploying, wo
 - [x] Print version of the listing detail styled as a land registry extract: `Ispiši` button, print-only header with parcel number and URL, light tokens on paper, rules in DESIGN.md "Print"
 
 Done when: all items work in both themes and on mobile, RLS tests cover any new table or RPC.
+
+## Phase 13c — Price comparison (2026-11-11)
+
+- [x] Listing detail: "Poređenje cijene" ledger (this listing's KM/m², median KM/m² of other active listings of the same type in the same municipality, difference as "N% ispod srednje" in the positive tone, "N% iznad srednje" or "U rangu srednje cijene" within ±5%) plus a note with the type, municipality and count. Shown only for active listings with a price per m² and at least 5 comparable listings; negotiable prices are excluded (`price_per_m2` is null for them)
+- [x] Municipality pages: "Srednje cijene po m² u općini …" ledger below the results, one row per property type with at least 5 active listings; nothing is shown otherwise
+- [x] Median, not mean, so one unrealistic price does not skew it. One cached query per municipality (`src/lib/search/price-stats.ts`, `listings` cache tag), pure logic in `src/lib/listings/price-comparison.ts`, no migration
+- [x] Checked on dev with 7 throwaway houses in Bugojno (950–2.000 KM/m², numbers verified by hand) at 390px and desktop; data deleted afterwards
 
 ## Phase 13b — AI listing text helper (2026-11-09)
 

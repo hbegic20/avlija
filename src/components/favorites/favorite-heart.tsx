@@ -18,7 +18,7 @@ export function FavoriteHeart({ listingId, title, className }: { listingId: stri
 
   if (!canToggle) {
     return (
-      <Link href={guestHref} onClick={onGuestClick} aria-label={label} title={label} className={cn(heartClasses, className)}>
+      <Link href={guestHref} prefetch={false} onClick={onGuestClick} aria-label={label} title={label} className={cn(heartClasses, className)}>
         {icon}
       </Link>
     );

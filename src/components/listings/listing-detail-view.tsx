@@ -36,10 +36,12 @@ export function ListingDetailView({
   view,
   aside,
   afterHeader,
+  priceComparison,
 }: {
   view: ListingView;
   aside?: ReactNode;
   afterHeader?: ReactNode;
+  priceComparison?: ReactNode;
 }) {
   const { listing, images, municipalityName } = view;
   const stamp = stampFor({ status: listing.status, isRegistered: listing.is_registered, isNew: view.isNew });
@@ -70,6 +72,7 @@ export function ListingDetailView({
             <LedgerSection title={bs.listing.sections.basic} rows={basicRows(view)} />
             <LedgerSection title={bs.listing.sections.building} rows={buildingRows(view)} />
             <LedgerSection title={bs.listing.sections.documents} rows={documentRows(view)} />
+            {priceComparison}
           </div>
 
           {features.length > 0 ? (

@@ -15,12 +15,14 @@ export function ListingRow({
   facts,
   notice,
   actions,
+  eager = false,
 }: {
   listing: ListingSummary;
   stamp: StampVariant | null;
   facts: Array<{ label: string; value: string; tone?: "default" | "positive" | "negative" }>;
   notice?: ReactNode;
   actions: ReactNode;
+  eager?: boolean;
 }) {
   const location = listing.municipalityName ? bs.listing.locationLine(listing.municipalityName, listing.neighborhood) : null;
   const inlineFacts = cardFacts(listing);
@@ -29,7 +31,14 @@ export function ListingRow({
     <article className="grid gap-4 bg-papir p-4 md:grid-cols-[120px_1fr_auto] md:items-start md:gap-6">
       <div className="relative aspect-4/3 w-full max-w-[200px] overflow-hidden border md:w-[120px]">
         {listing.coverUrl ? (
-          <Image src={listing.coverUrl} alt="" fill sizes="(min-width: 768px) 120px, 200px" className="object-cover" />
+          <Image
+            src={listing.coverUrl}
+            alt=""
+            fill
+            sizes="(min-width: 768px) 120px, 200px"
+            className="object-cover"
+            loading={eager ? "eager" : "lazy"}
+          />
         ) : (
           <div className="hatch size-full" aria-hidden="true" />
         )}

@@ -57,6 +57,8 @@ function factsFor(listing: OwnerListing): Fact[] {
   }
 }
 
+const eagerRowCount = 2;
+
 function rowStamp(listing: OwnerListing): StampVariant | null {
   if (listing.expiringSoon) {
     return "istice";
@@ -133,10 +135,11 @@ export default async function MyListingsPage({ searchParams }: PageProps<"/moj-r
             <EmptyState title={text.emptyTabTitle} description={text.emptyTabDescription} />
           ) : (
             <ul className="divide-y border">
-              {visible.map((listing) => (
+              {visible.map((listing, index) => (
                 <li key={listing.id}>
                   <ListingRow
                     listing={listing}
+                    eager={index < eagerRowCount}
                     stamp={rowStamp(listing)}
                     facts={factsFor(listing)}
                     notice={

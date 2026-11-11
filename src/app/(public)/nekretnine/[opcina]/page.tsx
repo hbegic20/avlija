@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Container } from "@/components/layout/container";
 import { ListingsBrowser } from "@/components/search/listings-browser";
+import { MunicipalityPrices } from "@/components/search/municipality-prices";
 import { ResultsSkeleton } from "@/components/search/results-skeleton";
 import { SearchPageHeader } from "@/components/search/search-page-header";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -43,6 +44,7 @@ async function MunicipalityListings({ params, searchParams }: MunicipalityPagePr
     <>
       <SearchPageHeader title={bs.search.titleIn(municipality.name)} intro={bs.search.introIn(municipality.name)} />
       <ListingsBrowser filters={parseSearchFilters(query, municipality.slug)} fixedMunicipality={municipality.slug} />
+      <MunicipalityPrices slug={municipality.slug} name={municipality.name} />
     </>
   );
 }

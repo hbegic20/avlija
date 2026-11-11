@@ -14,6 +14,8 @@ const securityHeaders = [
 
 const indexingHeaders = isIndexingAllowed ? [] : [{ key: "X-Robots-Tag", value: "noindex, nofollow" }];
 
+const thirtyOneDaysInSeconds = 60 * 60 * 24 * 31;
+
 const nextConfig: NextConfig = {
   cacheComponents: true,
   poweredByHeader: false,
@@ -22,6 +24,7 @@ const nextConfig: NextConfig = {
   },
   partialPrefetching: true,
   images: {
+    minimumCacheTTL: thirtyOneDaysInSeconds,
     remotePatterns: [
       {
         protocol: "https",
