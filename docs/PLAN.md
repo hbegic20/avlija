@@ -189,6 +189,7 @@ Done when: all lifecycle transitions work and respect limits (10 active).
 - [x] Users list with listing counts, ability to hide all listings of a user
 - [x] Promote or demote admins from the users list (2026-11-05, `set_user_role`); admins cannot demote themselves or accounts on the admin email list
 - [x] Delete a user from the users list (2026-11-05): typed `OBRIŠI` confirmation, removes the auth account (cascading to profile, contacts, listings, images, favourites, reports on their listings, contact reveals) and their storage files via `deleteUserCompletely` (shared with self-service account deletion); admins cannot delete themselves or another admin. Needs `SUPABASE_SECRET_KEY` on the server
+- [x] Un-hiding a sold listing (2026-11-11, migration `keep_sold_date_on_unhide`): it used to come back as `active` with its old `sold_at`, so a sold listing was for sale again. Now `unhideListing` restores `sold` when the listing has a sold date (otherwise `active`, or `archived` if expired), the lifecycle trigger keeps an existing `sold_at` instead of resetting it (the 30-day PRODANO period continues) and clears it whenever a listing becomes active; the migration also clears stale sold dates on active listings. `test:rls` covers both (84/84 on dev)
 - [x] Make the owner's account admin via a one-off SQL statement documented in README (README rewritten with setup, commands and the admin SQL)
 
 ## Phase 11 — SEO and sharing

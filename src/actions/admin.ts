@@ -4,6 +4,7 @@ import { revalidatePath, updateTag } from "next/cache";
 import { failure, success, type ActionResult } from "@/lib/action-result";
 import type { AdminErrorCode } from "@/lib/admin/admin-errors";
 import { adminRoutes } from "@/lib/admin/routes";
+import { statusAfterUnhide } from "@/lib/admin/status-after-unhide";
 import { getAdminSession } from "@/lib/auth/action-session";
 import type { UserRole } from "@/lib/domain/enums";
 import { listingCacheTag } from "@/lib/listings/public-listing";
@@ -68,16 +69,15 @@ export async function unhideListing(listingId: string): Promise<AdminResult> {
   }
   const { data: listing } = await admin.supabase
     .from("listings")
-    .select("number, status, expires_at")
+    .select("number, status, expires_at, sold_at")
     .eq("id", listingId)
     .maybeSingle();
   if (!listing || listing.status !== "hidden") {
     return failure("not_found");
   }
-  const stillValid = listing.expires_at !== null && new Date(listing.expires_at).getTime() > Date.now();
   const { error } = await admin.supabase
     .from("listings")
-    .update({ status: stillValid ? "active" : "archived", hidden_reason: null })
+    .update({ status: statusAfterUnhide(listing, Date.now()), hidden_reason: null })
     .eq("id", listingId);
   if (error) {
     return failure(logIfUnexpected("admin.unhideListing", error, /PUBLISH_REQUIREMENTS|PHONE_REQUIRED|LISTING_LIMIT/.test(error.message) ? "unhide_requirements" : "unexpected"));

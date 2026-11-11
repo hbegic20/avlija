@@ -340,6 +340,25 @@ async function run() {
   check("owner cannot un-hide a hidden listing", (unhidden ?? []).length === 0);
   await admin.from("listings").update({ status: "active", hidden_reason: null }).eq("id", draft.id);
 
+  const { error: markSoldError } = await userA.client.from("listings").update({ status: "sold" }).eq("id", draft.id);
+  const { data: soldRow } = await admin.from("listings").select("sold_at").eq("id", draft.id).single();
+  check("owner can mark an active listing as sold", markSoldError === null && Boolean(soldRow?.sold_at), describeError(markSoldError));
+  await admin.from("listings").update({ status: "hidden", hidden_reason: "Test" }).eq("id", draft.id);
+  await admin.from("listings").update({ status: "sold", hidden_reason: null }).eq("id", draft.id);
+  const { data: restoredSold } = await admin.from("listings").select("status, sold_at").eq("id", draft.id).single();
+  check(
+    "un-hiding a sold listing keeps its original sold date",
+    restoredSold?.status === "sold" && restoredSold?.sold_at === soldRow?.sold_at,
+    `got ${restoredSold?.status} ${restoredSold?.sold_at}, expected sold ${soldRow?.sold_at}`,
+  );
+  await admin.from("listings").update({ status: "active" }).eq("id", draft.id);
+  const { data: reactivated } = await admin.from("listings").select("status, sold_at").eq("id", draft.id).single();
+  check(
+    "a listing that becomes active has no sold date",
+    reactivated?.status === "active" && reactivated?.sold_at === null,
+    `got ${reactivated?.status} ${reactivated?.sold_at}`,
+  );
+
   for (let index = 0; index < 9; index += 1) {
     const { data: extra } = await admin
       .from("listings")
